@@ -1,6 +1,6 @@
 module AeroFuseHydrogen
 
-export greet_your_package_name
+export greet_AeroFuse
 include("functions.jl")
 
 end

@@ -3,6 +3,6 @@ using Test
 
 @testset "AeroFuseHydrogen.jl" begin
     # Write your tests here.
-    @test YourPackageName.greet_your_package_name() == "Hello AeroFuseHydrogen"
-    @test YourPackageName.greet_your_package_name() != "Hello world!"
+    @test AeroFuseHydrogen.greet_AeroFuse() == "Hello AeroFuseHydrogen"
+    @test AeroFuseHydrogen.greet_AeroFuse() != "Hello world!"
 end
