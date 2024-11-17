@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.46
+# v0.20.0
 
 using Markdown
 using InteractiveUtils
@@ -18,16 +18,16 @@ end
 using Pkg;
 
 # ╔═╡ 3602500f-cbd8-43a9-a9d5-001fda45aa6b
-Pkg.develop(url="https://github.com/PolyCrunch/AeroFuseHydrogen.jl")
+Pkg.develop(url="https://github.com/PolyCrunch/AeroFuseHydrogen.jl");
 
 # ╔═╡ 8802e233-9cfa-4ae6-b6bb-09f27215b5f4
-using AeroFuse
+using AeroFuse;
 
 # ╔═╡ 87dfa675-cb8c-41e6-b03d-c5a983d99aa8
-using Plots
+using Plots;
 
 # ╔═╡ 3fc8039e-acb3-44eb-a7c3-176afe4ad6e0
-using DataFrames
+using DataFrames;
 
 # ╔═╡ 1aeef97f-112b-4d1c-b4b0-b176483a783b
 begin
@@ -43,7 +43,11 @@ md"""# AeroFuse: Hydrogen-Electric Aircraft Design Demo
 """
 
 # ╔═╡ cf3ff4ea-03ed-4b53-982c-45d9d71a3ba2
-md"Start by including AeroFuse.jl, AeroFuseHydrogen.jl, and other necessary packages"
+md"""
+Start by including AeroFuse.jl, AeroFuseHydrogen.jl, and other necessary packages.
+
+Note: If you haven't already you will need to add the packages AeroFuse, Plots, Dataframe and PlutoUI to your Julia installation.
+"""
 
 # ╔═╡ b1e81925-32b5-45c0-888c-4b38a34e27b6
 gr(
@@ -56,7 +60,7 @@ md"""
 ## Aircraft information
 The aircraft in this demo will be a fictional Hydrogen-electric powered aircraft, based on a De Havilland Canada *Dash 8 Q-400*.
 
-For propulsion it uses an electric motor with propeller at the front of the aircraft, powered by PEM electric fuel cells which are fuelled by cryogenic liquid Hydrogen.
+For propulsion it will use an electric motor (with propeller) at the front of the aircraft, powered by PEM electric fuel cells which are fuelled by cryogenic liquid Hydrogen.
 
 ![Side view of a De Havilland Canada Dash 8 Q-400](https://static.wikia.nocookie.net/airline-club/images/4/4a/Bombardier-q400.png/revision/latest?cb=20220108202032)
 """
@@ -67,14 +71,14 @@ md"## Defining the fuselage"
 # ╔═╡ 0badf910-ef0d-4f6a-99b0-9a1a5d8a7213
 # Fuselage definition
 fuse = HyperEllipseFuselage(
-    radius = 2.7,           # Radius, m
-    length = 32.8,          # Length, m
-    x_a    = 0.14,          # Start of cabin, ratio of length
-    x_b    = 0.67,          # End of cabin, ratio of length
-    c_nose = 1.6,           # Curvature of nose
-    c_rear = 1.3,           # Curvature of rear
-    d_nose = -0.5,          # "Droop" or "rise" of nose, m
-    d_rear = 1.0,           # "Droop" or "rise" of rear, m
+    radius = 1.35,          # Radius, m ACCURATE
+    length = 32.8,          # Length, m ACCURATE
+    x_a    = 0.14,          # Start of cabin, ratio of length ACCURATE
+    x_b    = 0.67,          # End of cabin, ratio of length QUITE ACCURATE (Drawings)
+    c_nose = 1.6,           # Curvature of nose NO CLUE
+    c_rear = 1.2,           # Curvature of rear NO CLUE
+    d_nose = -0.5,          # "Droop" or "rise" of nose, m NO CLUE
+    d_rear = 0.7,           # "Droop" or "rise" of rear, m NO CLUE
     position = [0.,0.,0.]   # Set nose at origin, m
 )
 
@@ -84,7 +88,7 @@ begin
 	ts = 0:0.1:1                # Distribution of sections for nose, cabin and rear
 	S_f = wetted_area(fuse, ts) # Surface area, m²
 	V_f = volume(fuse, ts)      # Volume, m³
-end
+end;
 
 # ╔═╡ 165831ec-d5a5-4fa5-9e77-f808a296f09c
 md"## Defining the wing"
@@ -95,24 +99,24 @@ begin
 	foil_w_r = read_foil(download("http://airfoiltools.com/airfoil/seligdatfile?airfoil=naca633418-il")) # Root
 	foil_w_m = read_foil(download("http://airfoiltools.com/airfoil/seligdatfile?airfoil=naca633418-il")) # Midspan
 	foil_w_t = read_foil(download("http://airfoiltools.com/airfoil/seligdatfile?airfoil=n63415-il")) # Tip
-end
+end;
 
 # ╔═╡ 3413ada0-592f-4a37-b5d0-6ff88baad66c
 # Wing
 wing = Wing(
-    foils       = [foil_w_r, foil_w_m, foil_w_t], # Airfoils (root to tip)
-    chords      = [3.31, 3.00, 1.20],             # Chord lengths
-    spans       = [9.5, 28.4] / 2,                # Span lengths
-    dihedrals   = fill(1, 2),                     # Dihedral angles (deg)
-    sweeps      = fill(4.4, 2),                   # Sweep angles (deg)
+    foils       = [foil_w_r, foil_w_m, foil_w_t], # Airfoils (root to tip) ROOT AND TIP ACCURATE
+    chords      = [3.31, 3.00, 1.20],             # Chord lengths ROOT AND TIP ACCURATE
+    spans       = [9.5, 28.4] / 2,                # Span lengths TIP ACCURATE
+    dihedrals   = fill(1, 2),                     # Dihedral angles (deg) GUESS
+    sweeps      = fill(4.4, 2),                   # Sweep angles (deg) MAYBE ACCURATE (taken from a Uni exam)
     w_sweep     = 0.,                             # Leading-edge sweep
     symmetry    = true,                           # Symmetry
 
 	# Orientation
-    angle       = 3,       # Incidence angle (deg)
+    angle       = 3,       # Incidence angle (deg) NOT SURE
     axis        = [0, 1, 0], # Axis of rotation, x-axis
-    position    = [0.35fuse.length, 0., 2.7]
-)
+    position    = [0.38fuse.length, 0., 1.35]
+);
 
 # ╔═╡ 08420a59-34c1-4a29-a1d9-b8a6aa56ff1f
 md"### Wing Mesh"
@@ -122,7 +126,7 @@ wing_mesh = WingMesh(wing,
 	[8,16], # Number of spanwise panels
 	10,     # Number of chordwise panels
     span_spacing = Uniform() # Spacing: Uniform() or Cosine()
-)
+);
 
 # ╔═╡ 9f776e2f-1fa9-48f5-b554-6bf5a5d91441
 md"## Plot definition"
@@ -221,7 +225,7 @@ plt_vlm
 # ╟─165831ec-d5a5-4fa5-9e77-f808a296f09c
 # ╠═7bb33068-efa5-40d2-9e63-0137a44181cb
 # ╠═3413ada0-592f-4a37-b5d0-6ff88baad66c
-# ╠═08420a59-34c1-4a29-a1d9-b8a6aa56ff1f
+# ╟─08420a59-34c1-4a29-a1d9-b8a6aa56ff1f
 # ╠═6ef141f2-4655-431e-b064-1c82794c9bac
 # ╟─9f776e2f-1fa9-48f5-b554-6bf5a5d91441
 # ╠═ad1a5963-d120-4a8c-b5e1-9bd743a32670
