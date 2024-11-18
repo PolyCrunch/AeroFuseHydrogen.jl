@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.0
+# v0.19.46
 
 using Markdown
 using InteractiveUtils
@@ -63,6 +63,8 @@ The aircraft in this demo will be a fictional Hydrogen-electric powered aircraft
 For propulsion it will use an electric motor (with propeller) at the front of the aircraft, powered by PEM electric fuel cells which are fuelled by cryogenic liquid Hydrogen.
 
 ![Side view of a De Havilland Canada Dash 8 Q-400](https://static.wikia.nocookie.net/airline-club/images/4/4a/Bombardier-q400.png/revision/latest?cb=20220108202032)
+
+![Three-perspective of a De Havilland Canada Dash 8 Q-400](https://www.aviastar.org/pictures/canada/bombardier_dash-8-400.gif)
 """
 
 # ╔═╡ 6242fa28-1d3f-45d7-949a-646d2c7a9f52
@@ -90,6 +92,10 @@ begin
 	V_f = volume(fuse, ts)      # Volume, m³
 end;
 
+# ╔═╡ 87bca1cb-5e2f-4e2e-a1ff-a433507807da
+# Get coordinates of rear end
+fuse_end = fuse.affine.translation + [ fuse.length, 0., 0. ];
+
 # ╔═╡ 165831ec-d5a5-4fa5-9e77-f808a296f09c
 md"## Defining the wing"
 
@@ -115,11 +121,96 @@ wing = Wing(
 	# Orientation
     angle       = 3,       # Incidence angle (deg) NOT SURE
     axis        = [0, 1, 0], # Axis of rotation, x-axis
-    position    = [0.38fuse.length, 0., 1.35]
+    position    = [0.44fuse.length, 0., 1.35]
 );
 
+# ╔═╡ d69b550d-1634-4f45-a660-3be009ddd19d
+begin
+	b_w = span(wing)								# Span length, m
+	S_w = projected_area(wing)						# Area, m^2
+	c_w = mean_aerodynamic_chord(wing)				# Mean aerodynamic chord, m
+	mac_w = mean_aerodynamic_center(wing, 0.25)		# Mean aerodynamic center (25%), m
+	mac40_wing = mean_aerodynamic_center(wing, 0.40)# Mean aerodynamic center (40%), m
+end;
+
+# ╔═╡ 5446afd1-4326-41ab-94ec-199587c1411b
+md"""
+## Propulsion
+Electric motor and propeller combination
+"""
+
+# ╔═╡ f21b48c0-8e0c-4b67-9145-52a1480003ed
+wing_coords = coordinates(wing); # Get leading and trailing edge coordinates
+
+# ╔═╡ c82d7f29-08f4-4268-881f-e422864ab789
+begin
+	eng_L = wing_coords[1, 2] - [1, 0., 0.] # Left engine at mid-section leading edge
+	eng_R = wing_coords[1, 4] - [1, 0., 0.] # Right engine at mid-section leading edge
+end
+
+# ╔═╡ f02237a0-b9d2-4486-8608-cf99a5ea42bd
+md"## Stabilizers"
+
+# ╔═╡ 36431db2-ac86-48ce-8a91-16d9cca57dad
+md"#### Vertical stabilizer"
+
+# ╔═╡ cf33519f-4b3e-4d84-9f48-1e76f4e8be47
+vtail = WingSection(
+    area        = 14.92, 			# Area (m²). # HOW DO YOU DETERMINE THIS?
+    aspect      = 1.58,  			# Aspect ratio
+    taper       = 0.78,  			# Taper ratio
+    sweep       = 30.2, 			# Sweep angle (deg)
+    w_sweep     = 0.,   			# Leading-edge sweep
+    root_foil   = naca4(0,0,0,9), 	# Root airfoil
+	tip_foil    = naca4(0,0,0,9), 	# Tip airfoil
+
+    # Orientation
+    angle       = 90.,       # To make it vertical
+    axis        = [1, 0, 0], # Axis of rotation, x-axis
+    position    = fuse_end - [3.4, 0., -fuse.d_rear] # HOW DO YOU DETERMINE THIS?
+); # Not a symmetric surface
+
+# ╔═╡ 0f131ff8-d956-4d46-a7f0-a89f9c647dc7
+md"#### Horizontal stabilizer"
+
+# ╔═╡ 49134949-ea48-468b-934e-8101c6424ded
+con_foil = control_surface(naca4(0, 0, 1, 2), hinge = 0.75, angle = -10.) # Assumption
+
+# ╔═╡ a8cd9c4d-9afe-4656-9142-6525d9181ecf
+htail = WingSection(
+    area        = 13.4,  		# Area (m²). Determined via scale drawing
+	aspect      = 4.75,  		# Aspect ratio
+	taper       = 0.82,  		# Taper ratio
+	dihedral    = 0.,   		# Dihedral angle (deg)
+    sweep       = 0.,  			# Sweep angle (deg)
+    w_sweep     = 1.,   		# Leading-edge sweep
+    root_foil   = con_foil, 	# Root airfoil
+	tip_foil    = con_foil, 	# Tip airfoil
+    symmetry    = true,
+
+    # Orientation
+    angle       = 0,  # Incidence angle (deg). HOW DO YOU DETERMINE THIS?
+    axis        = [0., 1., 0.], # Axis of rotation, y-axis
+    position    = vtail.affine.translation + [ 3.2, 0., span(vtail)],
+);
+
+# ╔═╡ 73fddb34-3e63-43bf-8912-98ce180127e4
+b_h = span(htail);
+
+# ╔═╡ c49e01f1-4a58-49af-8c9b-2f4d5baa1d97
+S_h = projected_area(htail);
+
+# ╔═╡ 4579294d-d33a-4469-859e-985eeac3108d
+c_h = mean_aerodynamic_chord(htail);
+
+# ╔═╡ 24a66024-4213-4c6f-833b-d364fd9f1a87
+mac_h = mean_aerodynamic_center(htail);
+
+# ╔═╡ d9cc17ce-2c3c-4320-a93e-2e6db054470d
+V_h = S_h / S_w * (mac_h.x - mac_w.x) / c_w;
+
 # ╔═╡ 08420a59-34c1-4a29-a1d9-b8a6aa56ff1f
-md"### Wing Mesh"
+md"### Meshing"
 
 # ╔═╡ 6ef141f2-4655-431e-b064-1c82794c9bac
 wing_mesh = WingMesh(wing, 
@@ -128,13 +219,19 @@ wing_mesh = WingMesh(wing,
     span_spacing = Uniform() # Spacing: Uniform() or Cosine()
 );
 
+# ╔═╡ 1aed0dcb-3fa8-4c50-ac25-78e60c0ab99d
+vtail_mesh = WingMesh(vtail, [8], 6);
+
+# ╔═╡ 55a3b368-843e-47f1-a804-c5d3f582b1b9
+htail_mesh = WingMesh(htail, [10], 8);
+
 # ╔═╡ 9f776e2f-1fa9-48f5-b554-6bf5a5d91441
 md"## Plot definition"
 
 # ╔═╡ ad1a5963-d120-4a8c-b5e1-9bd743a32670
 begin
-	φ_s 			= @bind φ Slider(0:1e-2:90, default = 15)
-	ψ_s 			= @bind ψ Slider(0:1e-2:90, default = 30)
+	φ_s 			= @bind φ Slider(-180:1e-2:180, default = 15)
+	ψ_s 			= @bind ψ Slider(-180:1e-2:180, default = 30)
 	aero_flag 		= @bind aero CheckBox(default = true)
 	stab_flag 		= @bind stab CheckBox(default = true)
 	weights_flag 	= @bind weights CheckBox(default = false)
@@ -155,6 +252,9 @@ Streamlines: $(strm_flag)
 # ╔═╡ 11e3c0e6-534c-4b01-a961-5429d28985d7
 toggles
 
+# ╔═╡ 9b8ce85f-2cb8-43a9-a536-0d44681b5dfa
+toggles
+
 # ╔═╡ 620d9b28-dca9-4678-a50e-82af5176f558
 begin
 	# Plot meshes
@@ -169,13 +269,13 @@ begin
 	if aero
 		plot!(fuse, label = "Fuselage", alpha = 0.6)
 		plot!(wing_mesh, label = "Wing", mac = false)
-		#plot!(htail_mesh, label = "Horizontal Tail", mac = false)
-		#plot!(vtail_mesh, label = "Vertical Tail", mac = false)
+		plot!(htail_mesh, label = "Horizontal Tail", mac = false)
+		plot!(vtail_mesh, label = "Vertical Tail", mac = false)
 	else
 		plot!(fuse, alpha = 0.3, label = "Fuselage")
 		plot!(wing, 0.4, label = "Wing MAC 40%") 			 
-		#plot!(htail, 0.4, label = "Horizontal Tail MAC 40%") 
-		#plot!(vtail, 0.4, label = "Vertical Tail MAC 40%")
+		plot!(htail, 0.4, label = "Horizontal Tail MAC 40%") 
+		plot!(vtail, 0.4, label = "Vertical Tail MAC 40%")
 	end
 
 	# CG
@@ -207,6 +307,9 @@ end
 # ╔═╡ 62dd8881-9b07-465d-a83e-d93eafc7225a
 plt_vlm
 
+# ╔═╡ f03893b1-7518-47d3-ae88-da688aff9591
+plt_vlm
+
 # ╔═╡ Cell order:
 # ╟─316a98fa-f3e4-4b46-8c19-c5dbfa6a550f
 # ╟─cf3ff4ea-03ed-4b53-982c-45d9d71a3ba2
@@ -222,11 +325,31 @@ plt_vlm
 # ╠═11e3c0e6-534c-4b01-a961-5429d28985d7
 # ╠═62dd8881-9b07-465d-a83e-d93eafc7225a
 # ╠═d82a14c0-469e-42e6-abc2-f7b98173f92b
+# ╠═87bca1cb-5e2f-4e2e-a1ff-a433507807da
 # ╟─165831ec-d5a5-4fa5-9e77-f808a296f09c
 # ╠═7bb33068-efa5-40d2-9e63-0137a44181cb
 # ╠═3413ada0-592f-4a37-b5d0-6ff88baad66c
+# ╠═d69b550d-1634-4f45-a660-3be009ddd19d
+# ╟─5446afd1-4326-41ab-94ec-199587c1411b
+# ╠═f21b48c0-8e0c-4b67-9145-52a1480003ed
+# ╠═c82d7f29-08f4-4268-881f-e422864ab789
+# ╟─f02237a0-b9d2-4486-8608-cf99a5ea42bd
+# ╟─36431db2-ac86-48ce-8a91-16d9cca57dad
+# ╠═cf33519f-4b3e-4d84-9f48-1e76f4e8be47
+# ╟─0f131ff8-d956-4d46-a7f0-a89f9c647dc7
+# ╠═49134949-ea48-468b-934e-8101c6424ded
+# ╠═a8cd9c4d-9afe-4656-9142-6525d9181ecf
+# ╠═9b8ce85f-2cb8-43a9-a536-0d44681b5dfa
+# ╠═f03893b1-7518-47d3-ae88-da688aff9591
+# ╠═73fddb34-3e63-43bf-8912-98ce180127e4
+# ╠═c49e01f1-4a58-49af-8c9b-2f4d5baa1d97
+# ╠═4579294d-d33a-4469-859e-985eeac3108d
+# ╠═24a66024-4213-4c6f-833b-d364fd9f1a87
+# ╠═d9cc17ce-2c3c-4320-a93e-2e6db054470d
 # ╟─08420a59-34c1-4a29-a1d9-b8a6aa56ff1f
 # ╠═6ef141f2-4655-431e-b064-1c82794c9bac
+# ╠═1aed0dcb-3fa8-4c50-ac25-78e60c0ab99d
+# ╠═55a3b368-843e-47f1-a804-c5d3f582b1b9
 # ╟─9f776e2f-1fa9-48f5-b554-6bf5a5d91441
 # ╠═ad1a5963-d120-4a8c-b5e1-9bd743a32670
 # ╠═8af8885c-48d8-40cf-8584-45d89521d9a1
