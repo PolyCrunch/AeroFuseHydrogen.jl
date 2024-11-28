@@ -1,10 +1,10 @@
 struct CryogenicFuelTank{T<:Real,N<:AbstractAffineMap} <: AbstractFuelTank
+    radius::T
     internal_volume::T
     wall_thickness::T
-    radius::T
-    length::T
-    mass::T
     affine::N
+    # length::T
+    # mass::T
     function CryogenicFuelTank(R, V_internal, t_wall, affine)
         # Type promotion
         T = promote_type(eltype(R), eltype(V_internal), eltype(t_wall))
