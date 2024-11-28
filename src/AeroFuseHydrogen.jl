@@ -13,7 +13,7 @@ include("functions.jl")
 # include("Propulsion/FuelTank.jl")
 # include("Propulsion/Power/fuel_cell.jl")
 
-include("HydrogenPropulsion/HydrogenElectric.jl")
+include("HydrogenElectric/HydrogenElectric.jl")
 
 # Abstract types
 import .HydrogenElectric: AbstractHydrogenPropulsionSystem, AbstractFuelTank, AbstractEngine, AbstractPropeller
