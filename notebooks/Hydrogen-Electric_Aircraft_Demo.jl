@@ -53,10 +53,10 @@ Note: If you haven't already you will need to add the packages AeroFuse, Plots, 
 """
 
 # ╔═╡ 25cfde65-2b81-4edf-b0db-8d525a81edc2
-md"Check AeroFuseHydrogen works"
+md"Run AeroFuseHydrogen tests"
 
 # ╔═╡ 83238510-db03-4f25-84ce-49207b4a6e44
-Pkg.test("AeroFuseHydrogen")
+Pkg.test("AeroFuseHydrogen");
 
 # ╔═╡ b1e81925-32b5-45c0-888c-4b38a34e27b6
 gr(
