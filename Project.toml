@@ -14,7 +14,7 @@ AeroFuse = "0.4.12"
 CoordinateTransformations = "0.6.3"
 Rotations = "1.7.1"
 StaticArrays = "1.9.8"
-julia = "1.6.7"
+julia = "1.11"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
