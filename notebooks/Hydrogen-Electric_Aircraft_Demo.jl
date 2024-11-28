@@ -133,6 +133,12 @@ begin
 	mac40_wing = mean_aerodynamic_center(wing, 0.40)# Mean aerodynamic center (40%), m
 end;
 
+# ╔═╡ 2b8ec21c-d8da-4e16-91c0-244857483463
+md"## Defining the fuel tank"
+
+# ╔═╡ bb20a9ac-ac1e-4fa5-baa1-35300d5fcada
+
+
 # ╔═╡ 5446afd1-4326-41ab-94ec-199587c1411b
 md"""
 ## Propulsion
@@ -330,6 +336,8 @@ plt_vlm
 # ╠═7bb33068-efa5-40d2-9e63-0137a44181cb
 # ╠═3413ada0-592f-4a37-b5d0-6ff88baad66c
 # ╠═d69b550d-1634-4f45-a660-3be009ddd19d
+# ╟─2b8ec21c-d8da-4e16-91c0-244857483463
+# ╠═bb20a9ac-ac1e-4fa5-baa1-35300d5fcada
 # ╟─5446afd1-4326-41ab-94ec-199587c1411b
 # ╠═f21b48c0-8e0c-4b67-9145-52a1480003ed
 # ╠═c82d7f29-08f4-4268-881f-e422864ab789

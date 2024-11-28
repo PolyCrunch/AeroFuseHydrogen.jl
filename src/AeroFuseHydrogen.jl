@@ -15,4 +15,14 @@ include("functions.jl")
 
 include("HydrogenPropulsion/HydrogenElectric.jl")
 
+# Abstract types
+import .HydrogenElectric: AbstractHydrogenPropulsionSystem, AbstractFuelTank, AbstractEngine, AbstractPropeller
+
+export AbstractHydrogenPropulsionSystem, AbstractFuelTank, AbstractEngine, AbstractPropeller
+
+# Fuel tank
+import .HydrogenElectric: CryogenicFuelTank
+
+export CryogenicFuelTank
+
 end
