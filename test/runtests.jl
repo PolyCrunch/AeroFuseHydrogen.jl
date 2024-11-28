@@ -5,5 +5,5 @@ using Test
     # Write your tests here.
     @test AeroFuseHydrogen.greet_AeroFuse() == "Hello AeroFuseHydrogen"
     @test AeroFuseHydrogen.greet_AeroFuse() != "Hello world!"
-    @test AeroFuseHydrogen.CryogenicFuelTank()
+    @test AeroFuseHydrogen.CryogenicFuelTank(1, 1, 1)
 end
