@@ -23,6 +23,9 @@ Pkg.develop(url="https://github.com/PolyCrunch/AeroFuseHydrogen.jl");
 # ╔═╡ 8802e233-9cfa-4ae6-b6bb-09f27215b5f4
 using AeroFuse;
 
+# ╔═╡ f0aadce8-3424-47f2-a549-43a499385e80
+using AeroFuseHydrogen;
+
 # ╔═╡ 87dfa675-cb8c-41e6-b03d-c5a983d99aa8
 using Plots;
 
@@ -49,17 +52,17 @@ Start by including AeroFuse.jl, AeroFuseHydrogen.jl, and other necessary package
 Note: If you haven't already you will need to add the packages AeroFuse, Plots, Dataframe and PlutoUI to your Julia installation.
 """
 
-# ╔═╡ b1e81925-32b5-45c0-888c-4b38a34e27b6
-gr(
-	size = (900, 700),  # INCREASE THE SIZE FOR THE PLOTS HERE.
-	palette = :tab20    # Color scheme for the lines and markers in plots
-)
-
 # ╔═╡ 25cfde65-2b81-4edf-b0db-8d525a81edc2
 md"Check AeroFuseHydrogen works"
 
 # ╔═╡ 83238510-db03-4f25-84ce-49207b4a6e44
 Pkg.test("AeroFuseHydrogen")
+
+# ╔═╡ b1e81925-32b5-45c0-888c-4b38a34e27b6
+gr(
+	size = (900, 700),  # INCREASE THE SIZE FOR THE PLOTS HERE.
+	palette = :tab20    # Color scheme for the lines and markers in plots
+)
 
 # ╔═╡ b81ca63b-46e9-4808-8225-c36132e70084
 md"""
@@ -328,11 +331,12 @@ plt_vlm
 # ╠═3d26ac1a-f679-4ff8-a6d5-e52fc83bcae1
 # ╠═8802e233-9cfa-4ae6-b6bb-09f27215b5f4
 # ╠═3602500f-cbd8-43a9-a9d5-001fda45aa6b
+# ╟─25cfde65-2b81-4edf-b0db-8d525a81edc2
+# ╠═83238510-db03-4f25-84ce-49207b4a6e44
+# ╠═f0aadce8-3424-47f2-a549-43a499385e80
 # ╠═87dfa675-cb8c-41e6-b03d-c5a983d99aa8
 # ╠═3fc8039e-acb3-44eb-a7c3-176afe4ad6e0
 # ╠═b1e81925-32b5-45c0-888c-4b38a34e27b6
-# ╟─25cfde65-2b81-4edf-b0db-8d525a81edc2
-# ╠═83238510-db03-4f25-84ce-49207b4a6e44
 # ╟─b81ca63b-46e9-4808-8225-c36132e70084
 # ╟─6242fa28-1d3f-45d7-949a-646d2c7a9f52
 # ╠═0badf910-ef0d-4f6a-99b0-9a1a5d8a7213
