@@ -165,7 +165,7 @@ tank = CryogenicFuelTank(
 )
 
 # ╔═╡ 63475bbf-6993-4f6c-86b8-f3b608b63a8e
-tank_length = length(tank)
+tank_length = length(tank) # Calculate the tank exterior length
 
 # ╔═╡ 5446afd1-4326-41ab-94ec-199587c1411b
 md"""
