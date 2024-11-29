@@ -32,4 +32,4 @@ function CryogenicFuelTank(;
     return CryogenicFuelTank(radius, internal_volume, insulation_thickness, affine)
 end
 
-length(fuel_tank::CryogenicFuelTank) = fuel_tank.internal_volume / (π * (fuel_tank.radius - fuek_tank.insulation_thickness)^2) + 2 / 3 * fuel_tank.radius + 4 / 3 * fuel_tank.insulation_thickness
+Base.length(fuel_tank::CryogenicFuelTank) = fuel_tank.internal_volume / (π * (fuel_tank.radius - fuek_tank.insulation_thickness)^2) + 2 / 3 * fuel_tank.radius + 4 / 3 * fuel_tank.insulation_thickness
