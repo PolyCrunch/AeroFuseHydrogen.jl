@@ -1,3 +1,5 @@
+Base.length(fuel_tank :: CryogenicFuelTank) = fuel_tank.V_internal / (π * (fuel_tank.radius - fuek_tank.insulation_thickness)^2) + 2 / 3 * fuel_tank.radius + 4 / 3 * fuel_tank.insulation_thickness
+
 struct CryogenicFuelTank{T<:Real,N<:AbstractAffineMap} <: AbstractFuelTank
     radius::T
     internal_volume::T
@@ -27,9 +29,6 @@ function CryogenicFuelTank(;
     axis=[0.0, 1.0, 0.0],
     affine=AffineMap(AngleAxis(deg2rad(angle), axis...), SVector(position...)),
 )
-
-    #length = 1.0
-    #mass = 1.0
 
     return CryogenicFuelTank(radius, internal_volume, insulation_thickness, affine)
 end
