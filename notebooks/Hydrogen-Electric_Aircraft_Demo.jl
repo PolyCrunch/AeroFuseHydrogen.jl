@@ -17,10 +17,13 @@ end
 # ╔═╡ 3d26ac1a-f679-4ff8-a6d5-e52fc83bcae1
 using Pkg;
 
+# ╔═╡ dacf3264-b291-49b1-8588-4cb691a753b6
+Pkg.develop(url="https://github.com/PolyCrunch/AeroFuse.jl")
+
 # ╔═╡ 3602500f-cbd8-43a9-a9d5-001fda45aa6b
 Pkg.develop(url="https://github.com/PolyCrunch/AeroFuseHydrogen.jl");
 
-# ╔═╡ 8802e233-9cfa-4ae6-b6bb-09f27215b5f4
+# ╔═╡ 8758139a-3b2f-458f-b7a9-d64ed8613871
 using AeroFuse;
 
 # ╔═╡ f0aadce8-3424-47f2-a549-43a499385e80
@@ -105,6 +108,9 @@ end;
 # Get coordinates of rear end
 fuse_end = fuse.affine.translation + [ fuse.length, 0., 0. ];
 
+# ╔═╡ 9cd71ed3-c323-4500-92fa-43cb3f9b98e3
+fuse_t_w = 0.05; # Thickness of the fuselage wall, used for calculating space available for fuel tank
+
 # ╔═╡ 165831ec-d5a5-4fa5-9e77-f808a296f09c
 md"## Defining the wing"
 
@@ -145,8 +151,18 @@ end;
 # ╔═╡ 2b8ec21c-d8da-4e16-91c0-244857483463
 md"## Defining the fuel tank"
 
-# ╔═╡ bb20a9ac-ac1e-4fa5-baa1-35300d5fcada
-tank = CryogenicFuelTank()
+# ╔═╡ a017efa0-cf08-4302-80f7-fae1ef55651c
+md"""
+We will assume the fuel tank will be to the rear of the fuselage, taking up the entire radius available, with a given internal volume.
+"""
+
+# ╔═╡ 82b332ac-5628-4b82-8735-f361dcdfc9b6
+tank = CryogenicFuelTank(
+	radius = fuse.radius - fuse_t_w,
+	internal_volume = 100,
+	insulation_thickness = 0.1,
+	position = [0.5fuse.length, 0, 0]
+)
 
 # ╔═╡ 5446afd1-4326-41ab-94ec-199587c1411b
 md"""
@@ -329,7 +345,8 @@ plt_vlm
 # ╟─316a98fa-f3e4-4b46-8c19-c5dbfa6a550f
 # ╟─cf3ff4ea-03ed-4b53-982c-45d9d71a3ba2
 # ╠═3d26ac1a-f679-4ff8-a6d5-e52fc83bcae1
-# ╠═8802e233-9cfa-4ae6-b6bb-09f27215b5f4
+# ╠═dacf3264-b291-49b1-8588-4cb691a753b6
+# ╠═8758139a-3b2f-458f-b7a9-d64ed8613871
 # ╠═3602500f-cbd8-43a9-a9d5-001fda45aa6b
 # ╟─25cfde65-2b81-4edf-b0db-8d525a81edc2
 # ╠═83238510-db03-4f25-84ce-49207b4a6e44
@@ -344,12 +361,14 @@ plt_vlm
 # ╠═62dd8881-9b07-465d-a83e-d93eafc7225a
 # ╠═d82a14c0-469e-42e6-abc2-f7b98173f92b
 # ╠═87bca1cb-5e2f-4e2e-a1ff-a433507807da
+# ╠═9cd71ed3-c323-4500-92fa-43cb3f9b98e3
 # ╟─165831ec-d5a5-4fa5-9e77-f808a296f09c
 # ╠═7bb33068-efa5-40d2-9e63-0137a44181cb
 # ╠═3413ada0-592f-4a37-b5d0-6ff88baad66c
 # ╠═d69b550d-1634-4f45-a660-3be009ddd19d
 # ╟─2b8ec21c-d8da-4e16-91c0-244857483463
-# ╠═bb20a9ac-ac1e-4fa5-baa1-35300d5fcada
+# ╟─a017efa0-cf08-4302-80f7-fae1ef55651c
+# ╠═82b332ac-5628-4b82-8735-f361dcdfc9b6
 # ╟─5446afd1-4326-41ab-94ec-199587c1411b
 # ╠═f21b48c0-8e0c-4b67-9145-52a1480003ed
 # ╠═c82d7f29-08f4-4268-881f-e422864ab789

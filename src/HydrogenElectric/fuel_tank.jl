@@ -1,7 +1,7 @@
 struct CryogenicFuelTank{T<:Real,N<:AbstractAffineMap} <: AbstractFuelTank
     radius::T
     internal_volume::T
-    wall_thickness::T
+    insulation_thickness::T
     affine::N
     # length::T
     # mass::T
@@ -21,7 +21,7 @@ end
 function CryogenicFuelTank(;
     radius=1.0,
     internal_volume=1.0,
-    wall_thickness=0.05,
+    insulation_thickness=0.05,
     position=zeros(3),
     angle=0.0,
     axis=[0.0, 1.0, 0.0],
@@ -31,5 +31,5 @@ function CryogenicFuelTank(;
     #length = 1.0
     #mass = 1.0
 
-    return CryogenicFuelTank(radius, internal_volume, wall_thickness, affine)
+    return CryogenicFuelTank(radius, internal_volume, insulation_thickness, affine)
 end
