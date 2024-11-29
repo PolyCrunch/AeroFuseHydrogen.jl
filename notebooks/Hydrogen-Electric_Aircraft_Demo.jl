@@ -164,6 +164,9 @@ tank = CryogenicFuelTank(
 	position = [0.5fuse.length, 0, 0]
 )
 
+# ╔═╡ 63475bbf-6993-4f6c-86b8-f3b608b63a8e
+tank.radius
+
 # ╔═╡ 5446afd1-4326-41ab-94ec-199587c1411b
 md"""
 ## Propulsion
@@ -369,6 +372,7 @@ plt_vlm
 # ╟─2b8ec21c-d8da-4e16-91c0-244857483463
 # ╟─a017efa0-cf08-4302-80f7-fae1ef55651c
 # ╠═82b332ac-5628-4b82-8735-f361dcdfc9b6
+# ╠═63475bbf-6993-4f6c-86b8-f3b608b63a8e
 # ╟─5446afd1-4326-41ab-94ec-199587c1411b
 # ╠═f21b48c0-8e0c-4b67-9145-52a1480003ed
 # ╠═c82d7f29-08f4-4268-881f-e422864ab789

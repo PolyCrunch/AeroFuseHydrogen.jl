@@ -16,6 +16,10 @@ struct CryogenicFuelTank{T<:Real,N<:AbstractAffineMap} <: AbstractFuelTank
         
         new{T,N}(R, V_internal, t_wall, affine)
     end
+
+    function length()
+        return V_internal / (π * (R - t_wall)^2) + 2 / 3 * R + 4 / 3 * t_wall
+    end
 end
 
 function CryogenicFuelTank(;
