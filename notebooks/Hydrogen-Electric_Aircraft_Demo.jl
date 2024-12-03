@@ -171,7 +171,7 @@ tank_length = length(tank) # Calculate the tank exterior length (m)
 tank_mass = dry_mass(tank) # Calculate the dry mass of the tank (kg)
 
 # ╔═╡ a0c931b1-e9a5-4bf3-af6d-a9e6d0009998
-full_tank_mass = wet_mass.(tank, [0., 0.5, 1.0]) # Calculate the mass of a fuel tank 
+full_tank_mass = wet_mass(tank, [0., 0.5, 1.0]) # Calculate the mass of a fuel tank 
 
 # ╔═╡ 5446afd1-4326-41ab-94ec-199587c1411b
 md"""
