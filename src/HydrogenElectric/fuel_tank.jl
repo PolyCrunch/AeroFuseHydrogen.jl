@@ -63,3 +63,15 @@ function dry_mass(fuel_tank::CryogenicFuelTank)
 
     return V_w * ρ_w # Mass of the insulation
 end
+
+"""
+    wet_mass(fuel_tank :: CryogenicFuelTank, fraction :: Real, ρ_fuel :: Real)
+
+Compute the wet mass of a "CryogenicFuelTank" object, given the fuel fraction ``fracton``, and optional fuel density (defaults to `70.8 kg m^{-3}`, based on liquid Hydrogen at 20 K). Note the fraction must be between `0` and `1`.
+"""
+function wet_mass(fuel_tank::CryogenicFuelTank, fraction::Real, ρ_fuel::Real=70.8)
+    @assert 0 <= fraction <= 1 "Fraction must be between 0 and 1"
+
+    V_fuel = fraction * fuel_tank.internal_volume
+    return dry_mass(fuel_tank) + V_fuel * ρ_fuel
+end
