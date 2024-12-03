@@ -13,7 +13,7 @@ struct CryogenicFuelTank{T<:Real,N<:AbstractAffineMap} <: AbstractFuelTank
         @assert V_internal > 0 "Internal volume must be positive"
         @assert t_wall > 0 "Wall thickness must be positive"
 
-        new{T,N}(R, V_internal, t_wall, affine)
+        new{T,N}(R, V_internal, t_wall, ρ_wall, affine)
     end
 end
 
