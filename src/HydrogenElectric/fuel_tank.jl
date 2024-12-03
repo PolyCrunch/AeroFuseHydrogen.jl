@@ -84,6 +84,6 @@ Compute the wet mass of a "CryogenicFuelTank" object, given a vector of fuel fra
 function wet_mass(fuel_tank::CryogenicFuelTank, fraction::Vector, ρ_fuel::Real=70.8)
     @assert all(0 .<= fraction .<= 1) "Fraction members must be between 0 and 1"
 
-    V_fuel = fraction * fuel_tank.internal_volume
-    return dry_mass(fuel_tank) + V_fuel * ρ_fuel
+    V_fuel = fraction .* fuel_tank.internal_volume
+    return dry_mass(fuel_tank) .+ V_fuel .* ρ_fuel
 end
