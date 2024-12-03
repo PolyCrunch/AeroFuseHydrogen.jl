@@ -21,8 +21,8 @@ import .HydrogenElectric: AbstractHydrogenPropulsionSystem, AbstractFuelTank, Ab
 export AbstractHydrogenPropulsionSystem, AbstractFuelTank, AbstractEngine, AbstractPropeller
 
 # Fuel tank
-import .HydrogenElectric: CryogenicFuelTank, length
+import .HydrogenElectric: CryogenicFuelTank, length, dry_mass
 
-export CryogenicFuelTank, length
+export CryogenicFuelTank, length, dry_mass
 
 end
