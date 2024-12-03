@@ -1,14 +1,12 @@
-
 struct CryogenicFuelTank{T<:Real,N<:AbstractAffineMap} <: AbstractFuelTank
     radius::T
     internal_volume::T
     insulation_thickness::T
+    insulation_density::T
     affine::N
-    length::T
-    mass::T
-    function CryogenicFuelTank(R, V_internal, t_wall, affine)
+    function CryogenicFuelTank(R, V_internal, t_wall, ρ_wall, affine)
         # Type promotion
-        T = promote_type(eltype(R), eltype(V_internal), eltype(t_wall))
+        T = promote_type(eltype(R), eltype(V_internal), eltype(t_wall), eltype(ρ_wall))
         N = typeof(affine)
 
         @assert R > 0 "Radius must be positive"
@@ -28,6 +26,7 @@ Define a cryogenic fuel tank.
 - `radius :: Real = 1.`: Radius available for tank (m)
 - `internal_volume :: Real = 10.`: Tank volume needed for fuel (m^3)
 - `insulation_thickness :: Real = 0.05`: Insulation thickness (m)
+- 'insulation_density :: Real = 35.3`: Insulation density (kg/m^3)
 - `position :: Vector{Real} = zeros(3)`: Position (m)
 - `angle :: Real = 0.`: Angle of rotation (degrees)
 - `axis :: Vector{Real} = [0, 1 ,0]`: Axis of rotation, y-axis by default
@@ -37,13 +36,30 @@ function CryogenicFuelTank(;
     radius=1.0,
     internal_volume=10.0,
     insulation_thickness=0.05,
+    insulation_density=35.3, # Example taken from rigid closed cell polymethacrylimide foam
     position=zeros(3),
     angle=0.0,
     axis=[0.0, 1.0, 0.0],
     affine=AffineMap(AngleAxis(deg2rad(angle), axis...), SVector(position...)),
 )
 
-    return CryogenicFuelTank(radius, internal_volume, insulation_thickness, affine)
+    return CryogenicFuelTank(radius, internal_volume, insulation_thickness, insulation_density, affine)
 end
 
 Base.length(fuel_tank::CryogenicFuelTank) = fuel_tank.internal_volume / (π * (fuel_tank.radius - fuel_tank.insulation_thickness)^2) + 2 / 3 * fuel_tank.radius + 4 / 3 * fuel_tank.insulation_thickness
+
+"""
+    dry_mass(fuel_tank :: CryogenicFuelTank)
+
+Compute the dry mass of a "CryogenicFuelTank" object.
+"""
+function dry_mass(fuel_tank::CryogenicFuelTank)
+    t_w = fuel_tank.insulation_thickness
+    ρ_w = fuel_tank.insulation_density
+    R = fuel_tank.radius
+    L = length(fuel_tank)
+
+    V_w = -pi * t_w * (24 * R^2 - 18 * R * t_w - 6 * L * R + 4 * t_w^2 + 3 * L * t_w) / 3 # Volume of the insulation
+
+    return V_w * ρ_w # Mass of the insulation
+end
