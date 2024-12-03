@@ -77,11 +77,11 @@ function wet_mass(fuel_tank::CryogenicFuelTank, fraction::Real, ρ_fuel::Real=70
 end
 
 """
-    wet_mass(fuel_tank :: CryogenicFuelTank, fraction :: Vector, ρ_fuel :: Real)
+    wet_mass(fuel_tank :: CryogenicFuelTank, fraction :: Array, ρ_fuel :: Real)
 
-Compute the wet mass of a "CryogenicFuelTank" object, given a vector of fuel fractions ``fracton``, and optional fuel density (defaults to `70.8 kg m^{-3}`, based on liquid Hydrogen at 20 K). Note the members of fraction be between `0` and `1`.
+Compute the wet mass of a "CryogenicFuelTank" object, given an array of fuel fractions ``fracton``, and optional fuel density (defaults to `70.8 kg m^{-3}`, based on liquid Hydrogen at 20 K). Note the members of fraction be between `0` and `1`.
 """
-function wet_mass(fuel_tank::CryogenicFuelTank, fraction::Vector, ρ_fuel::Real=70.8)
+function wet_mass(fuel_tank::CryogenicFuelTank, fraction::Array, ρ_fuel::Real=70.8)
     @assert all(0 .<= fraction .<= 1) "Fraction members must be between 0 and 1"
 
     V_fuel = fraction .* fuel_tank.internal_volume
