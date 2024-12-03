@@ -1,0 +1,5 @@
+tank_insulation_properties: 
+  - name: "Tank Insulation Properties"
+    description: "Properties of the tank insulation."
+    citation: "NASA/CR-2002-211867"
+    link: "https://ntrs.nasa.gov/api/citations/20020085127/downloads/20020085127.pdf"
