@@ -170,6 +170,9 @@ tank_length = length(tank) # Calculate the tank exterior length (m)
 # ╔═╡ b9fddbc4-a2d7-48cf-ace4-f092a3c38b11
 tank_mass = dry_mass(tank) # Calculate the dry mass of the tank (kg)
 
+# ╔═╡ a0c931b1-e9a5-4bf3-af6d-a9e6d0009998
+full_tank_mass = wet_mass.(tank, [0., 0.5, 1.0]) # Calculate the mass of a fuel tank 
+
 # ╔═╡ 5446afd1-4326-41ab-94ec-199587c1411b
 md"""
 ## Propulsion
@@ -377,6 +380,7 @@ plt_vlm
 # ╠═82b332ac-5628-4b82-8735-f361dcdfc9b6
 # ╠═63475bbf-6993-4f6c-86b8-f3b608b63a8e
 # ╠═b9fddbc4-a2d7-48cf-ace4-f092a3c38b11
+# ╠═a0c931b1-e9a5-4bf3-af6d-a9e6d0009998
 # ╟─5446afd1-4326-41ab-94ec-199587c1411b
 # ╠═f21b48c0-8e0c-4b67-9145-52a1480003ed
 # ╠═c82d7f29-08f4-4268-881f-e422864ab789
