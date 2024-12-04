@@ -156,6 +156,9 @@ md"""
 We will assume the fuel tank will be to the rear of the fuselage, taking up the entire radius available, with a given internal volume.
 """
 
+# ╔═╡ a234a45e-c25f-4248-9c9f-3fce481cd281
+tank_data = read_data("Data/tank_insulation_properties.csv")
+
 # ╔═╡ 82b332ac-5628-4b82-8735-f361dcdfc9b6
 tank = CryogenicFuelTank(
 	radius = fuse.radius - fuse_t_w,
@@ -377,6 +380,7 @@ plt_vlm
 # ╠═d69b550d-1634-4f45-a660-3be009ddd19d
 # ╟─2b8ec21c-d8da-4e16-91c0-244857483463
 # ╟─a017efa0-cf08-4302-80f7-fae1ef55651c
+# ╠═a234a45e-c25f-4248-9c9f-3fce481cd281
 # ╠═82b332ac-5628-4b82-8735-f361dcdfc9b6
 # ╠═63475bbf-6993-4f6c-86b8-f3b608b63a8e
 # ╠═b9fddbc4-a2d7-48cf-ace4-f092a3c38b11

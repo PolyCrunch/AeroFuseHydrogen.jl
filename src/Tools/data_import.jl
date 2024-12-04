@@ -1,5 +1,5 @@
 function read_data(path::String)
-    data = CSV.read(input, DataFrame;
+    data = CSV.read(path, DataFrame;
         normalizenames=true
     )
     return data
