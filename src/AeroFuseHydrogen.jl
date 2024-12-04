@@ -25,4 +25,11 @@ import .HydrogenElectric: CryogenicFuelTank, length, dry_mass, wet_mass, boil_of
 
 export CryogenicFuelTank, length, dry_mass, wet_mass, boil_off
 
+include("Tools/Tools.jl")
+
+# Data import
+import .Tools: read_data
+
+export read_data
+
 end
