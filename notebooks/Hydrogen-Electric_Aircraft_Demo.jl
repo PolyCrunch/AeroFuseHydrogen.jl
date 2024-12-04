@@ -156,14 +156,35 @@ md"""
 We will assume the fuel tank will be to the rear of the fuselage, taking up the entire radius available, with a given internal volume.
 """
 
+# ╔═╡ b69a9c96-c979-4ced-bc85-fbe47ada1c9e
+md"""
+#### Firstly, inspect the included data on insulation materials and choose one.
+Source: [NASA](https://ntrs.nasa.gov/api/citations/20020085127/downloads/20020085127.pdf).
+"""
+
 # ╔═╡ a234a45e-c25f-4248-9c9f-3fce481cd281
 tank_data = read_data("Data/tank_insulation_properties.csv")
+
+# ╔═╡ 5dc43298-f815-4087-9a60-03717d20fd8e
+merit_indices = 1 ./ tank_data.Density ./ tank_data.Thermal_conductivity # Merit index to minimize density and thermal conductivity
+
+# ╔═╡ 48b7e573-ecf4-4d4c-a733-369ae06bbae5
+begin
+	(~, id_max) = findmax(merit_indices)
+	println("The best material for tank insulation is " * tank_data.Insulation_type[id_max])
+
+	insulation_material = tank_data[id_max, :];
+end
+
+# ╔═╡ 0b15a106-9871-4fc5-8f50-1ae92c549881
+md"What other important factors have been missed here?"
 
 # ╔═╡ 82b332ac-5628-4b82-8735-f361dcdfc9b6
 tank = CryogenicFuelTank(
 	radius = fuse.radius - fuse_t_w,
 	internal_volume = 100,
 	insulation_thickness = 0.1,
+	insulation_density = insulation_material.Density,
 	position = [0.5fuse.length, 0, 0]
 )
 
@@ -380,7 +401,11 @@ plt_vlm
 # ╠═d69b550d-1634-4f45-a660-3be009ddd19d
 # ╟─2b8ec21c-d8da-4e16-91c0-244857483463
 # ╟─a017efa0-cf08-4302-80f7-fae1ef55651c
+# ╟─b69a9c96-c979-4ced-bc85-fbe47ada1c9e
 # ╠═a234a45e-c25f-4248-9c9f-3fce481cd281
+# ╠═5dc43298-f815-4087-9a60-03717d20fd8e
+# ╠═48b7e573-ecf4-4d4c-a733-369ae06bbae5
+# ╟─0b15a106-9871-4fc5-8f50-1ae92c549881
 # ╠═82b332ac-5628-4b82-8735-f361dcdfc9b6
 # ╠═63475bbf-6993-4f6c-86b8-f3b608b63a8e
 # ╠═b9fddbc4-a2d7-48cf-ace4-f092a3c38b11

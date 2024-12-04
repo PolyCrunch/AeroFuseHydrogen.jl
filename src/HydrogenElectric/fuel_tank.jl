@@ -1,4 +1,5 @@
 struct CryogenicFuelTank{T<:Real,N<:AbstractAffineMap} <: AbstractFuelTank
+    # I THINK THE USER SHOULD SPECIFY LENGTH INSTEAD OF INTERNAL VOLUME. SEE NOTES FROM DEC 4
     radius::T
     internal_volume::T
     insulation_thickness::T
