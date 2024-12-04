@@ -1,4 +1,4 @@
-﻿Insulation type,Density (kg/m^3),Thermal conductivity (W/m K)
+﻿Insulation type,Density,Thermal conductivity
 Rigid closed cell polymethacrylimide,35.3,0.0096
 Rigid open cell polyurethane,32.1,0.0112
 Rigid closed cell polyvinalchloride,49.8,0.0046
