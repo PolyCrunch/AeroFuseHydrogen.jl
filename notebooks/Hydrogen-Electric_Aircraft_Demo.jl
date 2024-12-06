@@ -182,7 +182,7 @@ md"What other important factors have been missed here?"
 # ╔═╡ 82b332ac-5628-4b82-8735-f361dcdfc9b6
 tank = CryogenicFuelTank(
 	radius = fuse.radius - fuse_t_w,
-	internal_volume = 100,
+	length = volume_to_length(100., fuse.radius - fuse_t_w, 0.1),
 	insulation_thickness = 0.1,
 	insulation_density = insulation_material.Density,
 	position = [0.5fuse.length, 0, 0]

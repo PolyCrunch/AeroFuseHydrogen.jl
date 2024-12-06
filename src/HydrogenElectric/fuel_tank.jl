@@ -52,12 +52,13 @@ end
 
 Compute the length of a CryogenicFuelTank, given an internal volume, radius and insulation thickness.
 """
-function volume_to_length(V_internal::Float64, R::Float64, t_wall::Float64)
+function volume_to_length(V_internal::Real, R::Real, t_wall::Real)
+
     @assert V_internal > 0 "Internal volume must be positive"
     @assert R > 0 "Radius must be positive"
     @assert t_wall > 0 "Wall thickness must be positive"
 
-    return V_internal / (π * (R - t_insulation)^2) + 2 / 3 * R + 4 / 3 * t_insulation
+    return V_internal / (π * (R - t_wall)^2) + 2 / 3 * R + 4 / 3 * t_wall
 end
 
 """
