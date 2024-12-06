@@ -189,7 +189,7 @@ tank = CryogenicFuelTank(
 )
 
 # ╔═╡ 63475bbf-6993-4f6c-86b8-f3b608b63a8e
-tank_length = length(tank) # Calculate the tank exterior length (m)
+tank_length = tank.length # Calculate the tank exterior length (m)
 
 # ╔═╡ b9fddbc4-a2d7-48cf-ace4-f092a3c38b11
 tank_mass = dry_mass(tank) # Calculate the dry mass of the tank (kg)
