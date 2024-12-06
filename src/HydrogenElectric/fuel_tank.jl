@@ -1,20 +1,20 @@
 struct CryogenicFuelTank{T<:Real,N<:AbstractAffineMap} <: AbstractFuelTank
     # I THINK THE USER SHOULD SPECIFY LENGTH INSTEAD OF INTERNAL VOLUME. SEE NOTES FROM DEC 4
     radius::T
-    internal_volume::T
+    length::T
     insulation_thickness::T
     insulation_density::T
     affine::N
-    function CryogenicFuelTank(R, V_internal, t_wall, ρ_wall, affine)
+    function CryogenicFuelTank(R, L, t_wall, ρ_wall, affine)
         # Type promotion
-        T = promote_type(eltype(R), eltype(V_internal), eltype(t_wall), eltype(ρ_wall))
+        T = promote_type(eltype(R), eltype(L), eltype(t_wall), eltype(ρ_wall))
         N = typeof(affine)
 
         @assert R > 0 "Radius must be positive"
-        @assert V_internal > 0 "Internal volume must be positive"
+        @assert L > 0 "Length must be positive"
         @assert t_wall > 0 "Wall thickness must be positive"
 
-        new{T,N}(R, V_internal, t_wall, ρ_wall, affine)
+        new{T,N}(R, L, t_wall, ρ_wall, affine)
     end
 end
 
@@ -25,7 +25,7 @@ Define a cryogenic fuel tank.
 
 # Arguments
 - `radius :: Real = 1.`: Radius available for tank (m)
-- `internal_volume :: Real = 10.`: Tank volume needed for fuel (m^3)
+- `length :: Real = 5.`: External length of tank (m)
 - `insulation_thickness :: Real = 0.05`: Insulation thickness (m)
 - 'insulation_density :: Real = 35.3`: Insulation density (kg/m^3)
 - `position :: Vector{Real} = zeros(3)`: Position (m)
@@ -35,7 +35,7 @@ Define a cryogenic fuel tank.
 """
 function CryogenicFuelTank(;
     radius=1.0,
-    internal_volume=10.0,
+    length=5.0,
     insulation_thickness=0.05,
     insulation_density=35.3, # Example taken from rigid closed cell polymethacrylimide foam
     position=zeros(3),
@@ -44,10 +44,30 @@ function CryogenicFuelTank(;
     affine=AffineMap(AngleAxis(deg2rad(angle), axis...), SVector(position...)),
 )
 
-    return CryogenicFuelTank(radius, internal_volume, insulation_thickness, insulation_density, affine)
+    return CryogenicFuelTank(radius, length, insulation_thickness, insulation_density, affine)
 end
 
-Base.length(fuel_tank::CryogenicFuelTank) = fuel_tank.internal_volume / (π * (fuel_tank.radius - fuel_tank.insulation_thickness)^2) + 2 / 3 * fuel_tank.radius + 4 / 3 * fuel_tank.insulation_thickness
+"""
+    function volume_to_length(V_internal :: Float64, R :: Float64, t_wall :: Float64)
+
+Compute the length of a CryogenicFuelTank, given an internal volume, radius and insulation thickness.
+"""
+function volume_to_length(V_internal::Float64, R::Float64, t_wall::Float64)
+    @assert V_internal > 0 "Internal volume must be positive"
+    @assert R > 0 "Radius must be positive"
+    @assert t_wall > 0 "Wall thickness must be positive"
+
+    return V_internal / (π * (R - t_insulation)^2) + 2 / 3 * R + 4 / 3 * t_insulation
+end
+
+"""
+    internal_volume(fuel_tank :: CryogenicFuelTank)
+
+Compute the internal volume of a "CryogenicFuelTank" object.
+"""
+function internal_volume(fuel_tank::CryogenicFuelTank)
+    return pi / 3 * (fuel_tank.radius - fuel_tank.insulation_thickness)^2 * (3 * fuel_tank.length - 10 * fuel_tank.radius + 4 * fuel_tank.insulation_thickness)
+end
 
 """
     dry_mass(fuel_tank :: CryogenicFuelTank)
@@ -71,22 +91,10 @@ end
 Compute the wet mass of a "CryogenicFuelTank" object, given the fuel fraction ``fracton``, and optional fuel density (defaults to `70.8 kg m^{-3}`, based on liquid Hydrogen at 20 K). Note the fraction must be between `0` and `1`.
 """
 function wet_mass(fuel_tank::CryogenicFuelTank, fraction::Real, ρ_fuel::Real=70.8)
-    @assert 0. <= fraction <= 1. "Fraction must be between 0 and 1"
+    @assert 0.0 <= fraction <= 1.0 "Fraction must be between 0 and 1"
 
-    V_fuel = fraction * fuel_tank.internal_volume
+    V_fuel = fraction * internal_volume(fuel_tank)
     return dry_mass(fuel_tank) + V_fuel * ρ_fuel
-end
-
-"""
-    wet_mass(fuel_tank :: CryogenicFuelTank, fraction :: Array, ρ_fuel :: Real)
-
-Compute the wet mass of a "CryogenicFuelTank" object, given an array of fuel fractions ``fracton``, and optional fuel density (defaults to `70.8 kg m^{-3}`, based on liquid Hydrogen at 20 K). Note the members of fraction be between `0` and `1`.
-"""
-function wet_mass(fuel_tank::CryogenicFuelTank, fraction::Array, ρ_fuel::Real=70.8)
-    @assert all(0 .<= fraction .<= 1) "Fraction members must be between 0 and 1"
-
-    V_fuel = fraction .* fuel_tank.internal_volume
-    return dry_mass(fuel_tank) .+ V_fuel .* ρ_fuel
 end
 
 """
