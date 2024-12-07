@@ -182,14 +182,18 @@ md"What other important factors have been missed here?"
 # ╔═╡ 82b332ac-5628-4b82-8735-f361dcdfc9b6
 tank = CryogenicFuelTank(
 	radius = fuse.radius - fuse_t_w,
-	length = volume_to_length(100., fuse.radius - fuse_t_w, 0.1),
+	#length = volume_to_length(100., fuse.radius - fuse_t_w, 0.1),
+	length = 23.10,
 	insulation_thickness = 0.1,
 	insulation_density = insulation_material.Density,
 	position = [0.5fuse.length, 0, 0]
 )
 
 # ╔═╡ 63475bbf-6993-4f6c-86b8-f3b608b63a8e
-tank_length = tank.length # Calculate the tank exterior length (m)
+tank_length = tank.length # Tank exterior length
+
+# ╔═╡ 026030f5-fbf1-471e-b16b-5f72911b429d
+tank_volume = internal_volume(tank) # Calculate the internal volume of the tank
 
 # ╔═╡ b9fddbc4-a2d7-48cf-ace4-f092a3c38b11
 tank_mass = dry_mass(tank) # Calculate the dry mass of the tank (kg)
@@ -408,6 +412,7 @@ plt_vlm
 # ╟─0b15a106-9871-4fc5-8f50-1ae92c549881
 # ╠═82b332ac-5628-4b82-8735-f361dcdfc9b6
 # ╠═63475bbf-6993-4f6c-86b8-f3b608b63a8e
+# ╠═026030f5-fbf1-471e-b16b-5f72911b429d
 # ╠═b9fddbc4-a2d7-48cf-ace4-f092a3c38b11
 # ╠═a0c931b1-e9a5-4bf3-af6d-a9e6d0009998
 # ╟─5446afd1-4326-41ab-94ec-199587c1411b
