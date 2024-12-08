@@ -8,11 +8,22 @@ using AeroFuse
 export greet_AeroFuse
 include("functions.jl")
 
-# include("Propulsion/Engine/electric_motor.jl")
-# include("Propulsion/Engine/propeller.jl")
-# include("Propulsion/FuelTank.jl")
-# include("Propulsion/Power/fuel_cell.jl")
+## Tools
+#==========================================================================================#
+include("Tools/Tools.jl")
 
+# Data import
+import .Tools: read_data
+
+export read_data
+
+# Gas properties
+import .Tools: K_air, α_air, ν_air
+
+export K_air, α_air, ν_air
+
+## Hydrogen Electric
+#==========================================================================================#
 include("HydrogenElectric/HydrogenElectric.jl")
 
 # Abstract types
@@ -30,16 +41,5 @@ import .HydrogenElectric: tank_surface_temperature, boil_off
 
 export tank_surface_temperature, boil_off
 
-include("Tools/Tools.jl")
-
-# Data import
-import .Tools: read_data
-
-export read_data
-
-# Gas properties
-import .Tools: K_air, α_air, ν_air
-
-export K_air, α_air, ν_air
 
 end
