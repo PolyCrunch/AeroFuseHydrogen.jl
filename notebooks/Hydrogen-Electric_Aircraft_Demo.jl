@@ -201,6 +201,30 @@ tank_mass = dry_mass(tank) # Calculate the dry mass of the tank (kg)
 # ╔═╡ a0c931b1-e9a5-4bf3-af6d-a9e6d0009998
 full_tank_mass = wet_mass(tank, 1) # Calculate the mass of a fuel tank. This function can also accept a vector of fractions
 
+# ╔═╡ 017913f0-946c-4252-bc39-88b510fa0cc2
+begin
+	tank1 = CryogenicFuelTank(
+        radius=3,
+        length=volume_to_length(100.0, 3, 0.1),
+        insulation_thickness=0.1,
+        insulation_density=120,
+        position=[0, 0, 0]
+    )
+    tank_length_test = tank1.length
+
+    tank2 = CryogenicFuelTank(
+        radius=3,
+        length=tank_length_test,
+        insulation_thickness=0.1,
+        insulation_density=120,
+        position=[0, 0, 0]
+    )
+
+	println(tank_length_test)
+	println(internal_volume(tank1))
+	println(internal_volume(tank2))
+end
+
 # ╔═╡ 5446afd1-4326-41ab-94ec-199587c1411b
 md"""
 ## Propulsion
@@ -415,6 +439,7 @@ plt_vlm
 # ╠═026030f5-fbf1-471e-b16b-5f72911b429d
 # ╠═b9fddbc4-a2d7-48cf-ace4-f092a3c38b11
 # ╠═a0c931b1-e9a5-4bf3-af6d-a9e6d0009998
+# ╠═017913f0-946c-4252-bc39-88b510fa0cc2
 # ╟─5446afd1-4326-41ab-94ec-199587c1411b
 # ╠═f21b48c0-8e0c-4b67-9145-52a1480003ed
 # ╠═c82d7f29-08f4-4268-881f-e422864ab789

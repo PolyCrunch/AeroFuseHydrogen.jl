@@ -1,5 +1,4 @@
 struct CryogenicFuelTank{T<:Real,N<:AbstractAffineMap} <: AbstractFuelTank
-    # I THINK THE USER SHOULD SPECIFY LENGTH INSTEAD OF INTERNAL VOLUME. SEE NOTES FROM DEC 4
     radius::T
     length::T
     insulation_thickness::T
@@ -58,7 +57,7 @@ function volume_to_length(V_internal::Real, R::Real, t_wall::Real)
     @assert R > 0 "Radius must be positive"
     @assert t_wall > 0 "Wall thickness must be positive"
 
-    return V_internal / (π * (R - t_wall)^2) + 2 / 3 * R + 4 / 3 * t_wall
+    return V_internal / (π * (R - t_wall)^2) + 2 * R / 3 + 4 * t_wall / 3
 end
 
 """
@@ -67,7 +66,7 @@ end
 Compute the internal volume of a "CryogenicFuelTank" object.
 """
 function internal_volume(fuel_tank::CryogenicFuelTank)
-    return pi / 3 * (fuel_tank.radius - fuel_tank.insulation_thickness)^2 * (3 * fuel_tank.length - 10 * fuel_tank.radius + 4 * fuel_tank.insulation_thickness)
+    return -pi * (fuel_tank.radius - fuel_tank.insulation_thickness)^2 * (2 * fuel_tank.radius - 3 * fuel_tank.length + 4 * fuel_tank.insulation_thickness) / 3
 end
 
 """
