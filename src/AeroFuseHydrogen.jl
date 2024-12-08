@@ -28,8 +28,8 @@ export CryogenicFuelTank, volume_to_length, internal_volume, dry_mass, wet_mass,
 include("Tools/Tools.jl")
 
 # Data import
-import .Tools: read_data
+import .Tools: read_data, K_air, α_air, ν_air, tank_surface_temperature, boil_off
 
-export read_data
+export read_data, K_air, α_air, ν_air, tank_surface_temperature, boil_off
 
 end

@@ -5,6 +5,10 @@ module HydrogenElectric
 using StaticArrays
 using CoordinateTransformations
 using Rotations
+using Roots # For solving for T_s in boil-off rate
+
+# Gas properties
+import ..Tools: K_air, α_air, ν_air
 
 ## Types
 #==========================================================================================#
@@ -20,5 +24,10 @@ abstract type AbstractPropeller <: AbstractHydrogenPropulsionSystem end
 #==========================================================================================#
 
 include("fuel_tank.jl")
+
+## Boil-off
+#==========================================================================================#
+
+include("boil_off.jl")
 
 end

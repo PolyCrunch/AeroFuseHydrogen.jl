@@ -98,14 +98,3 @@ function wet_mass(fuel_tank::CryogenicFuelTank, fraction::Real, ρ_fuel::Real=70
     V_fuel = fraction * internal_volume(fuel_tank)
     return dry_mass(fuel_tank) + V_fuel * ρ_fuel
 end
-
-"""
-    boil_off(fuel_tank :: CryogenicFuelTank)
-
-Calculate the boil-off rate for a "CryogenicFuelTank" object.
-"""
-function boil_off(fuel_tank::CryogenicFuelTank)
-    # Do stuff
-
-    return 0.5 # Placeholder
-end

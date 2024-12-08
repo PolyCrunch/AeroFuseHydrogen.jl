@@ -14,4 +14,9 @@ using DataFrames
 
 include("data_import.jl")
 
+## Gas properties
+#==========================================================================================#
+
+include("gas_properties.jl")
+
 end
