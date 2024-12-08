@@ -24,6 +24,6 @@ using Test
         position=[0, 0, 0]
     )
 
-    @test internal_volume(tank1) ≈ internal_volume(tank2) atol = 1e-3
+    @test internal_volume(tank1) ≈ internal_volume(tank2) atol = 1e-6
 
 end
