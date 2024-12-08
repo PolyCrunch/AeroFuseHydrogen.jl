@@ -201,8 +201,11 @@ tank_mass = dry_mass(tank) # Calculate the dry mass of the tank (kg)
 # ╔═╡ a0c931b1-e9a5-4bf3-af6d-a9e6d0009998
 full_tank_mass = wet_mass(tank, 1) # Calculate the mass of a fuel tank. This function can also accept a vector of fractions
 
-# ╔═╡ b416b05e-1eb2-4b23-860f-9ed1c77c2d09
+# ╔═╡ 8d26056e-6f67-4ea5-a615-2fd17c6583e6
+T_s = tank_surface_temperature(tank, 100, 293, 20, 0.1)
 
+# ╔═╡ b416b05e-1eb2-4b23-860f-9ed1c77c2d09
+M = boil_off(tank)
 
 # ╔═╡ 5446afd1-4326-41ab-94ec-199587c1411b
 md"""
@@ -418,6 +421,7 @@ plt_vlm
 # ╠═026030f5-fbf1-471e-b16b-5f72911b429d
 # ╠═b9fddbc4-a2d7-48cf-ace4-f092a3c38b11
 # ╠═a0c931b1-e9a5-4bf3-af6d-a9e6d0009998
+# ╠═8d26056e-6f67-4ea5-a615-2fd17c6583e6
 # ╠═b416b05e-1eb2-4b23-860f-9ed1c77c2d09
 # ╟─5446afd1-4326-41ab-94ec-199587c1411b
 # ╠═f21b48c0-8e0c-4b67-9145-52a1480003ed
