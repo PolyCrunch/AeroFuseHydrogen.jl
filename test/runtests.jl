@@ -6,4 +6,24 @@ using Test
     @test AeroFuseHydrogen.greet_AeroFuse() == "Hello AeroFuseHydrogen"
     @test AeroFuseHydrogen.greet_AeroFuse() != "Hello world!"
     @test AeroFuseHydrogen.CryogenicFuelTank() isa CryogenicFuelTank
+
+    tank1 = CryogenicFuelTank(
+        radius=3,
+        length=volume_to_length(100.0, 3, 0.1),
+        insulation_thickness=0.1,
+        insulation_density=120,
+        position=[0, 0, 0]
+    )
+    tank_length = tank1.length
+
+    tank2 = CryogenicFuelTank(
+        radius=3,
+        length=tank_length,
+        insulation_thickness=0.1,
+        insulation_density=120,
+        position=[0, 0, 0]
+    )
+
+    @test internal_volume(tank1) ≈ internal_volume(tank2) atol = 1e-3
+
 end

@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.0
+# v0.19.46
 
 using Markdown
 using InteractiveUtils
@@ -182,8 +182,8 @@ md"What other important factors have been missed here?"
 # ╔═╡ 82b332ac-5628-4b82-8735-f361dcdfc9b6
 tank = CryogenicFuelTank(
 	radius = fuse.radius - fuse_t_w,
-	#length = volume_to_length(100., fuse.radius - fuse_t_w, 0.1),
-	length = 23.10,
+	length = volume_to_length(100., fuse.radius - fuse_t_w, 0.1),
+	#length = 23.10,
 	insulation_thickness = 0.1,
 	insulation_density = insulation_material.Density,
 	position = [0.5fuse.length, 0, 0]
