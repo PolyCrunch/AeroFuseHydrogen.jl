@@ -75,12 +75,14 @@ end
 Compute the dry mass of a "CryogenicFuelTank" object.
 """
 function dry_mass(fuel_tank::CryogenicFuelTank)
-    t_w = fuel_tank.insulation_thickness
     ρ_w = fuel_tank.insulation_density
     R = fuel_tank.radius
     L = fuel_tank.length
 
-    V_w = -pi * t_w * (24 * R^2 - 18 * R * t_w - 6 * L * R + 4 * t_w^2 + 3 * L * t_w) / 3 # Volume of the insulation
+    V_ext = pi * R^2 * (3 * L - 2 * R) / 3 # External volume of the tank
+    V_int = internal_volume(fuel_tank) # Internal volume of the tank
+
+    V_w = V_ext - V_int # Volume of the insulation
 
     return V_w * ρ_w # Mass of the insulation
 end
