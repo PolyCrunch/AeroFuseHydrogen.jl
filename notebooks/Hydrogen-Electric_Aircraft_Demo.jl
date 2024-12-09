@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.0
+# v0.19.46
 
 using Markdown
 using InteractiveUtils
@@ -171,20 +171,26 @@ merit_indices = 1 ./ tank_data.Density ./ tank_data.Thermal_conductivity # Meri
 # ╔═╡ 48b7e573-ecf4-4d4c-a733-369ae06bbae5
 begin
 	(~, id_max) = findmax(merit_indices)
-	println("The best material for tank insulation is " * tank_data.Insulation_type[id_max])
+	println("Material with lowest ρ * K: " * tank_data.Insulation_type[id_max])
 
-	insulation_material = tank_data[id_max, :];
+	#insulation_material = tank_data[id_max, :];
 end
+
+# ╔═╡ 6a4534a9-5921-4da6-abf4-3c774515aac7
+insulation_material = tank_data[4, :];
 
 # ╔═╡ 0b15a106-9871-4fc5-8f50-1ae92c549881
 md"What other important factors have been missed here?"
 
+# ╔═╡ 4942019c-8f8d-4153-a1b8-6744ffc5469b
+t_insulation = 0.05;
+
 # ╔═╡ 82b332ac-5628-4b82-8735-f361dcdfc9b6
 tank = CryogenicFuelTank(
 	radius = fuse.radius - fuse_t_w,
-	length = volume_to_length(100., fuse.radius - fuse_t_w, 0.1),
+	length = volume_to_length(100., fuse.radius - fuse_t_w, t_insulation),
 	#length = 23.10,
-	insulation_thickness = 0.05,
+	insulation_thickness = t_insulation,
 	insulation_density = insulation_material.Density,
 	position = [0.5fuse.length, 0, 0]
 )
@@ -207,7 +213,13 @@ full_tank_mass = wet_mass(tank, 1) # Calculate the mass of a fuel tank. This fu
 # ╔═╡ f4158708-4c5b-44d2-80bd-22334c19b319
 begin
 	t_w = [0.001 0.002 0.003 0.004 0.005 0.006 0.008 0.01 0.015 0.02 0.03 0.04 0.05 0.1 0.15 0.2]'
+	K_insulation = insulation_material.Thermal_conductivity
+	T_s_0 = 100
+	T∞ = 293
+	T_LH2 = 20
+	ϵ = 0.1
 	M = zeros(Float64, size(t_w))
+	T_s = zeros(Float64, size(t_w))
 
 	local i = 1
 	for v in t_w
@@ -218,19 +230,47 @@ begin
 			insulation_density = insulation_material.Density,
 			position = [0.5fuse.length, 0, 0]
 		)		
-		M[i] = boil_off(temp_tank)
+		M[i] = boil_off(temp_tank, K_insulation, T_s_0, T∞, T_LH2, ϵ)
+		T_s[i] = tank_surface_temperature(temp_tank, T_s_0, T∞, T_LH2, ϵ)
 		i += 1
 	end		
+end
 
+# ╔═╡ 8b8d3b80-45e2-4290-bad1-82a4f8e5fd0d
+plot(
+	100 * t_w,
+	360 * M,
+	title = "Boil-off rate versus insulation thickness",
+	xlabel = "Insulation thickness (cm)",
+	ylabel = "Boil-off rate (kg /hr)",
+	marker = :x,
+	legend = false
+)
+
+# ╔═╡ e0dc6d21-bda9-43b3-8c9f-b62079b6c618
+plot(
+	100 * t_w,
+	360 * M / 72,
+	title = "Volume boil-off rate versus insulation thickness",
+	xlabel = "Insulation thickness (cm)",
+	ylabel = "Volume boil-off rate (m^3 /hr)",
+	marker = :x,
+	legend = false
+)
+
+# ╔═╡ bb07dbc3-8cb3-4e30-aff1-9eb91988e13a
+begin
 	plot(
 		100 * t_w,
-		1000 * 360 * M,
-		title = "Boil-off rate versus insulation thickness",
+		T_s,
+		title = "Tank surface temperature versus insulation thickness",
 		xlabel = "Insulation thickness (cm)",
-		ylabel = "Boil-off rate (g /hr)",
-		m = :x
+		ylabel = "Tank surface temperature (K)",
+		marker = :x,
+		label = "Theoretical value"
 	)
-
+	
+	plot!([0; 20], [T∞; T∞], linestyle = :dash, linecolor = :gray, linewidth = 1, label = "T∞")
 end
 
 # ╔═╡ 5446afd1-4326-41ab-94ec-199587c1411b
@@ -441,7 +481,9 @@ plt_vlm
 # ╠═a234a45e-c25f-4248-9c9f-3fce481cd281
 # ╠═5dc43298-f815-4087-9a60-03717d20fd8e
 # ╠═48b7e573-ecf4-4d4c-a733-369ae06bbae5
+# ╠═6a4534a9-5921-4da6-abf4-3c774515aac7
 # ╟─0b15a106-9871-4fc5-8f50-1ae92c549881
+# ╠═4942019c-8f8d-4153-a1b8-6744ffc5469b
 # ╠═82b332ac-5628-4b82-8735-f361dcdfc9b6
 # ╠═63475bbf-6993-4f6c-86b8-f3b608b63a8e
 # ╠═026030f5-fbf1-471e-b16b-5f72911b429d
@@ -449,6 +491,9 @@ plt_vlm
 # ╠═a0c931b1-e9a5-4bf3-af6d-a9e6d0009998
 # ╠═b416b05e-1eb2-4b23-860f-9ed1c77c2d09
 # ╠═f4158708-4c5b-44d2-80bd-22334c19b319
+# ╟─8b8d3b80-45e2-4290-bad1-82a4f8e5fd0d
+# ╟─e0dc6d21-bda9-43b3-8c9f-b62079b6c618
+# ╠═bb07dbc3-8cb3-4e30-aff1-9eb91988e13a
 # ╟─5446afd1-4326-41ab-94ec-199587c1411b
 # ╠═f21b48c0-8e0c-4b67-9145-52a1480003ed
 # ╠═c82d7f29-08f4-4268-881f-e422864ab789
