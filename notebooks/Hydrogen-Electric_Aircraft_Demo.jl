@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.46
+# v0.20.0
 
 using Markdown
 using InteractiveUtils
@@ -202,7 +202,36 @@ tank_mass = dry_mass(tank) # Calculate the dry mass of the tank (kg)
 full_tank_mass = wet_mass(tank, 1) # Calculate the mass of a fuel tank. This function can also accept a vector of fractions
 
 # ╔═╡ b416b05e-1eb2-4b23-860f-9ed1c77c2d09
-M = boil_off(tank)
+# M = boil_off(tank)
+
+# ╔═╡ f4158708-4c5b-44d2-80bd-22334c19b319
+begin
+	t_w = [0.001 0.005 0.01 0.02 0.03 0.04 0.05 0.1 0.15 0.2]'
+	M = zeros(Float64, size(t_w))
+
+	local i = 1
+	for v in t_w
+		temp_tank = CryogenicFuelTank(
+			radius = fuse.radius - fuse_t_w,
+			length = 5,
+			insulation_thickness = v,
+			insulation_density = insulation_material.Density,
+			position = [0.5fuse.length, 0, 0]
+		)		
+		M[i] = boil_off(temp_tank)
+		i += 1
+	end		
+
+	plot(
+		t_w,
+		M,
+		title = "Boil-off rate versus insulation thickness",
+		xlabel = "Insulation thickness (m)",
+		ylabel = "Boil-off rate (kg /s)",
+		m = :x
+	)
+
+end
 
 # ╔═╡ 5446afd1-4326-41ab-94ec-199587c1411b
 md"""
@@ -419,6 +448,7 @@ plt_vlm
 # ╠═b9fddbc4-a2d7-48cf-ace4-f092a3c38b11
 # ╠═a0c931b1-e9a5-4bf3-af6d-a9e6d0009998
 # ╠═b416b05e-1eb2-4b23-860f-9ed1c77c2d09
+# ╟─f4158708-4c5b-44d2-80bd-22334c19b319
 # ╟─5446afd1-4326-41ab-94ec-199587c1411b
 # ╠═f21b48c0-8e0c-4b67-9145-52a1480003ed
 # ╠═c82d7f29-08f4-4268-881f-e422864ab789
