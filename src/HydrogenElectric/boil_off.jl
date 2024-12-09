@@ -9,7 +9,7 @@ function tank_surface_temperature(fuel_tank::CryogenicFuelTank, T_s_initial_gues
 
     # Define the function to solve (for T_s)
     function heat_transfer_eq(T_s)
-        Qin = ϵ * σ * (T∞^4 - T_s^4) * (K * (T∞ - T_s) * ((387 * ((D^3 * g * (T∞ - T_s)) / (T∞ * α * ν))^(1 / 6)) / (1000 * (((559 * α) / (1000 * ν))^(9 / 16) + 1)^(8 / 27)) + 3 / 5)^2) / D # Ouch
+        Qin = ϵ * σ * (T∞^4 - T_s^4) * (K * (T∞ - T_s) * ((387 * ((D^3 * g * (T∞ - T_s)) / (T∞ * α * ν))^(1 / 6)) / (1000 * (((559 * α) / (1000 * ν))^(9 / 16) + 1)^(8 / 27)) + 3 / 5)^2) / D
         Qout = K * (T_s - T_LH2) / L
 
         return Qin - Qout

@@ -205,11 +205,11 @@ begin
 			insulation_thickness = v,
 			insulation_density = insulation_material.Density,
 			position = [0.5fuse.length, 0, 0]
-		)		
+		)	
 		M[i] = boil_off(temp_tank, K_insulation, T_s_0, T∞, T_LH2, ϵ)
 		T_s[i] = tank_surface_temperature(temp_tank, T_s_0, T∞, T_LH2, ϵ)
 		i += 1
-	end		
+	end
 end
 
 # ╔═╡ c829759c-914e-4d1d-a037-9c59bf0f97c9
@@ -259,7 +259,6 @@ t_insulation = 0.05;
 tank = CryogenicFuelTank(
 	radius = fuse.radius - fuse_t_w,
 	length = volume_to_length(100., fuse.radius - fuse_t_w, t_insulation),
-	#length = 23.10,
 	insulation_thickness = t_insulation,
 	insulation_density = insulation_material.Density,
 	position = [0.5fuse.length, 0, 0]
@@ -273,6 +272,9 @@ tank_dry_mass = dry_mass(tank) # Calculate the dry mass of the tank (kg)
 
 # ╔═╡ a0c931b1-e9a5-4bf3-af6d-a9e6d0009998
 full_tank_mass = wet_mass(tank, 1) # Calculate the mass of a fuel tank. This function can also accept a vector of fractions
+
+# ╔═╡ e36dc0e2-015e-4132-a105-d145e17cceb8
+tank_capacity = internal_volume(tank) # Calculate the internal volume of the fuel tank
 
 # ╔═╡ 5446afd1-4326-41ab-94ec-199587c1411b
 md"""
@@ -494,6 +496,7 @@ plt_vlm
 # ╠═63475bbf-6993-4f6c-86b8-f3b608b63a8e
 # ╠═b9fddbc4-a2d7-48cf-ace4-f092a3c38b11
 # ╠═a0c931b1-e9a5-4bf3-af6d-a9e6d0009998
+# ╠═e36dc0e2-015e-4132-a105-d145e17cceb8
 # ╟─5446afd1-4326-41ab-94ec-199587c1411b
 # ╠═f21b48c0-8e0c-4b67-9145-52a1480003ed
 # ╠═c82d7f29-08f4-4268-881f-e422864ab789
