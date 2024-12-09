@@ -18,7 +18,7 @@ end
 using Pkg;
 
 # ╔═╡ dacf3264-b291-49b1-8588-4cb691a753b6
-Pkg.develop(url="https://github.com/PolyCrunch/AeroFuse.jl")
+Pkg.develop(url="https://github.com/PolyCrunch/AeroFuse.jl");
 
 # ╔═╡ 3602500f-cbd8-43a9-a9d5-001fda45aa6b
 Pkg.develop(url="https://github.com/PolyCrunch/AeroFuseHydrogen.jl");
@@ -165,6 +165,9 @@ Source: [NASA](https://ntrs.nasa.gov/api/citations/20020085127/downloads/2002008
 # ╔═╡ a234a45e-c25f-4248-9c9f-3fce481cd281
 tank_data = read_data("Data/tank_insulation_properties.csv")
 
+# ╔═╡ a9df29fc-7f0a-409c-a34a-3a0fbcaa94e2
+md"Which tank material may be best to use?"
+
 # ╔═╡ 5dc43298-f815-4087-9a60-03717d20fd8e
 merit_indices = 1 ./ tank_data.Density ./ tank_data.Thermal_conductivity # Merit index to minimize density and thermal conductivity
 
@@ -172,43 +175,16 @@ merit_indices = 1 ./ tank_data.Density ./ tank_data.Thermal_conductivity # Meri
 begin
 	(~, id_max) = findmax(merit_indices)
 	println("Material with lowest ρ * K: " * tank_data.Insulation_type[id_max])
-
-	#insulation_material = tank_data[id_max, :];
 end
 
-# ╔═╡ 6a4534a9-5921-4da6-abf4-3c774515aac7
-insulation_material = tank_data[4, :];
+# ╔═╡ 631cfc20-058a-4574-8d81-b10c49fd2036
+md"Use the slider to choose an insulation material of your choice:"
 
-# ╔═╡ 0b15a106-9871-4fc5-8f50-1ae92c549881
-md"What other important factors have been missed here?"
+# ╔═╡ 89530c07-b538-4875-b67b-c916963d9ab8
+@bind insulation_index Slider(1:nrow(tank_data))
 
-# ╔═╡ 4942019c-8f8d-4153-a1b8-6744ffc5469b
-t_insulation = 0.05;
-
-# ╔═╡ 82b332ac-5628-4b82-8735-f361dcdfc9b6
-tank = CryogenicFuelTank(
-	radius = fuse.radius - fuse_t_w,
-	length = volume_to_length(100., fuse.radius - fuse_t_w, t_insulation),
-	#length = 23.10,
-	insulation_thickness = t_insulation,
-	insulation_density = insulation_material.Density,
-	position = [0.5fuse.length, 0, 0]
-)
-
-# ╔═╡ 63475bbf-6993-4f6c-86b8-f3b608b63a8e
-tank_length = tank.length # Tank exterior length
-
-# ╔═╡ 026030f5-fbf1-471e-b16b-5f72911b429d
-tank_volume = internal_volume(tank) # Calculate the internal volume of the tank
-
-# ╔═╡ b9fddbc4-a2d7-48cf-ace4-f092a3c38b11
-tank_mass = dry_mass(tank) # Calculate the dry mass of the tank (kg)
-
-# ╔═╡ a0c931b1-e9a5-4bf3-af6d-a9e6d0009998
-full_tank_mass = wet_mass(tank, 1) # Calculate the mass of a fuel tank. This function can also accept a vector of fractions
-
-# ╔═╡ b416b05e-1eb2-4b23-860f-9ed1c77c2d09
-# M = boil_off(tank)
+# ╔═╡ 6fffa62e-48c1-48aa-a048-4e78048fb309
+insulation_material = tank_data[insulation_index, :]
 
 # ╔═╡ f4158708-4c5b-44d2-80bd-22334c19b319
 begin
@@ -236,42 +212,67 @@ begin
 	end		
 end
 
-# ╔═╡ 8b8d3b80-45e2-4290-bad1-82a4f8e5fd0d
-plot(
-	100 * t_w,
-	360 * M,
-	title = "Boil-off rate versus insulation thickness",
-	xlabel = "Insulation thickness (cm)",
-	ylabel = "Boil-off rate (kg /hr)",
-	marker = :x,
-	legend = false
-)
-
-# ╔═╡ e0dc6d21-bda9-43b3-8c9f-b62079b6c618
-plot(
-	100 * t_w,
-	360 * M / 72,
-	title = "Volume boil-off rate versus insulation thickness",
-	xlabel = "Insulation thickness (cm)",
-	ylabel = "Volume boil-off rate (m^3 /hr)",
-	marker = :x,
-	legend = false
-)
-
-# ╔═╡ bb07dbc3-8cb3-4e30-aff1-9eb91988e13a
+# ╔═╡ c829759c-914e-4d1d-a037-9c59bf0f97c9
 begin
-	plot(
+	ρ_LH2 = 70.8; # Density of Hydrogen, kg /m^3
+	boiloffplot = plot(
+		100 * t_w,
+		360 * M,
+		title = "Mass boil-off rate versus insulation thickness",
+		xlabel = "Insulation thickness (cm)",
+		ylabel = "Mass boil-off (kg /hr)",
+		legend = false
+	);
+
+	volboioloffplot = plot(
+		100 * t_w,
+		360 * M / ρ_LH2,
+		title = "Volume boil-off rate versus insulation thickness",
+		xlabel = "Insulation thickness (cm)",
+		ylabel = "Volume boil-off (m³ /hr)",
+		legend = false
+	);
+
+	Tsplot = plot(
 		100 * t_w,
 		T_s,
 		title = "Tank surface temperature versus insulation thickness",
 		xlabel = "Insulation thickness (cm)",
 		ylabel = "Tank surface temperature (K)",
-		marker = :x,
 		label = "Theoretical value"
 	)
 	
 	plot!([0; 20], [T∞; T∞], linestyle = :dash, linecolor = :gray, linewidth = 1, label = "T∞")
+
+	plot(boiloffplot, volboioloffplot, Tsplot, layout = @layout [a; b; c])
 end
+
+# ╔═╡ 25b42e5d-2053-4687-bc8a-a5a145c42e53
+md"""
+#### Define the fuel tank using your desired insulation material
+"""
+
+# ╔═╡ 7fa4e010-4ae8-4b77-9bc2-f12437adb7b3
+t_insulation = 0.05;
+
+# ╔═╡ 82b332ac-5628-4b82-8735-f361dcdfc9b6
+tank = CryogenicFuelTank(
+	radius = fuse.radius - fuse_t_w,
+	length = volume_to_length(100., fuse.radius - fuse_t_w, t_insulation),
+	#length = 23.10,
+	insulation_thickness = t_insulation,
+	insulation_density = insulation_material.Density,
+	position = [0.5fuse.length, 0, 0]
+)
+
+# ╔═╡ 63475bbf-6993-4f6c-86b8-f3b608b63a8e
+tank_length = tank.length # Tank exterior length
+
+# ╔═╡ b9fddbc4-a2d7-48cf-ace4-f092a3c38b11
+tank_dry_mass = dry_mass(tank) # Calculate the dry mass of the tank (kg)
+
+# ╔═╡ a0c931b1-e9a5-4bf3-af6d-a9e6d0009998
+full_tank_mass = wet_mass(tank, 1) # Calculate the mass of a fuel tank. This function can also accept a vector of fractions
 
 # ╔═╡ 5446afd1-4326-41ab-94ec-199587c1411b
 md"""
@@ -462,7 +463,7 @@ plt_vlm
 # ╠═f0aadce8-3424-47f2-a549-43a499385e80
 # ╠═87dfa675-cb8c-41e6-b03d-c5a983d99aa8
 # ╠═3fc8039e-acb3-44eb-a7c3-176afe4ad6e0
-# ╠═b1e81925-32b5-45c0-888c-4b38a34e27b6
+# ╟─b1e81925-32b5-45c0-888c-4b38a34e27b6
 # ╟─b81ca63b-46e9-4808-8225-c36132e70084
 # ╟─6242fa28-1d3f-45d7-949a-646d2c7a9f52
 # ╠═0badf910-ef0d-4f6a-99b0-9a1a5d8a7213
@@ -479,21 +480,20 @@ plt_vlm
 # ╟─a017efa0-cf08-4302-80f7-fae1ef55651c
 # ╟─b69a9c96-c979-4ced-bc85-fbe47ada1c9e
 # ╠═a234a45e-c25f-4248-9c9f-3fce481cd281
+# ╟─a9df29fc-7f0a-409c-a34a-3a0fbcaa94e2
 # ╠═5dc43298-f815-4087-9a60-03717d20fd8e
-# ╠═48b7e573-ecf4-4d4c-a733-369ae06bbae5
-# ╠═6a4534a9-5921-4da6-abf4-3c774515aac7
-# ╟─0b15a106-9871-4fc5-8f50-1ae92c549881
-# ╠═4942019c-8f8d-4153-a1b8-6744ffc5469b
+# ╟─48b7e573-ecf4-4d4c-a733-369ae06bbae5
+# ╟─631cfc20-058a-4574-8d81-b10c49fd2036
+# ╟─89530c07-b538-4875-b67b-c916963d9ab8
+# ╟─6fffa62e-48c1-48aa-a048-4e78048fb309
+# ╟─f4158708-4c5b-44d2-80bd-22334c19b319
+# ╟─c829759c-914e-4d1d-a037-9c59bf0f97c9
+# ╟─25b42e5d-2053-4687-bc8a-a5a145c42e53
+# ╠═7fa4e010-4ae8-4b77-9bc2-f12437adb7b3
 # ╠═82b332ac-5628-4b82-8735-f361dcdfc9b6
 # ╠═63475bbf-6993-4f6c-86b8-f3b608b63a8e
-# ╠═026030f5-fbf1-471e-b16b-5f72911b429d
 # ╠═b9fddbc4-a2d7-48cf-ace4-f092a3c38b11
 # ╠═a0c931b1-e9a5-4bf3-af6d-a9e6d0009998
-# ╠═b416b05e-1eb2-4b23-860f-9ed1c77c2d09
-# ╠═f4158708-4c5b-44d2-80bd-22334c19b319
-# ╟─8b8d3b80-45e2-4290-bad1-82a4f8e5fd0d
-# ╟─e0dc6d21-bda9-43b3-8c9f-b62079b6c618
-# ╠═bb07dbc3-8cb3-4e30-aff1-9eb91988e13a
 # ╟─5446afd1-4326-41ab-94ec-199587c1411b
 # ╠═f21b48c0-8e0c-4b67-9145-52a1480003ed
 # ╠═c82d7f29-08f4-4268-881f-e422864ab789
