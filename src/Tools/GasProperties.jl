@@ -1,3 +1,5 @@
+module GasProperties
+
 """
     K_air(T)
 
@@ -31,3 +33,5 @@ function ν_air(T::Real)
 end
 
 # Nusselt number depends on R_ad, which depends on T_s
+
+end

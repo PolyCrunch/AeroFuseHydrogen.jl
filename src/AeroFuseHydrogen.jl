@@ -9,18 +9,16 @@ using RecipesBase # For defining how arbitrary objects are plotted
 export greet_AeroFuse
 include("functions.jl")
 
-## Tools
+## Data tools
 #==========================================================================================#
-include("Tools/Tools.jl")
-
-# Data import
-import .Tools: read_data
-
+include("Tools/DataTools.jl")
+import .DataTools: read_data
 export read_data
 
-# Gas properties
-import .Tools: K_air, α_air, ν_air
-
+## Gas properties
+#==========================================================================================#
+include("Tools/GasProperties.jl")
+import .GasProperties: K_air, α_air, ν_air
 export K_air, α_air, ν_air
 
 ## Hydrogen Electric
@@ -46,8 +44,6 @@ export tank_surface_temperature, boil_off
 ## Post-processing
 #==========================================================================================#
 include{"Tools/plot_tools.jl"}
-
 export plot_surface
-
 
 end
