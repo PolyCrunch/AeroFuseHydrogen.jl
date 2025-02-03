@@ -44,7 +44,7 @@ end
     ts = LinRange(0, 1, n_secs)
     tank_coo = coordinates(tank, ts, n_circ) # Get coordinates
     tank_ske = [ tank_coo[end÷4,:,1:3]; tank_coo[end÷2,:,1:3]; tank_coo[3*end÷4,:,1:3] ] 
-    tank_plan = [ reshape(tank_coo, n_circ * n_secs * 3, 3)l tank_ske ]
+    tank_plan = [ reshape(tank_coo, n_circ * n_secs * 3, 3); tank_ske ]
     @series begin
         @views tank_plan[:,1], tank_plan[:,2], tank_plan[:,3]
     end
