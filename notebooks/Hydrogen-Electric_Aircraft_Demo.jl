@@ -414,7 +414,7 @@ begin
 		plot!(wing_mesh, label = "Wing", mac = false)
 		plot!(htail_mesh, label = "Horizontal Tail", mac = false)
 		plot!(vtail_mesh, label = "Vertical Tail", mac = false)
-		plot!(tank, label = "Fuel Tank")
+		plot!(tank, label = "Fuel Tank", n_secs = 3, n_circ = 10)
 	else
 		plot!(fuse, alpha = 0.3, label = "Fuselage")
 		plot!(wing, 0.4, label = "Wing MAC 40%") 			 
