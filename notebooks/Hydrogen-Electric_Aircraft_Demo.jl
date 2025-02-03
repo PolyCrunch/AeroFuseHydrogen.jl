@@ -283,7 +283,7 @@ Electric motor and propeller combination
 """
 
 # ╔═╡ f21b48c0-8e0c-4b67-9145-52a1480003ed
-wing_coords = coordinates(wing); # Get leading and trailing edge coordinates
+wing_coords = AeroFuse.coordinates(wing); # Get leading and trailing edge coordinates
 
 # ╔═╡ c82d7f29-08f4-4268-881f-e422864ab789
 begin

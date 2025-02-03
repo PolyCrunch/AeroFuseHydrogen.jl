@@ -183,6 +183,9 @@ function coordinates(tank :: CryogenicFuelTank, ts, n_circ = 20)
         circle3D_yz.(x_re, z_re, n_circ)
     ])
 
+    print("Coo:")
+    print(coo)
+
     # Do the affine map
     aff_coo = combinedimsview(map(tank.affine, splitdimsview(coo, (1))), (1))
 
