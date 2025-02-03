@@ -12,9 +12,6 @@ function FuelTank(L, weights, radii, position = zeros(3))
     FuelTank{T}(L, weights, radii[perms], position)
 end
 
-Base.length(tank :: FuelTank) = tank.length
-Base.radius(tank :: FuelTank) = max(tank.radii)
-
 @views function coordinates(tank :: FuelTank, n)
     ws_rads = cosine_interpolation(tank, n)
 
@@ -81,8 +78,6 @@ function CryogenicFuelTank(;
 
     return CryogenicFuelTank(radius, length, insulation_thickness, insulation_density, affine)
 end
-
-Base.radius(tank :: CryogenicFuelTank) = tank.radius
 
 # Generate circles in the y-z plane
 function circle3D_yz(x, R, n) 
