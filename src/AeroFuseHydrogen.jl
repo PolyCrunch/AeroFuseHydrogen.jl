@@ -6,6 +6,9 @@ module AeroFuseHydrogen
 using AeroFuse
 using RecipesBase # For defining how arbitrary objects are plotted
 
+using SplitApplyCombine: combinedimsview, splitdimsview
+export combinedimsview, splitdimsview
+
 export greet_AeroFuse
 include("functions.jl")
 
