@@ -258,10 +258,10 @@ t_insulation = 0.05;
 # ╔═╡ 82b332ac-5628-4b82-8735-f361dcdfc9b6
 tank = CryogenicFuelTank(
 	radius = fuse.radius - fuse_t_w,
-	length = volume_to_length(100., fuse.radius - fuse_t_w, t_insulation),
+	length = volume_to_length(50., fuse.radius - fuse_t_w, t_insulation),
 	insulation_thickness = t_insulation,
 	insulation_density = insulation_material.Density,
-	position = [0.5fuse.length, 0, 0]
+	position = [0.4fuse.length, 0, 0]
 )
 
 # ╔═╡ 63475bbf-6993-4f6c-86b8-f3b608b63a8e
@@ -451,6 +451,9 @@ end
 # ╔═╡ 62dd8881-9b07-465d-a83e-d93eafc7225a
 plt_vlm
 
+# ╔═╡ 50e128f3-72d9-42b1-b987-540bf6e7e6d0
+plt_vlm
+
 # ╔═╡ f03893b1-7518-47d3-ae88-da688aff9591
 plt_vlm
 
@@ -498,6 +501,7 @@ plt_vlm
 # ╠═b9fddbc4-a2d7-48cf-ace4-f092a3c38b11
 # ╠═a0c931b1-e9a5-4bf3-af6d-a9e6d0009998
 # ╠═e36dc0e2-015e-4132-a105-d145e17cceb8
+# ╠═50e128f3-72d9-42b1-b987-540bf6e7e6d0
 # ╟─5446afd1-4326-41ab-94ec-199587c1411b
 # ╠═f21b48c0-8e0c-4b67-9145-52a1480003ed
 # ╠═c82d7f29-08f4-4268-881f-e422864ab789
