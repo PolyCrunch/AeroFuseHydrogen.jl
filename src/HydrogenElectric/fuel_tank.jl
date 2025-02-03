@@ -1,3 +1,39 @@
+struct FuelTank{T<:Real} <: AbstractFuelTank
+    length   ::T # I do not know what weights or radii represent.
+    weights  ::Vector{T}
+    radii    ::Vector{T}
+    position ::SVector{3,T}
+end
+
+function FuelTank(L, weights, radii, position = zeros(3))
+    T = promote_type(eltype(L), eltype(weights), eltype(radii), eltype(position))
+    @assert all(x -> 0 <= x <= 1., weights) "The distribution of weights must lie in [0,1] ⊂ ℝ."
+    perms = sortperm(weights); sort!(weights)
+    FuelTank{T}(L, weights, radii[perms], position)
+end
+
+Base.length(tank :: FuelTank) = tank.length
+Base.radius(tank :: FuelTank) = max(tank.radii)
+
+@views function coordinates(tank :: FuelTank, n)
+    ws_rads = cosine_interpolation(tank, n)
+
+    [ ws_rads[:,1] .* tank.length ws_rads[:,2] ]
+
+end
+
+function cosine_interpolation(tank :: FuelTank, n)
+    xs = tank.weights
+    ys = tank.radii
+    
+    x_min, x_max = extrema(xs)
+    x_circ = cosine_spacing((x_min + x_max) / 2, x_max - x_min, n)
+    
+    y_u = linear_interpolation(xs, ys).(x_circ)
+    
+    return [ x_circ y_u ]
+end
+
 struct CryogenicFuelTank{T<:Real,N<:AbstractAffineMap} <: AbstractFuelTank
     radius::T
     length::T
@@ -33,8 +69,8 @@ Define a cryogenic fuel tank.
 - `affine :: AffineMap = AffineMap(AngleAxis(deg2rad(angle), axis...), position)`: Affine mapping for the position and orientation via `CoordinateTransformations.jl` (overrides `angle` and `axis` if specified)
 """
 function CryogenicFuelTank(;
-    radius=1.0,
-    length=5.0,
+    radius=1.,
+    length=5.,
     insulation_thickness=0.05,
     insulation_density=35.3, # Example taken from rigid closed cell polymethacrylimide foam
     position=zeros(3),
@@ -44,6 +80,44 @@ function CryogenicFuelTank(;
 )
 
     return CryogenicFuelTank(radius, length, insulation_thickness, insulation_density, affine)
+end
+
+Base.radius(tank :: CryogenicFuelTank) = tank.radius
+
+# Generate circles in the y-z plane
+function circle3D_yz(x, R, n) 
+    ts = LinRange(0, 2π, n)
+    @. [ fill(x, n) R * cos(ts) R * sin(ts) ]
+end
+
+function curve(tank :: CryogenicFuelTank, ts)
+    # Check parametric curve domain
+    @assert ts[1] == 0
+    @assert ts[end] == 1
+
+    R_T = tank.radius
+    L_T = tank.length
+
+    L_hemisphere = R_T
+    L_cylinder = L_T - 2 * R_T
+
+    # x-coordinates for front hemisphere, cylindrical section, and rear hemisphere
+    x_fr = @. ts * L_hemisphere
+    x_main = @. ts * L_cylinder + L_hemisphere
+    x_re = @. ts * L_hemisphere + L_hemisphere + L_cylinder
+
+    # z-coordinates for front hemisphere, cylindrical section, and rear hemisphere
+    z_fr = @. R_T * sqrt(1 - (1 - ts)^2)
+    z_main = fill(R_T, length(x_main))
+    z_re = @. R_T * sqrt(1 - ts^2)
+
+    xzs = [
+        x_fr z_fr;
+        x_main z_main;
+        x_re z_re;
+    ]
+
+    return xzs
 end
 
 """
@@ -97,4 +171,26 @@ function wet_mass(fuel_tank::CryogenicFuelTank, fraction::Real, ρ_fuel::Real=70
 
     V_fuel = fraction * internal_volume(fuel_tank)
     return dry_mass(fuel_tank) + V_fuel * ρ_fuel
+end
+
+"""
+    coordinates(fuse :: CryogenicFuelTank, t) 
+
+Get the coordinates of a `CryogenicFuelTank` given the parameter distribution ``t``. Note that the distribution must have endpoints `0` and `1`.
+"""
+function coordinates(tank :: CryogenicFuelTank, ts, n_circ = 20)
+    x_fr, x_main, x_re, z_fr, z_main, z_re = curve(tank, ts) # NEED TO DEFINE CURVE
+
+    # Generate 3D coordinates
+    coo = reduce(vcat, [ 
+        circle3D_yz.(x_fr, z_fr, n_circ); 
+        circle3D_yz.(x_main, z_main, n_circ); 
+        circle3D_yz.(x_re, z_re, n_circ)
+    ])
+
+    # Do the affine map
+    aff_coo = combinedimsview(map(tank.affine, splitdimsview(coo, (1))), (1))
+
+    # Reshape with indices [rad_number,sec_number,xyz]
+    return reshape(aff_coo, n_circ, length(ts) * 3, 3)
 end

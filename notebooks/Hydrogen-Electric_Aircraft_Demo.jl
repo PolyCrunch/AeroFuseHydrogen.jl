@@ -414,6 +414,7 @@ begin
 		plot!(wing_mesh, label = "Wing", mac = false)
 		plot!(htail_mesh, label = "Horizontal Tail", mac = false)
 		plot!(vtail_mesh, label = "Vertical Tail", mac = false)
+		plot!(tank, label = "Fuel Tank")
 	else
 		plot!(fuse, alpha = 0.3, label = "Fuselage")
 		plot!(wing, 0.4, label = "Wing MAC 40%") 			 
@@ -469,8 +470,8 @@ plt_vlm
 # ╟─b81ca63b-46e9-4808-8225-c36132e70084
 # ╟─6242fa28-1d3f-45d7-949a-646d2c7a9f52
 # ╠═0badf910-ef0d-4f6a-99b0-9a1a5d8a7213
-# ╠═11e3c0e6-534c-4b01-a961-5429d28985d7
 # ╠═62dd8881-9b07-465d-a83e-d93eafc7225a
+# ╠═11e3c0e6-534c-4b01-a961-5429d28985d7
 # ╠═d82a14c0-469e-42e6-abc2-f7b98173f92b
 # ╠═87bca1cb-5e2f-4e2e-a1ff-a433507807da
 # ╠═9cd71ed3-c323-4500-92fa-43cb3f9b98e3

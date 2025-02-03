@@ -4,6 +4,7 @@ module AeroFuseHydrogen
 #==========================================================================================#
 
 using AeroFuse
+using RecipesBase # For defining how arbitrary objects are plotted
 
 export greet_AeroFuse
 include("functions.jl")
@@ -32,14 +33,21 @@ import .HydrogenElectric: AbstractHydrogenPropulsionSystem, AbstractFuelTank, Ab
 export AbstractHydrogenPropulsionSystem, AbstractFuelTank, AbstractEngine, AbstractPropeller
 
 # Fuel tank
-import .HydrogenElectric: CryogenicFuelTank, volume_to_length, internal_volume, dry_mass, wet_mass
+import .HydrogenElectric: FuelTank, length, cosine_interpolation, CryogenicFuelTank, volume_to_length, internal_volume, dry_mass, wet_mass
 
-export CryogenicFuelTank, volume_to_length, internal_volume, dry_mass, wet_mass
+export FuelTank, length, cosine_interpolation, CryogenicFuelTank, volume_to_length, internal_volume, dry_mass, wet_mass
 
 # Boil-off
 import .HydrogenElectric: tank_surface_temperature, boil_off
 
 export tank_surface_temperature, boil_off
+
+
+## Post-processing
+#==========================================================================================#
+include{"Tools/plot_tools.jl"}
+
+export plot_surface
 
 
 end
