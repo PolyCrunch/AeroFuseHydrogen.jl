@@ -82,7 +82,7 @@ end
 # Generate circles in the y-z plane
 function circle3D_yz(x, R, n) 
     ts = LinRange(0, 2π, n)
-    @. [ fill(x, n) R * cos(ts) R * sin(ts) ]
+    return @. [ fill(x, n) R * cos(ts) R * sin(ts) ]
 end
 
 function curve(tank :: CryogenicFuelTank, ts)
@@ -106,13 +106,7 @@ function curve(tank :: CryogenicFuelTank, ts)
     z_main = fill(R_T, length(x_main))
     z_re = @. R_T * sqrt(1 - ts^2)
 
-    xzs = [
-        x_fr z_fr;
-        x_main z_main;
-        x_re z_re;
-    ]
-
-    return xzs
+    return x_fr, x_main, x_re, z_fr, z_main, z_re
 end
 
 """
@@ -174,7 +168,7 @@ end
 Get the coordinates of a `CryogenicFuelTank` given the parameter distribution ``t``. Note that the distribution must have endpoints `0` and `1`.
 """
 function coordinates(tank :: CryogenicFuelTank, ts, n_circ = 20)
-    x_fr, x_main, x_re, z_fr, z_main, z_re = curve(tank, ts) # NEED TO DEFINE CURVE
+    x_fr, x_main, x_re, z_fr, z_main, z_re = curve(tank, ts)
 
     # Generate 3D coordinates
     coo = reduce(vcat, [ 
