@@ -8,7 +8,7 @@ using Rotations
 using Roots # For solving for T_s in boil-off rate
 
 # Gas properties
-import ..Tools: K_air, α_air, ν_air
+import ..GasProperties: K_air, α_air, ν_air
 
 ## Types
 #==========================================================================================#
