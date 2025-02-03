@@ -6,6 +6,7 @@ using StaticArrays
 using CoordinateTransformations
 using Rotations
 using Roots # For solving for T_s in boil-off rate
+using SplitApplyCombine
 
 # Gas properties
 import ..GasProperties: K_air, α_air, ν_air
