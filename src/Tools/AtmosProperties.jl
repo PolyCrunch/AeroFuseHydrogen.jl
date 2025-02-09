@@ -40,7 +40,7 @@ end
 ISA pressure of gaseous air at altitude `h` in meters. Valid for 0 ≤ h < 11000 m.
 """
 function p_air(h::Real=0)
-    @assert (0 <= h < 11000) "Altitude out of range"
+    @assert (0 <= h < 11000) "Altitude out of range 0 ≤ h < 11000 m"
     p = 101325 * (1 - 2.25577e-5 * h)^5.25588
     return p
 end
@@ -51,7 +51,7 @@ end
 ISA temperature of gaseous air at altitude `h` in meters. Valid for 0 ≤ h < 11000 m.
 """
 function T_air(h::Real=0)
-    @assert (0 <= h < 11000) "Altitude out of range"
+    @assert (0 <= h < 11000) "Altitude out of range 0 ≤ h < 11000 m"
     T = 288.15 - 0.0065 * h
     return T
 end

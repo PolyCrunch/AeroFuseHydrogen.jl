@@ -2,7 +2,7 @@ using AeroFuseHydrogen
 using Test
 
 @testset "AeroFuseHydrogen.jl" begin
-    # Write your tests here.
+    # Fuel Tank Tests
     @test AeroFuseHydrogen.CryogenicFuelTank() isa CryogenicFuelTank
 
     tank1 = CryogenicFuelTank(
@@ -24,9 +24,10 @@ using Test
 
     @test internal_volume(tank1) ≈ internal_volume(tank2) atol = 1e-6
 
+    # Atmospheric Property Tests
     @test K_air(100) ≈ 909.286 atol = 1e-3
     @test α_air(100) ≈ 2.101e-6 atol = 1e-8
     @test ν_air(100) ≈ 1.775e-6 atol = 1e-8
     @test p_air(10000) ≈ 26436.233 atol = 1e-3
-    @test T_air(36000) ≈ 23.150 atol = 1e-3
+    @test T_air(10000) ≈ 23.150 atol = 1e-3
 end
