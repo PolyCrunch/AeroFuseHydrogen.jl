@@ -18,8 +18,8 @@ export read_data
 
 ## Gas properties
 #==========================================================================================#
-include("Tools/GasProperties.jl")
-import .GasProperties: K_air, α_air, ν_air
+include("Tools/AtmosProperties.jl")
+import .AtmosProperties: K_air, α_air, ν_air
 export K_air, α_air, ν_air
 
 ## Hydrogen Electric

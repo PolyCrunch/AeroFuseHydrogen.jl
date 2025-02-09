@@ -1,4 +1,4 @@
-module GasProperties
+module AtmosProperties
 
 """
     K_air(T)
@@ -19,7 +19,7 @@ Diffusivity of gaseous air at temperature `T` in Kelvin.
 """
 function α_air(T::Real)
     α = -3.119e-6 + 3.541e-8 * T + 1.679e-10 * T^2
-    return α;
+    return α
 end
 
 """
@@ -28,10 +28,31 @@ end
 Kinematic viscosity of gaseous air at temperature `T` in Kelvin.
 """
 function ν_air(T::Real)
-    ν = -2.079e-6 + 2.777e-8 * T + 1.077e-10 * T^2;
-    return ν;
+    ν = -2.079e-6 + 2.777e-8 * T + 1.077e-10 * T^2
+    return ν
 end
 
 # Nusselt number depends on R_ad, which depends on T_s
 
+"""
+    p_air(h)
+
+ISA pressure of gaseous air at altitude `h` in meters. Valid for 0 ≤ h < 11000 m.
+"""
+function p_air(h::Real = 0)
+    @assert (0 <= h < 11000) "Altitude out of range"
+    p = 101325 * (1 - 2.25577e-5 * h)^5.25588
+    return p
 end
+
+"""
+    T_air(h)
+
+ISA temperature of gaseous air at altitude `h` in meters. Valid for 0 ≤ h < 11000 m.
+"""
+function T_air(h::Real = 0)
+    @assert (0 <= h < 11000) "Altitude out of range"
+    T = 288.15 - 0.0065 * h
+    return T
+end
+
