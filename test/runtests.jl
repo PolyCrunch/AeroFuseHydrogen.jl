@@ -24,4 +24,10 @@ using Test
 
     @test internal_volume(tank1) ≈ internal_volume(tank2) atol = 1e-6
 
+    @test K_air(100) ≈ 909.286 atol = 1e-6
+    @test α_air(100) ≈ 2.101e-6 atol = 1e-6
+    @test ν_air(100) ≈ 1.775e-6 atol = 1e-6
+    #@test p_air(36000) ≈ ???
+    #@test T_air(36000) ≈ ???
+
 end

@@ -368,6 +368,9 @@ vtail_mesh = WingMesh(vtail, [8], 6);
 # ╔═╡ 55a3b368-843e-47f1-a804-c5d3f582b1b9
 htail_mesh = WingMesh(htail, [10], 8);
 
+# ╔═╡ 4d710502-7b8f-41ae-96ca-5aed36c1d3af
+#T_air(36000)
+
 # ╔═╡ 9f776e2f-1fa9-48f5-b554-6bf5a5d91441
 md"## Plot definition"
 
@@ -522,6 +525,7 @@ plt_vlm
 # ╠═6ef141f2-4655-431e-b064-1c82794c9bac
 # ╠═1aed0dcb-3fa8-4c50-ac25-78e60c0ab99d
 # ╠═55a3b368-843e-47f1-a804-c5d3f582b1b9
+# ╠═4d710502-7b8f-41ae-96ca-5aed36c1d3af
 # ╟─9f776e2f-1fa9-48f5-b554-6bf5a5d91441
 # ╠═ad1a5963-d120-4a8c-b5e1-9bd743a32670
 # ╠═8af8885c-48d8-40cf-8584-45d89521d9a1

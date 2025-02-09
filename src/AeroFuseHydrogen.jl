@@ -16,11 +16,11 @@ include("Tools/DataTools.jl")
 import .DataTools: read_data
 export read_data
 
-## Gas properties
+## Atmospheric properties
 #==========================================================================================#
 include("Tools/AtmosProperties.jl")
-import .AtmosProperties: K_air, α_air, ν_air
-export K_air, α_air, ν_air
+import .AtmosProperties: K_air, α_air, ν_air, p_air, T_air
+export K_air, α_air, ν_air, p_air, T_air
 
 ## Hydrogen Electric
 #==========================================================================================#
