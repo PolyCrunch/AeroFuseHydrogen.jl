@@ -29,5 +29,5 @@ using Test
     @test α_air(100) ≈ 2.101e-6 atol = 1e-8
     @test ν_air(100) ≈ 1.775e-6 atol = 1e-8
     @test p_air(10000) ≈ 26436.233 atol = 1e-3
-    @test T_air(10000) ≈ 23.150 atol = 1e-3
+    @test T_air(10000) ≈ 223.150 atol = 1e-3
 end
