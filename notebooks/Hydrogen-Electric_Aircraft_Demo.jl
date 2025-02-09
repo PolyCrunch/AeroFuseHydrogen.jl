@@ -369,7 +369,7 @@ vtail_mesh = WingMesh(vtail, [8], 6);
 htail_mesh = WingMesh(htail, [10], 8);
 
 # ╔═╡ 4d710502-7b8f-41ae-96ca-5aed36c1d3af
-#T_air(36000)
+α_air(100)
 
 # ╔═╡ 9f776e2f-1fa9-48f5-b554-6bf5a5d91441
 md"## Plot definition"
