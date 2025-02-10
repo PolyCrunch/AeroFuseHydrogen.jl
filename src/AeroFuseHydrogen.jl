@@ -41,6 +41,11 @@ import .HydrogenElectric: tank_surface_temperature, boil_off
 
 export tank_surface_temperature, boil_off
 
+# Fuel cell
+#import .HydrogenElectric: 
+
+#export 
+
 
 ## Post-processing
 #==========================================================================================#

@@ -26,6 +26,11 @@ abstract type AbstractPropeller <: AbstractHydrogenPropulsionSystem end
 
 include("fuel_tank.jl")
 
+## Fuel cell
+#==========================================================================================#
+
+include("fuel_cell.jl")
+
 ## Boil-off
 #==========================================================================================#
 
