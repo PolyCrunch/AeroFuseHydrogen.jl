@@ -368,8 +368,11 @@ vtail_mesh = WingMesh(vtail, [8], 6);
 # ╔═╡ 55a3b368-843e-47f1-a804-c5d3f582b1b9
 htail_mesh = WingMesh(htail, [10], 8);
 
+# ╔═╡ 06d1e62f-d35a-4e28-9239-95083cd93440
+i = [0. 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0]
+
 # ╔═╡ 22043683-a69f-4394-b872-4be6eb4b5dc9
-E = pemfc_polarization
+E = pemfc_polarization(i, 0.0, 333.0, 1.0, 2, 20.0, 0.03, 16000.0, 1500.0)
 
 # ╔═╡ 9f776e2f-1fa9-48f5-b554-6bf5a5d91441
 md"## Plot definition"
@@ -525,6 +528,7 @@ plt_vlm
 # ╠═6ef141f2-4655-431e-b064-1c82794c9bac
 # ╠═1aed0dcb-3fa8-4c50-ac25-78e60c0ab99d
 # ╠═55a3b368-843e-47f1-a804-c5d3f582b1b9
+# ╠═06d1e62f-d35a-4e28-9239-95083cd93440
 # ╠═22043683-a69f-4394-b872-4be6eb4b5dc9
 # ╟─9f776e2f-1fa9-48f5-b554-6bf5a5d91441
 # ╠═ad1a5963-d120-4a8c-b5e1-9bd743a32670
