@@ -372,7 +372,7 @@ htail_mesh = WingMesh(htail, [10], 8);
 i = [0. 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0]
 
 # ╔═╡ 22043683-a69f-4394-b872-4be6eb4b5dc9
-E = pemfc_polarization(i, 0.0, 333.0, 1.0, 2, 20.0, 0.03, 16000.0, 1500.0)
+pemfc_polarization(i, 0.0, 333.0, 1.0, 2, 20.0, 0.03, 16000.0, 1500.0)
 
 # ╔═╡ 9f776e2f-1fa9-48f5-b554-6bf5a5d91441
 md"## Plot definition"

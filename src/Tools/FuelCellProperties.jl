@@ -1,9 +1,7 @@
 module FuelCellProperties
 using Base: LinRange
 
-function pemfc_polarization(i::Matrix{Number}=LinRange(0, 1.5, 20), E_rTP=0.0, T=333.0, α=1.0, n::Integer=2, i_loss=20.0, i_0=0.03, i_L=16000.0, R_i=1500.0)
-    @assert length(i) ≥ 1 "Current density vector must have at least one element"
-
+function pemfc_polarization(i, E_rTP::Number=0.0, T::Number=333.0, α::Number=1.0, n::Integer=2, i_loss::Number=20.0, i_0::Number=0.03, i_L::Number=16000.0, R_i::Number=1500.0)
     F = 96485.  # Faraday constant (C/mol)
     R = 8.314   # Ideal gas constant (J/mol/K)
 
