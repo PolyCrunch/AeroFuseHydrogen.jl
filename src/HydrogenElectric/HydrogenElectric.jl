@@ -19,7 +19,7 @@ abstract type AbstractHydrogenPropulsionSystem end
 abstract type AbstractFuelTank <: AbstractHydrogenPropulsionSystem end
 abstract type AbstractEngine <: AbstractHydrogenPropulsionSystem end
 abstract type AbstractPropeller <: AbstractHydrogenPropulsionSystem end
-# abstract type AbstractFuelCell <: AbstractHydrogenPropulsionSystem end
+abstract type AbstractFuelCell <: AbstractHydrogenPropulsionSystem end
 
 ## Fuel tank
 #==========================================================================================#

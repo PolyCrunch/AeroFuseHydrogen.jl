@@ -22,6 +22,11 @@ include("Tools/AtmosProperties.jl")
 import .AtmosProperties: K_air, α_air, ν_air, p_air, T_air
 export K_air, α_air, ν_air, p_air, T_air
 
+## Fuel Cell properties
+include("Tools/FuelCellProperties.jl")
+import .FuelCellProperties: pemfc_polarization
+export pemfc_polarization
+
 ## Hydrogen Electric
 #==========================================================================================#
 include("HydrogenElectric/HydrogenElectric.jl")
