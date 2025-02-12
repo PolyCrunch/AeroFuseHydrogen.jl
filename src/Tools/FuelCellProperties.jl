@@ -9,7 +9,7 @@ function pemfc_polarization(i::Number, E_rTP::Number=0.0, T::Number=333.0, α::N
     R = 8.314   # Ideal gas constant (J/mol/K)
 
     E_cell = @. E_rTP - (R * T) / (α * F) * log((i + i_loss) / i_0) - (R * T) / (n * F) * log(i_L / (i_L - i)) - R_i * i
-
+# SEE PAGE 65 FOR EXAMPLE CALCULATION AAAA
     return E_cell
 end
 
