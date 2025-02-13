@@ -35,6 +35,9 @@ using Plots;
 # ╔═╡ 3fc8039e-acb3-44eb-a7c3-176afe4ad6e0
 using DataFrames;
 
+# ╔═╡ 559bcd99-f43f-4228-9632-2aa5cd93a1fb
+using LinearRegression;
+
 # ╔═╡ 1aeef97f-112b-4d1c-b4b0-b176483a783b
 begin
 	using PlutoUI
@@ -294,22 +297,66 @@ end
 # ╔═╡ 9816aa83-4f98-4ea6-b149-749eacf833e6
 md"### Fuel Cell Setup"
 
-# ╔═╡ 06d1e62f-d35a-4e28-9239-95083cd93440
-i = LinRange(0., 1600, 100)/1000;
+# ╔═╡ ebf91bfe-01e2-4975-93fe-b6c7ad03846f
+md"""#### PEM Fuel Cell Polarization Curve
+Generate the PEMFC polarization curve for a range of **i** using *pemfc\_polarization(i, T, α, n, i\_loss, i\_0, i\_L, R\_i)*."""
+
+# ╔═╡ 1e80cb97-f238-43f7-b082-6ab2deacd701
+i = collect(LinRange(0., 1600, 100) / 1000);
 
 # ╔═╡ 22043683-a69f-4394-b872-4be6eb4b5dc9
 E_cell = pemfc_polarization.(i);
 
+# ╔═╡ 218c8ebb-414e-40f8-ad7a-ad5b6a0a44f3
+md"""Observe that the curve seems approximately linear for 200 ≤ i ≤ 1500 mA/cm²
+
+Choose a range of **i** for the linear fit:"""
+
+# ╔═╡ d0433ace-dcfa-4adf-8df1-f7e0784afb5a
+i_fitRange = [200., 1500.]/1000; # [minimum i, maximum i]
+
+# ╔═╡ 7c48582c-3493-4c80-aab3-019aef3da65c
+idx_iRangeMin = findfirst(x -> x >= i_fitRange[1], i);
+
+# ╔═╡ 192ea8d5-df83-4944-9998-7b3006b32d68
+idx_iRangeMax = findfirst(x -> x >= i_fitRange[2], i) - 1;
+
+# ╔═╡ 541a4049-d17d-4ec8-8fd7-fe934ca53230
+md"Create vectors of the linear portions of the curve, and perform a linear fit"
+
+# ╔═╡ 5d7f3f13-eded-4e01-bb4e-925d24f2d883
+i_linear = i[idx_iRangeMin:idx_iRangeMax];
+
+# ╔═╡ ae560365-dddf-4aff-aff9-0dcd4227e1c4
+E_linear = E_cell[idx_iRangeMin:idx_iRangeMax];
+
+# ╔═╡ e17a3e03-88bf-4b9d-b3fb-5e20b4541c36
+E_fit = linregress(i_linear, E_linear)
+
+# ╔═╡ d48ea3f5-766c-4ce3-96f5-6f629685b721
+i_extrem = [i[1] i[end]]';
+
 # ╔═╡ f0f28c3a-aa3c-4111-b676-5fd22fb3238c
-plot(
-	i*1000, E_cell,
-	lw=3,
-	label=false,
-	ylims = (0, 1.2),
-	xlims = (0, 2000),
-	xlabel = "Current density (mA/cm²)",
-	ylabel = "Cell PD (V)"
-)
+begin
+	plot(
+		i*1000, E_cell,
+		lw=3,
+		label="Model Curve",
+		ylims = (0, 1.2),
+		xlims = (0, 2000),
+		xlabel = "Current density, i (mA/cm²)",
+		ylabel = "Cell PD, E (V)"
+	)
+
+	plot!(
+		i_extrem.*1000,
+		LinearRegression.slope(E_fit) .* i_extrem .+ LinearRegression.bias(E_fit),
+		lw=2,
+		label="Linear Fit",
+		linestyle=:dash,
+		linecolor = :gray50
+	)
+end
 
 # ╔═╡ f02237a0-b9d2-4486-8608-cf99a5ea42bd
 md"## Stabilizers"
@@ -489,12 +536,13 @@ plt_vlm
 # ╠═f0aadce8-3424-47f2-a549-43a499385e80
 # ╠═87dfa675-cb8c-41e6-b03d-c5a983d99aa8
 # ╠═3fc8039e-acb3-44eb-a7c3-176afe4ad6e0
+# ╠═559bcd99-f43f-4228-9632-2aa5cd93a1fb
 # ╟─b1e81925-32b5-45c0-888c-4b38a34e27b6
 # ╟─b81ca63b-46e9-4808-8225-c36132e70084
 # ╟─6242fa28-1d3f-45d7-949a-646d2c7a9f52
 # ╠═0badf910-ef0d-4f6a-99b0-9a1a5d8a7213
 # ╠═62dd8881-9b07-465d-a83e-d93eafc7225a
-# ╠═11e3c0e6-534c-4b01-a961-5429d28985d7
+# ╟─11e3c0e6-534c-4b01-a961-5429d28985d7
 # ╠═d82a14c0-469e-42e6-abc2-f7b98173f92b
 # ╠═87bca1cb-5e2f-4e2e-a1ff-a433507807da
 # ╠═9cd71ed3-c323-4500-92fa-43cb3f9b98e3
@@ -526,9 +574,19 @@ plt_vlm
 # ╠═f21b48c0-8e0c-4b67-9145-52a1480003ed
 # ╠═c82d7f29-08f4-4268-881f-e422864ab789
 # ╟─9816aa83-4f98-4ea6-b149-749eacf833e6
-# ╠═06d1e62f-d35a-4e28-9239-95083cd93440
+# ╟─ebf91bfe-01e2-4975-93fe-b6c7ad03846f
+# ╠═1e80cb97-f238-43f7-b082-6ab2deacd701
 # ╠═22043683-a69f-4394-b872-4be6eb4b5dc9
-# ╠═f0f28c3a-aa3c-4111-b676-5fd22fb3238c
+# ╟─f0f28c3a-aa3c-4111-b676-5fd22fb3238c
+# ╟─218c8ebb-414e-40f8-ad7a-ad5b6a0a44f3
+# ╠═d0433ace-dcfa-4adf-8df1-f7e0784afb5a
+# ╠═7c48582c-3493-4c80-aab3-019aef3da65c
+# ╠═192ea8d5-df83-4944-9998-7b3006b32d68
+# ╠═541a4049-d17d-4ec8-8fd7-fe934ca53230
+# ╠═5d7f3f13-eded-4e01-bb4e-925d24f2d883
+# ╠═ae560365-dddf-4aff-aff9-0dcd4227e1c4
+# ╠═e17a3e03-88bf-4b9d-b3fb-5e20b4541c36
+# ╟─d48ea3f5-766c-4ce3-96f5-6f629685b721
 # ╟─f02237a0-b9d2-4486-8608-cf99a5ea42bd
 # ╟─36431db2-ac86-48ce-8a91-16d9cca57dad
 # ╠═cf33519f-4b3e-4d84-9f48-1e76f4e8be47
