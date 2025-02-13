@@ -25,7 +25,7 @@ Compute the cell potential difference of a H2/Air proton exchange membrane fuel 
 - `i_L::Number=1.6`: Limiting current density (A/cm²)
 - `R_i::Number=0.15`: Internal resistance (Ω/cm²)
 
-Default values are obtained from F Barbir, CHAPTER 3 — Fuel Cell Electrochemistry, PEM Fuel Cells, Academic Press, 2005.
+Default values and method are obtained from F Barbir, CHAPTER 3 — Fuel Cell Electrochemistry, PEM Fuel Cells, Academic Press, 2005.
 """
 function pemfc_polarization(i::Number, T::Number=333.0, α::Number=1.0, n::Integer=2, i_loss::Number=0.002, i_0::Number=3e-6, i_L::Number=1.6, R_i::Number=0.15)
     F = 96485.0 # Faraday constant (C/mol)

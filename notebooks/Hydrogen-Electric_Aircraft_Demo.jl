@@ -291,6 +291,26 @@ begin
 	eng_R = wing_coords[1, 4] - [1, 0., 0.] # Right engine at mid-section leading edge
 end
 
+# ╔═╡ 9816aa83-4f98-4ea6-b149-749eacf833e6
+md"### Fuel Cell Setup"
+
+# ╔═╡ 06d1e62f-d35a-4e28-9239-95083cd93440
+i = LinRange(0., 1600, 100)/1000;
+
+# ╔═╡ 22043683-a69f-4394-b872-4be6eb4b5dc9
+E_cell = pemfc_polarization.(i);
+
+# ╔═╡ f0f28c3a-aa3c-4111-b676-5fd22fb3238c
+plot(
+	i*1000, E_cell,
+	lw=3,
+	label=false,
+	ylims = (0, 1.2),
+	xlims = (0, 2000),
+	xlabel = "Current density (mA/cm²)",
+	ylabel = "Cell PD (V)"
+)
+
 # ╔═╡ f02237a0-b9d2-4486-8608-cf99a5ea42bd
 md"## Stabilizers"
 
@@ -367,21 +387,6 @@ vtail_mesh = WingMesh(vtail, [8], 6);
 
 # ╔═╡ 55a3b368-843e-47f1-a804-c5d3f582b1b9
 htail_mesh = WingMesh(htail, [10], 8);
-
-# ╔═╡ 06d1e62f-d35a-4e28-9239-95083cd93440
-i = LinRange(0., 1600, 100)/1000
-
-# ╔═╡ 22043683-a69f-4394-b872-4be6eb4b5dc9
-E_cell = pemfc_polarization.(i, 333.0, 1.0, 2, 0.002, 3e-6, 1.6, 0.15)
-
-# ╔═╡ f0f28c3a-aa3c-4111-b676-5fd22fb3238c
-plot(
-	i*1000, E_cell,
-	lw=3,
-	label=false,
-	ylims = (0, 1.2),
-	xlims = (0, 2000)
-)
 
 # ╔═╡ 9f776e2f-1fa9-48f5-b554-6bf5a5d91441
 md"## Plot definition"
@@ -520,6 +525,10 @@ plt_vlm
 # ╟─5446afd1-4326-41ab-94ec-199587c1411b
 # ╠═f21b48c0-8e0c-4b67-9145-52a1480003ed
 # ╠═c82d7f29-08f4-4268-881f-e422864ab789
+# ╟─9816aa83-4f98-4ea6-b149-749eacf833e6
+# ╠═06d1e62f-d35a-4e28-9239-95083cd93440
+# ╠═22043683-a69f-4394-b872-4be6eb4b5dc9
+# ╠═f0f28c3a-aa3c-4111-b676-5fd22fb3238c
 # ╟─f02237a0-b9d2-4486-8608-cf99a5ea42bd
 # ╟─36431db2-ac86-48ce-8a91-16d9cca57dad
 # ╠═cf33519f-4b3e-4d84-9f48-1e76f4e8be47
@@ -537,9 +546,6 @@ plt_vlm
 # ╠═6ef141f2-4655-431e-b064-1c82794c9bac
 # ╠═1aed0dcb-3fa8-4c50-ac25-78e60c0ab99d
 # ╠═55a3b368-843e-47f1-a804-c5d3f582b1b9
-# ╠═06d1e62f-d35a-4e28-9239-95083cd93440
-# ╠═22043683-a69f-4394-b872-4be6eb4b5dc9
-# ╠═f0f28c3a-aa3c-4111-b676-5fd22fb3238c
 # ╟─9f776e2f-1fa9-48f5-b554-6bf5a5d91441
 # ╠═ad1a5963-d120-4a8c-b5e1-9bd743a32670
 # ╠═8af8885c-48d8-40cf-8584-45d89521d9a1
