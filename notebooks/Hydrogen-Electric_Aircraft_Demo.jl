@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.0
+# v0.19.46
 
 using Markdown
 using InteractiveUtils
@@ -372,7 +372,7 @@ htail_mesh = WingMesh(htail, [10], 8);
 i = LinRange(0., 1600, 100)/1000
 
 # ╔═╡ 22043683-a69f-4394-b872-4be6eb4b5dc9
-E_cell = pemfc_polarization.(i, 1.189, 333.0, 1.0, 2, 0.002, 3e-6, 1.6, 0.15)
+E_cell = pemfc_polarization.(i, 333.0, 1.0, 2, 0.002, 3e-6, 1.6, 0.15)
 
 # ╔═╡ f0f28c3a-aa3c-4111-b676-5fd22fb3238c
 plot(
