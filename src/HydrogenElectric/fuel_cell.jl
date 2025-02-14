@@ -67,7 +67,7 @@ Compute the length of a proton exchange membrane fuel cell stack.
 # Arguments
 - `stack::PEMFCStack`: Proton exchange membrane fuel cell stack
 """
-function length(stack::PEMFCStack)
+Base.length(stack::PEMFCStack)
     n_layers::Int = floor(Int, stack.height / stack.layer_thickness)
     l = stack.area_effective / (stack.width * n_layers)
 

@@ -396,6 +396,9 @@ U_PEMFC = U_cell(j_PEMFC, polarization_coeffs)
 # ╔═╡ 6895ed8b-acf4-4941-ada7-38ab54d77870
 mdot_H2 = fflow_H2(PEMFC, 1., polarization_coeffs)
 
+# ╔═╡ 1d624369-c08a-4c65-8ac4-46e8605cf905
+#PEMFC_length = length(PEMFC)
+
 # ╔═╡ f02237a0-b9d2-4486-8608-cf99a5ea42bd
 md"## Stabilizers"
 
@@ -633,6 +636,7 @@ plt_vlm
 # ╠═e9ffaaed-b8b3-4825-8bb2-30a848a17abc
 # ╠═c6b9ea47-0dc5-42b9-a0b1-ff4158102d49
 # ╠═6895ed8b-acf4-4941-ada7-38ab54d77870
+# ╠═1d624369-c08a-4c65-8ac4-46e8605cf905
 # ╟─f02237a0-b9d2-4486-8608-cf99a5ea42bd
 # ╟─36431db2-ac86-48ce-8a91-16d9cca57dad
 # ╠═cf33519f-4b3e-4d84-9f48-1e76f4e8be47

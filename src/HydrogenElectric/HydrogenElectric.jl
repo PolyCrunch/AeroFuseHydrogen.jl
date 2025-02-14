@@ -2,6 +2,7 @@ module HydrogenElectric
 
 ## Package imports
 #==========================================================================================#
+using Base.Math
 using StaticArrays
 using CoordinateTransformations
 using Rotations
