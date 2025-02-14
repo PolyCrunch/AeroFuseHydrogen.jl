@@ -366,7 +366,7 @@ md"""### Defining the Fuel Cell Stack"""
 
 # ╔═╡ eea50a16-6798-4b53-8c36-ec647b592b23
 PEMFC = PEMFCStack(
-	area_effective=5000000.,
+	area_effective=5.e6,
 	power_max = 4.e6,
 	height = 2.,
 	width = 2.,
@@ -385,13 +385,16 @@ Note:
 """
 
 # ╔═╡ df7431fe-dcde-4456-a548-1ffafccb84b8
-j_PEMFC = j_cell(PEMFC, polarization_coeffs)
+j_PEMFC = j_cell(PEMFC, 1, polarization_coeffs)
 
 # ╔═╡ e9ffaaed-b8b3-4825-8bb2-30a848a17abc
 U_PEMFC = U_cell(j_PEMFC, polarization_coeffs)
 
 # ╔═╡ c6b9ea47-0dc5-42b9-a0b1-ff4158102d49
 η_PEMFC = η_FC(U_PEMFC)
+
+# ╔═╡ 6895ed8b-acf4-4941-ada7-38ab54d77870
+mdot_H2 = fflow_H2(PEMFC, 1., polarization_coeffs)
 
 # ╔═╡ f02237a0-b9d2-4486-8608-cf99a5ea42bd
 md"## Stabilizers"
@@ -629,6 +632,7 @@ plt_vlm
 # ╠═df7431fe-dcde-4456-a548-1ffafccb84b8
 # ╠═e9ffaaed-b8b3-4825-8bb2-30a848a17abc
 # ╠═c6b9ea47-0dc5-42b9-a0b1-ff4158102d49
+# ╠═6895ed8b-acf4-4941-ada7-38ab54d77870
 # ╟─f02237a0-b9d2-4486-8608-cf99a5ea42bd
 # ╟─36431db2-ac86-48ce-8a91-16d9cca57dad
 # ╠═cf33519f-4b3e-4d84-9f48-1e76f4e8be47

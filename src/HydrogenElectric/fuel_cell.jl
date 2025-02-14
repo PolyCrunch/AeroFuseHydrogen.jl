@@ -60,6 +60,21 @@ function PEMFCStack(;
 end
 
 """
+length(stack::PEMFCStack)
+
+Compute the length of a proton exchange membrane fuel cell stack.
+
+# Arguments
+- `stack::PEMFCStack`: Proton exchange membrane fuel cell stack
+"""
+function length(stack::PEMFCStack)
+    n_layers::Int = floor(Int, stack.height / stack.layer_thickness)
+    l = stack.area_effective / (stack.width * n_layers)
+
+    return l
+end
+
+"""
 j_cell(cell::PEMFuelCell, polarization_coefficients::Vector)
 
 Compute the current density of a proton exchange membrane fuel cell.
