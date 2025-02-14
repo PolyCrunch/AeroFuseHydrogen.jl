@@ -66,15 +66,19 @@ Compute the current density of a proton exchange membrane fuel cell.
 
 # Arguments
 - `cell::PEMFCStack`: Proton exchange membrane fuel cell stack
+- `throttle::Number`: Throttle value (0-1)
 - `polarization_coefficients::Vector`: Polarization coefficients [α β] such that U_cell = α * j_cell + β
 - `i_L::Number`: Limiting current density (A/cm²)
 """
-function j_cell(cell::PEMFCStack, polarization_coefficients::Vector = [-0.213; 0.873], i_L::Number = 1.6)
+function j_cell(cell::PEMFCStack, throttle:number = 1., polarization_coefficients::Vector = [-0.213; 0.873], i_L::Number = 1.6)
+    @assert throttle > 0 "Throttle must be positive"
+    @assert throttle <= 1 "Throttle must be less than or equal to 1"
+
     @assert length(polarization_coefficients) == 2 "Polarization coefficients must be a vector [α β] such that U_cell = α * j_cell + β"
     
     a = polarization_coefficients[1]
     b = polarization_coefficients[2]
-    c = -cell.power_max / cell.area_effective
+    c = -cell.power_max * throttle / cell.area_effective
     
     @assert b^2 - 4 * a * c >= 0 "No real solution for current density. Consider increasing the effective area of the fuel cell."
     
