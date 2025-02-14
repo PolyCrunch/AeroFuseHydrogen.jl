@@ -70,7 +70,7 @@ Compute the current density of a proton exchange membrane fuel cell.
 - `polarization_coefficients::Vector`: Polarization coefficients [α β] such that U_cell = α * j_cell + β
 - `i_L::Number`: Limiting current density (A/cm²)
 """
-function j_cell(cell::PEMFCStack, throttle:number = 1., polarization_coefficients::Vector = [-0.213; 0.873], i_L::Number = 1.6)
+function j_cell(cell::PEMFCStack, throttle::Number = 1., polarization_coefficients::Vector = [-0.213; 0.873], i_L::Number = 1.6)
     @assert throttle > 0 "Throttle must be positive"
     @assert throttle <= 1 "Throttle must be less than or equal to 1"
 
@@ -121,10 +121,53 @@ Compute the efficiency of a proton exchange membrane fuel cell.
 function η_FC(U_cell::Number)
     n = 2           # Number of electrons involved
     F = 96485.0     # Faraday constant (C/mol)
-    H2_HHV = 286.e3 # Higher Heating Value of hydrogen (J/mol)
+    H2_HHV = 285.8e3 # Higher Heating Value of hydrogen (J/mol)
 
     U_ideal = H2_HHV / (n * F) # Ideal cell potential difference
 
     η = U_cell / U_ideal
     return η
+end
+
+"""
+η_FC(cell::PEMFCStack, throttle::Number, polarization_coefficients::Vector, i_L::Number)
+
+Compute the efficiency of a proton exchange membrane fuel cell.
+
+# Arguments
+- `cell::PEMFCStack`: Proton exchange membrane fuel cell stack
+- `throttle::Number`: Throttle value (0-1)
+- `polarization_coefficients::Vector`: Polarization coefficients [α β] such that U_cell = α * j_cell + β
+- `i_L::Number`: Limiting current density (A/cm²)
+"""
+function η_FC(cell::PEMFCStack, throttle::Number = 1., polarization_coefficients::Vector = [-0.213; 0.873], i_L::Number = 1.6)
+    @assert throttle > 0 "Throttle must be positive"
+    @assert throttle <= 1 "Throttle must be less than or equal to 1"
+
+    j = j_cell(cell, throttle, polarization_coefficients, i_L)
+    U = U_cell(j, polarization_coefficients, i_L)
+    return η_FC(U)
+end
+
+"""
+fflow_H2(cell::PEMFCStack, throttle::Number, polarization_coefficients::Vector, i_L::Number)
+
+Compute the mass flow rate of hydrogen to a proton exchange membrane fuel cell for a given power.
+
+# Arguments
+- `cell::PEMFCStack`: Proton exchange membrane fuel cell stack
+- `throttle::Number`: Throttle value (0-1)
+- `polarization_coefficients::Vector`: Polarization coefficients [α β] such that U_cell = α * j_cell + β
+- `i_L::Number`: Limiting current density (A/cm²)
+"""
+function fflow_H2(cell::PEMFCStack, throttle::Number = 1., polarization_coefficients::Vector = [-0.213; 0.873], i_L::Number = 1.6)
+    # Stiochiometric ratio source: Hartmann, Christian & Nøland, Jonas Kristiansen & Nilssen, Robert & Mellerud, Runar. (2021). Conceptual Design, Sizing and Performance Analysis of a Cryo-Electric Propulsion System for a Next-Generation Hydrogen-Powered Aircraft. 10.36227/techrxiv.17102792.v1.
+    λ_H2 = 1.05 # Assumed stoichiometric ratio of hydrogen, assuming recycling of exhaust hydrogen
+    P_FC = cell.power_max * throttle
+    η_cell = η_FC(cell, throttle, polarization_coefficients, i_L)
+    Δh_H2 = 141.9e6 # Higher Heating Value of hydrogen (J/kg)
+
+    m_dot_H2 = λ_H2 * P_FC / (η_cell * Δh_H2)
+
+    return m_dot_H2
 end
