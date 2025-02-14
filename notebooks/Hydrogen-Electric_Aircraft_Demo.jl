@@ -366,7 +366,7 @@ md"""### Defining the Fuel Cell Stack"""
 
 # ╔═╡ eea50a16-6798-4b53-8c36-ec647b592b23
 PEMFC = PEMFCStack(
-	area_effective=5.e6,
+	area_effective=500.,
 	power_max = 4.e6,
 	height = 2.,
 	width = 2.,

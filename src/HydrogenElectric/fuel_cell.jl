@@ -17,7 +17,7 @@ struct PEMFCStack{T<:Real,N<:AbstractAffineMap} <: AbstractFuelCell
         @assert w > 0 "Width must be positive"
         @assert t > 0 "Layer thickness must be positive"
 
-        new{T,N}(A_eff,P_max,h,w,t,affine)
+        new{T,N}(A_eff, P_max, h, w, t, affine)
     end
 end
 
@@ -38,10 +38,10 @@ Define a proton exchange membrane fuel cell.
 - `affine :: AffineMap = AffineMap(AngleAxis(deg2rad(angle), axis...), position)`: Affine mapping for the position and orientation via `CoordinateTransformations.jl` (overrides `angle` and `axis` if specified)
 """
 function PEMFCStack(;
-    area_effective=500.,
+    area_effective=500.0,
     power_max=1.e6,
-    height=2.,
-    width=2.,
+    height=2.0,
+    width=2.0,
     layer_thickness=0.0043, # Source: Rubio, Abel & Agila, Wilton & González, Leandro & Aviles-Cedeno, Jonathan. (2023). Distributed Intelligence in Autonomous PEM Fuel Cell Control. Energies. 16. 4830. 10.3390/en16204830.
     position=zeros(3),
     angle=0.0,
@@ -52,12 +52,12 @@ function PEMFCStack(;
 end
 
 """
-length(stack::PEMFCStack)
+length(stack :: PEMFCStack)
 
 Compute the length of a proton exchange membrane fuel cell stack.
 
 # Arguments
-- `stack::PEMFCStack`: Proton exchange membrane fuel cell stack
+- `stack :: PEMFCStack`: Proton exchange membrane fuel cell stack
 """
 function Base.length(stack::PEMFCStack)
     n_layers::Int = floor(Int, stack.height / stack.layer_thickness)
@@ -67,28 +67,43 @@ function Base.length(stack::PEMFCStack)
 end
 
 """
+mass(stack::PEMFCStack, ρ_A)
+
+Compute the mass of a proton exchange membrane fuel cell stack.
+
+# Arguments
+- `stack :: PEMFCStack`: Proton exchange membrane fuel cell stack
+- `ρ_A :: Number = 2.5`: Area density of the fuel cell stack (kg/m²). Default value taken from Source M. Schröder, F. Becker, J. Kallo, C. Gentner, Optimal operating conditions of PEM fuel cells in commercial aircraft, International Journal of Hydrogen Energy, Volume 46, Issue 66, 2021.
+"""
+function mass(stack::PEMFCStack, ρ_A = 2.5)
+    m = ρ_A * stack.area_effective
+
+    return m
+end
+
+"""
 j_cell(cell::PEMFuelCell, polarization_coefficients::Vector)
 
 Compute the current density of a proton exchange membrane fuel cell.
 
 # Arguments
-- `cell::PEMFCStack`: Proton exchange membrane fuel cell stack
-- `throttle::Number`: Throttle value (0-1)
-- `polarization_coefficients::Vector`: Polarization coefficients [α β] such that U_cell = α * j_cell + β
-- `i_L::Number`: Limiting current density (A/cm²)
+- `cell :: PEMFCStack`: Proton exchange membrane fuel cell stack
+- `throttle :: Number = 1.0`: Throttle value (0-1)
+- `polarization_coefficients :: Vector = [-0.213; 0.873]`: Polarization coefficients [α β] such that U_cell = α * j_cell + β
+- `i_L :: Number = 1.6`: Limiting current density (A/cm²)
 """
-function j_cell(cell::PEMFCStack, throttle::Number = 1., polarization_coefficients::Vector = [-0.213; 0.873], i_L::Number = 1.6)
+function j_cell(cell::PEMFCStack, throttle::Number=1.0, polarization_coefficients::Vector=[-0.213; 0.873], i_L::Number=1.6)
     @assert throttle > 0 "Throttle must be positive"
     @assert throttle <= 1 "Throttle must be less than or equal to 1"
 
     @assert length(polarization_coefficients) == 2 "Polarization coefficients must be a vector [α β] such that U_cell = α * j_cell + β"
-    
+
     a = polarization_coefficients[1]
     b = polarization_coefficients[2]
     c = -cell.power_max * throttle / cell.area_effective / 10000 # Power density (W/cm²)
-    
+
     @assert b^2 - 4 * a * c >= 0 "No real solution for current density. Consider increasing the effective area of the fuel cell."
-    
+
     j = (-b + sqrt(b^2 - 4 * a * c)) / (2 * a) # Quadratic formula
 
     @assert j <= i_L "Current density is greater than the limiting current density. Consider increasing the effective area of the fuel cell."
@@ -102,11 +117,11 @@ U_cell(j::Number, polarization_coefficients::Vector)
 Compute the cell potential difference of a proton exchange membrane fuel cell.
 
 # Arguments
-- `j::Number`: Current density (A/cm²)
-- `polarization_coefficients::Vector`: Polarization coefficients [α β] such that U_cell = α * j_cell + β
-- `i_L::Number`: Limiting current density (A/cm²)
+- `j :: Number`: Current density (A/cm²)
+- `polarization_coefficients :: Vector = [0.213; 0.873]`: Polarization coefficients [α β] such that U_cell = α * j_cell + β
+- `i_L :: Number = 1.6`: Limiting current density (A/cm²)
 """
-function U_cell(j::Number, polarization_coefficients::Vector = [-0.213 0.873], i_L::Number = 1.6)
+function U_cell(j::Number, polarization_coefficients::Vector=[-0.213 0.873], i_L::Number=1.6)
     @assert length(polarization_coefficients) == 2 "Polarization coefficients must be a vector [α β] such that U_cell = α * j_cell + β"
 
     @assert j <= i_L "Current density is greater than the limiting current density. Consider increasing the effective area of the fuel cell."
@@ -118,12 +133,12 @@ function U_cell(j::Number, polarization_coefficients::Vector = [-0.213 0.873], i
 end
 
 """
-η_FC(U_cell::Number)
+η_FC(U_cell :: Number)
 
 Compute the efficiency of a proton exchange membrane fuel cell.
 
 # Arguments
-- `U_cell::Number`: Cell potential difference (V)
+- `U_cell :: Number`: Cell potential difference (V)
 """
 function η_FC(U_cell::Number)
     n = 2           # Number of electrons involved
@@ -137,17 +152,17 @@ function η_FC(U_cell::Number)
 end
 
 """
-η_FC(cell::PEMFCStack, throttle::Number, polarization_coefficients::Vector, i_L::Number)
+η_FC(cell :: PEMFCStack, throttle :: Number, polarization_coefficients :: Vector, i_L :: Number)
 
 Compute the efficiency of a proton exchange membrane fuel cell.
 
 # Arguments
-- `cell::PEMFCStack`: Proton exchange membrane fuel cell stack
-- `throttle::Number`: Throttle value (0-1)
-- `polarization_coefficients::Vector`: Polarization coefficients [α β] such that U_cell = α * j_cell + β
-- `i_L::Number`: Limiting current density (A/cm²)
+- `cell :: PEMFCStack`: Proton exchange membrane fuel cell stack
+- `throttle :: Number = 1.0`: Throttle value (0-1)
+- `polarization_coefficients :: Vector = [0.213; 0.873]`: Polarization coefficients [α β] such that U_cell = α * j_cell + β
+- `i_L :: Number = 1.6`: Limiting current density (A/cm²)
 """
-function η_FC(cell::PEMFCStack, throttle::Number = 1., polarization_coefficients::Vector = [-0.213; 0.873], i_L::Number = 1.6)
+function η_FC(cell::PEMFCStack, throttle::Number=1.0, polarization_coefficients::Vector=[-0.213; 0.873], i_L::Number=1.6)
     @assert throttle > 0 "Throttle must be positive"
     @assert throttle <= 1 "Throttle must be less than or equal to 1"
 
@@ -157,17 +172,17 @@ function η_FC(cell::PEMFCStack, throttle::Number = 1., polarization_coefficient
 end
 
 """
-fflow_H2(cell::PEMFCStack, throttle::Number, polarization_coefficients::Vector, i_L::Number)
+fflow_H2(cell :: PEMFCStack, throttle :: Number, polarization_coefficients :: Vector, i_L :: Number)
 
 Compute the mass flow rate of hydrogen to a proton exchange membrane fuel cell for a given power.
 
 # Arguments
-- `cell::PEMFCStack`: Proton exchange membrane fuel cell stack
-- `throttle::Number`: Throttle value (0-1)
-- `polarization_coefficients::Vector`: Polarization coefficients [α β] such that U_cell = α * j_cell + β
-- `i_L::Number`: Limiting current density (A/cm²)
+- `cell :: PEMFCStack`: Proton exchange membrane fuel cell stack
+- `throttle :: Number = 1.0`: Throttle value (0-1)
+- `polarization_coefficients :: Vector = [0.213; 0.873]`: Polarization coefficients [α β] such that U_cell = α * j_cell + β
+- `i_L :: Number = 1.6`: Limiting current density (A/cm²)
 """
-function fflow_H2(cell::PEMFCStack, throttle::Number = 1., polarization_coefficients::Vector = [-0.213; 0.873], i_L::Number = 1.6)
+function fflow_H2(cell::PEMFCStack, throttle::Number=1.0, polarization_coefficients::Vector=[-0.213; 0.873], i_L::Number=1.6)
     # Stiochiometric ratio source: Hartmann, Christian & Nøland, Jonas Kristiansen & Nilssen, Robert & Mellerud, Runar. (2021). Conceptual Design, Sizing and Performance Analysis of a Cryo-Electric Propulsion System for a Next-Generation Hydrogen-Powered Aircraft. 10.36227/techrxiv.17102792.v1.
     λ_H2 = 1.05 # Assumed stoichiometric ratio of hydrogen, assuming recycling of exhaust hydrogen
     P_FC = cell.power_max * throttle
