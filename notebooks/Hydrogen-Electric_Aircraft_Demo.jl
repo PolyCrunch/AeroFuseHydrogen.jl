@@ -359,20 +359,41 @@ begin
 end
 
 # ╔═╡ a2e58e67-f7f1-444b-991f-442f304f86bf
-polarization_coeffs = [LinearRegression.slope(E_fit); LinearRegression.bias(E_fit)];
+polarization_coeffs = [LinearRegression.slope(E_fit); LinearRegression.bias(E_fit)]
 
 # ╔═╡ 4d86e477-7a9e-4eed-8b8f-e007411b2898
 md"""### Defining the Fuel Cell Stack"""
 
+# ╔═╡ e2457cb1-8718-4175-b7a2-e5ad6e864a43
+P_max = 4.e6 # Maximum power needed by the aircraft (W)
+
+# ╔═╡ 4e23f46e-9253-4b3b-92fa-1efe7049899a
+A_min = - 4 * polarization_coeffs[1] * P_max / polarization_coeffs[2]^2 / 10000;
+
+# ╔═╡ 45f95a01-b50d-4f11-bc5c-412968c16dee
+print("Minimum fuel cell area required for a real 'j': " * string(round(A_min, digits=1)) * " m^2");
+
+# ╔═╡ cbeacb6e-f1ae-4152-aef5-426908cb5f6e
+order_A = floor(Int, log10(A_min));
+
+# ╔═╡ 479f80e3-8ab6-4f3d-bd47-a18f4671dfa9
+md"Choose a fuel cell area for your aircraft, and observe the effect on fuel cell length and efficiency $η$ at max power:"
+
+# ╔═╡ 040809ae-69cf-4445-8a6c-82c404b7dabd
+@bind A_eff Slider(A_min*1.1:10^(order_A-0.5):5*A_min, default=A_min*1.2)
+
 # ╔═╡ eea50a16-6798-4b53-8c36-ec647b592b23
 PEMFC = PEMFCStack(
-	area_effective=500.,
-	power_max = 4.e6,
+	area_effective=A_eff,
+	power_max = P_max,
 	height = 2.,
 	width = 2.,
 	layer_thickness=0.0043,
 	position = [0., 0., 0.]
 )
+
+# ╔═╡ ec53c66a-9f14-4520-8d28-2f53a54bb447
+print("Fuel cell area: " * string(round(A_eff, digits=0)) * " m^2")
 
 # ╔═╡ e81ab1c3-228c-4a32-9275-43d5f9b134db
 md"""Calculate the cell current density $j$ (A/cm²) for the cell under max power.
@@ -385,19 +406,22 @@ Note:
 """
 
 # ╔═╡ df7431fe-dcde-4456-a548-1ffafccb84b8
-j_PEMFC = j_cell(PEMFC, 1, polarization_coeffs)
+j_PEMFC = j_cell(PEMFC, 1, polarization_coeffs) # Cell current density (A/cm^2)
 
 # ╔═╡ e9ffaaed-b8b3-4825-8bb2-30a848a17abc
-U_PEMFC = U_cell(j_PEMFC, polarization_coeffs)
+U_PEMFC = U_cell(j_PEMFC, polarization_coeffs); # Cell potential difference (V)
 
 # ╔═╡ c6b9ea47-0dc5-42b9-a0b1-ff4158102d49
-η_PEMFC = η_FC(U_PEMFC)
+η_PEMFC = η_FC(U_PEMFC) # Fuel cell stack efficiency (w.r.t HHV)
 
 # ╔═╡ 6895ed8b-acf4-4941-ada7-38ab54d77870
-mdot_H2 = fflow_H2(PEMFC, 1., polarization_coeffs)
+mdot_H2 = fflow_H2(PEMFC, 1., polarization_coeffs) # Hydrogen mass flow rate in (kg/s)
 
 # ╔═╡ 1d624369-c08a-4c65-8ac4-46e8605cf905
-PEMFC_length = length(PEMFC)
+PEMFC_length = length(PEMFC) # Fuel cell length (m)
+
+# ╔═╡ 5270c8d4-4703-423b-89a5-805679a374ae
+PEMFC_mass = mass(PEMFC) # Fuel cell mass (kg)
 
 # ╔═╡ f02237a0-b9d2-4486-8608-cf99a5ea42bd
 md"## Stabilizers"
@@ -630,13 +654,21 @@ plt_vlm
 # ╠═e17a3e03-88bf-4b9d-b3fb-5e20b4541c36
 # ╠═a2e58e67-f7f1-444b-991f-442f304f86bf
 # ╟─4d86e477-7a9e-4eed-8b8f-e007411b2898
+# ╠═e2457cb1-8718-4175-b7a2-e5ad6e864a43
 # ╠═eea50a16-6798-4b53-8c36-ec647b592b23
+# ╠═4e23f46e-9253-4b3b-92fa-1efe7049899a
+# ╟─45f95a01-b50d-4f11-bc5c-412968c16dee
+# ╟─cbeacb6e-f1ae-4152-aef5-426908cb5f6e
+# ╟─479f80e3-8ab6-4f3d-bd47-a18f4671dfa9
+# ╟─040809ae-69cf-4445-8a6c-82c404b7dabd
+# ╟─ec53c66a-9f14-4520-8d28-2f53a54bb447
 # ╟─e81ab1c3-228c-4a32-9275-43d5f9b134db
 # ╠═df7431fe-dcde-4456-a548-1ffafccb84b8
 # ╠═e9ffaaed-b8b3-4825-8bb2-30a848a17abc
 # ╠═c6b9ea47-0dc5-42b9-a0b1-ff4158102d49
 # ╠═6895ed8b-acf4-4941-ada7-38ab54d77870
 # ╠═1d624369-c08a-4c65-8ac4-46e8605cf905
+# ╠═5270c8d4-4703-423b-89a5-805679a374ae
 # ╟─f02237a0-b9d2-4486-8608-cf99a5ea42bd
 # ╟─36431db2-ac86-48ce-8a91-16d9cca57dad
 # ╠═cf33519f-4b3e-4d84-9f48-1e76f4e8be47
