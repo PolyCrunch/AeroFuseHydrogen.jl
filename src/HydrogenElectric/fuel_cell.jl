@@ -1,11 +1,3 @@
-#struct FuelCell{T<:Real} <: AbstractFuelCell
-
-#end
-
-#function FuelCell()
-
-#end
-
 struct PEMFCStack{T<:Real,N<:AbstractAffineMap} <: AbstractFuelCell
     area_effective::T   # Effective area of the fuel cell
     power_max::T        # Maximum power output of the fuel cell
@@ -67,7 +59,7 @@ Compute the length of a proton exchange membrane fuel cell stack.
 # Arguments
 - `stack::PEMFCStack`: Proton exchange membrane fuel cell stack
 """
-Base.length(stack::PEMFCStack)
+function Base.length(stack::PEMFCStack)
     n_layers::Int = floor(Int, stack.height / stack.layer_thickness)
     l = stack.area_effective / (stack.width * n_layers)
 
