@@ -38,7 +38,7 @@ Define a proton exchange membrane fuel cell.
 - `affine :: AffineMap = AffineMap(AngleAxis(deg2rad(angle), axis...), position)`: Affine mapping for the position and orientation via `CoordinateTransformations.jl` (overrides `angle` and `axis` if specified)
 """
 function PEMFCStack(;
-    area_effective=1.0,
+    area_effective=500.,
     power_max=1.e6,
     height=2.,
     width=2.,
@@ -85,7 +85,7 @@ function j_cell(cell::PEMFCStack, throttle::Number = 1., polarization_coefficien
     
     a = polarization_coefficients[1]
     b = polarization_coefficients[2]
-    c = -cell.power_max * throttle / cell.area_effective
+    c = -cell.power_max * throttle / cell.area_effective / 10000 # Power density (W/cm²)
     
     @assert b^2 - 4 * a * c >= 0 "No real solution for current density. Consider increasing the effective area of the fuel cell."
     
