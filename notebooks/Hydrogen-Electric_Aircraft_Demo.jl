@@ -331,7 +331,10 @@ i_linear = i[idx_iRangeMin:idx_iRangeMax];
 E_linear = E_cell[idx_iRangeMin:idx_iRangeMax];
 
 # ╔═╡ e17a3e03-88bf-4b9d-b3fb-5e20b4541c36
-E_fit = linregress(i_linear, E_linear)
+E_fit = linregress(i_linear, E_linear);
+
+# ╔═╡ a2e58e67-f7f1-444b-991f-442f304f86bf
+polarization_coeffs = [LinearRegression.slope(E_fit); LinearRegression.bias(E_fit)];
 
 # ╔═╡ 4d86e477-7a9e-4eed-8b8f-e007411b2898
 md"""### Defining the Fuel Cell Stack"""
@@ -345,6 +348,9 @@ PEMFC = PEMFCStack(
 	layer_thickness=0.0043,
 	position = [0., 0., 0.]
 )
+
+# ╔═╡ df7431fe-dcde-4456-a548-1ffafccb84b8
+j_PEMFC = j_cell(PEMFC, polarization_coeffs)
 
 # ╔═╡ d48ea3f5-766c-4ce3-96f5-6f629685b721
 i_extrem = [i[1] i[end]]';
@@ -599,8 +605,10 @@ plt_vlm
 # ╠═5d7f3f13-eded-4e01-bb4e-925d24f2d883
 # ╠═ae560365-dddf-4aff-aff9-0dcd4227e1c4
 # ╠═e17a3e03-88bf-4b9d-b3fb-5e20b4541c36
+# ╠═a2e58e67-f7f1-444b-991f-442f304f86bf
 # ╟─4d86e477-7a9e-4eed-8b8f-e007411b2898
 # ╠═eea50a16-6798-4b53-8c36-ec647b592b23
+# ╠═df7431fe-dcde-4456-a548-1ffafccb84b8
 # ╟─d48ea3f5-766c-4ce3-96f5-6f629685b721
 # ╟─f02237a0-b9d2-4486-8608-cf99a5ea42bd
 # ╟─36431db2-ac86-48ce-8a91-16d9cca57dad
