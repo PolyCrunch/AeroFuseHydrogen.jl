@@ -6,7 +6,7 @@
 
 #end
 
-struct PEMFuelCell{T<:Real,N<:AbstractAffineMap} <: AbstractFuelCell
+struct PEMFCStack{T<:Real,N<:AbstractAffineMap} <: AbstractFuelCell
     area_effective::T   # Effective area of the fuel cell
     power_max::T        # Maximum power output of the fuel cell
     height::T           # Height of the fuel cell
@@ -14,7 +14,7 @@ struct PEMFuelCell{T<:Real,N<:AbstractAffineMap} <: AbstractFuelCell
     layer_thickness::T  # Thickness of the fuel cell layer
     affine::N           # Affine transformation
 
-    function PEMFuelCell(A_eff, P_max, h, w, t, affine)
+    function PEMFCStack(A_eff, P_max, h, w, t, affine)
         # Type promotion
         T = promote_type(eltype(A_eff), eltype(P_max), eltype(h), eltype(w), eltype(t))
         N = typeof(affine)
@@ -30,7 +30,7 @@ struct PEMFuelCell{T<:Real,N<:AbstractAffineMap} <: AbstractFuelCell
 end
 
 """
-PEMFuelCell(;
+PEMFCStack(;
 
 Define a proton exchange membrane fuel cell.
 
@@ -42,16 +42,57 @@ Define a proton exchange membrane fuel cell.
 - `layer_thickness :: Real = 0.001`: Thickness of the fuel cell layer (m)
 - `affine :: AffineMap = AffineMap(AngleAxis(deg2rad(angle), axis...), position)`: Affine mapping for the position and orientation via `CoordinateTransformations.jl` (overrides `angle` and `axis` if specified)
 """
-function PEMFuelCell(;
-    area_effective=1.,
-    power_max=1.,
+function PEMFCStack(;
+    area_effective=1.0,
+    power_max=1.0,
     height=0.1,
     width=0.1,
-    layer_thickness=0.001,
+    layer_thickness=0.0043, # Source: Rubio, Abel & Agila, Wilton & González, Leandro & Aviles-Cedeno, Jonathan. (2023). Distributed Intelligence in Autonomous PEM Fuel Cell Control. Energies. 16. 4830. 10.3390/en16204830.
     position=zeros(3),
     angle=0.0,
     axis=[0.0, 1.0, 0.0],
     affine=AffineMap(AngleAxis(deg2rad(angle), axis...), SVector(position...)),
 )
-    PEMFuelCell(area_effective, power_max, height, width, layer_thickness, affine)
+    PEMFCStack(area_effective, power_max, height, width, layer_thickness, affine)
+end
+
+"""
+j_cell(cell::PEMFuelCell, polarization_coefficients::Vector)
+
+Compute the current density of a proton exchange membrane fuel cell.
+
+# Arguments
+- `cell::PEMFCStack`: Proton exchange membrane fuel cell stack
+- `polarization_coefficients::Vector`: Polarization coefficients [α β] such that U_cell = α * j_cell + β
+"""
+function j_cell(cell::PEMFCStack, polarization_coefficients::Vector = [-0.213 0.873])
+    @assert length(polarization_coefficients) == 2 "Polarization coefficients must be a vector [α β] such that U_cell = α * j_cell + β"
+
+    a = polarization_coefficients[1]
+    b = polarization_coefficients[2]
+    c = -cell.power_max / cell.area_effective
+
+    j = (-b + sqrt(b^2 - 4 * a * c)) / (2 * a) # Quadratic formula
+
+    @assert j < 1.6 "Current density is greater than the limiting current density of 1.6 A/cm². Consider increasing the effective area of the fuel cell."
+
+    return j
+end
+
+"""
+U_cell(j::Number, polarization_coefficients::Vector)
+
+Compute the cell potential difference of a proton exchange membrane fuel cell.
+
+# Arguments
+- `j::Number`: Current density (A/cm²)
+- `polarization_coefficients::Vector`: Polarization coefficients [α β] such that U_cell = α * j_cell + β
+"""
+function U_cell(j::Number, polarization_coefficients::Vector = [-0.213 0.873])
+    @assert length(polarization_coefficients) == 2 "Polarization coefficients must be a vector [α β] such that U_cell = α * j_cell + β"
+
+    a = polarization_coefficients[1]
+    b = polarization_coefficients[2]
+
+    return a * j + b
 end
