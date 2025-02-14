@@ -25,7 +25,7 @@ struct PEMFCStack{T<:Real,N<:AbstractAffineMap} <: AbstractFuelCell
         @assert w > 0 "Width must be positive"
         @assert t > 0 "Layer thickness must be positive"
 
-        new{T,N}{A_eff,P_max,h,w,t,affine}
+        new{T,N}(A_eff,P_max,h,w,t,affine)
     end
 end
 
@@ -36,17 +36,20 @@ Define a proton exchange membrane fuel cell.
 
 # Arguments
 - `area_effective :: Real = 1.`: Effective area of the fuel cell (m²)
-- `P_max :: Real = 1.`: Maximum power output required from the fuel cell (W)
-- `height :: Real = 0.1`: Height of the fuel cell (m)
-- `width :: Real = 0.1`: Width of the fuel cell (m)
-- `layer_thickness :: Real = 0.001`: Thickness of the fuel cell layer (m)
+- `power_max :: Real = 1.e6`: Maximum power output required from the fuel cell (W)
+- `height :: Real = 2.`: Height of the fuel cell (m)
+- `width :: Real = 2.`: Width of the fuel cell (m)
+- `layer_thickness :: Real = 0.0043`: Thickness of the fuel cell layer (m)
+- `position :: Vector{3} = zeros(3)`: Position (m)
+- `angle :: Real = 0.0`: Angle of rotation (degrees)
+- `axis :: Vector{3} = [0.0, 1.0, 0.0]`: Axis of rotation, y-axis by default
 - `affine :: AffineMap = AffineMap(AngleAxis(deg2rad(angle), axis...), position)`: Affine mapping for the position and orientation via `CoordinateTransformations.jl` (overrides `angle` and `axis` if specified)
 """
 function PEMFCStack(;
     area_effective=1.0,
-    power_max=1.0,
-    height=0.1,
-    width=0.1,
+    power_max=1.e6,
+    height=2.,
+    width=2.,
     layer_thickness=0.0043, # Source: Rubio, Abel & Agila, Wilton & González, Leandro & Aviles-Cedeno, Jonathan. (2023). Distributed Intelligence in Autonomous PEM Fuel Cell Control. Energies. 16. 4830. 10.3390/en16204830.
     position=zeros(3),
     angle=0.0,

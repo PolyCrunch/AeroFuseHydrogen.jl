@@ -337,7 +337,14 @@ E_fit = linregress(i_linear, E_linear)
 md"""### Defining the Fuel Cell Stack"""
 
 # ╔═╡ eea50a16-6798-4b53-8c36-ec647b592b23
-#PEMFC = 
+PEMFC = PEMFCStack(
+	area_effective=50.,
+	power_max = 4.e6,
+	height = 2.,
+	width = 2.,
+	layer_thickness=0.0043,
+	position = [0., 0., 0.]
+)
 
 # ╔═╡ d48ea3f5-766c-4ce3-96f5-6f629685b721
 i_extrem = [i[1] i[end]]';
