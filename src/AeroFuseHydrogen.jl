@@ -47,9 +47,9 @@ import .HydrogenElectric: tank_surface_temperature, boil_off
 export tank_surface_temperature, boil_off
 
 # Fuel cell
-import .HydrogenElectric: PEMFCStack, j_cell, U_cell
+import .HydrogenElectric: PEMFCStack, j_cell, U_cell, η_FC
 
-export PEMFCStack, j_cell, U_cell
+export PEMFCStack, j_cell, U_cell, η_FC
 
 
 ## Post-processing
