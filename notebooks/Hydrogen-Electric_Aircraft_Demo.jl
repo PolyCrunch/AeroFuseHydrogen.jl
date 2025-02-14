@@ -304,6 +304,9 @@ Generate the PEMFC polarization curve for a range of **i** using *pemfc\_polariz
 # ╔═╡ 1e80cb97-f238-43f7-b082-6ab2deacd701
 i = collect(LinRange(0., 1600, 100) / 1000);
 
+# ╔═╡ 911a3b54-10f4-4ddb-bb89-f380c79b4476
+i_extrem = [i[1] i[end]]';
+
 # ╔═╡ 22043683-a69f-4394-b872-4be6eb4b5dc9
 E_cell = pemfc_polarization.(i);
 
@@ -333,28 +336,6 @@ E_linear = E_cell[idx_iRangeMin:idx_iRangeMax];
 # ╔═╡ e17a3e03-88bf-4b9d-b3fb-5e20b4541c36
 E_fit = linregress(i_linear, E_linear);
 
-# ╔═╡ a2e58e67-f7f1-444b-991f-442f304f86bf
-polarization_coeffs = [LinearRegression.slope(E_fit); LinearRegression.bias(E_fit)];
-
-# ╔═╡ 4d86e477-7a9e-4eed-8b8f-e007411b2898
-md"""### Defining the Fuel Cell Stack"""
-
-# ╔═╡ eea50a16-6798-4b53-8c36-ec647b592b23
-PEMFC = PEMFCStack(
-	area_effective=50.,
-	power_max = 4.e6,
-	height = 2.,
-	width = 2.,
-	layer_thickness=0.0043,
-	position = [0., 0., 0.]
-)
-
-# ╔═╡ df7431fe-dcde-4456-a548-1ffafccb84b8
-j_PEMFC = j_cell(PEMFC, polarization_coeffs)
-
-# ╔═╡ d48ea3f5-766c-4ce3-96f5-6f629685b721
-i_extrem = [i[1] i[end]]';
-
 # ╔═╡ f0f28c3a-aa3c-4111-b676-5fd22fb3238c
 begin
 	plot(
@@ -376,6 +357,38 @@ begin
 		linecolor = :gray50
 	)
 end
+
+# ╔═╡ a2e58e67-f7f1-444b-991f-442f304f86bf
+polarization_coeffs = [LinearRegression.slope(E_fit); LinearRegression.bias(E_fit)];
+
+# ╔═╡ 4d86e477-7a9e-4eed-8b8f-e007411b2898
+md"""### Defining the Fuel Cell Stack"""
+
+# ╔═╡ eea50a16-6798-4b53-8c36-ec647b592b23
+PEMFC = PEMFCStack(
+	area_effective=5000000.,
+	power_max = 4.e6,
+	height = 2.,
+	width = 2.,
+	layer_thickness=0.0043,
+	position = [0., 0., 0.]
+)
+
+# ╔═╡ e81ab1c3-228c-4a32-9275-43d5f9b134db
+md"""Calculate the cell current density $j$ (A/cm²) for the cell under max power.
+Note:
+- *j* must be lower than the previously-defined limiting current density *j_L*
+- A real solution only exists for $b^2 - 4ac >= 0$, where:
+  -  $a$ is the gradient of the linear fit of the polarization curve,
+  -  $b$ is the y-intercept, and
+  -  $c = P_{max}/A$
+"""
+
+# ╔═╡ df7431fe-dcde-4456-a548-1ffafccb84b8
+j_PEMFC = j_cell(PEMFC, polarization_coeffs)
+
+# ╔═╡ e9ffaaed-b8b3-4825-8bb2-30a848a17abc
+U_PEMFC = U_cell(j_PEMFC, polarization_coeffs)
 
 # ╔═╡ f02237a0-b9d2-4486-8608-cf99a5ea42bd
 md"## Stabilizers"
@@ -595,8 +608,9 @@ plt_vlm
 # ╟─9816aa83-4f98-4ea6-b149-749eacf833e6
 # ╟─ebf91bfe-01e2-4975-93fe-b6c7ad03846f
 # ╠═1e80cb97-f238-43f7-b082-6ab2deacd701
+# ╠═911a3b54-10f4-4ddb-bb89-f380c79b4476
 # ╠═22043683-a69f-4394-b872-4be6eb4b5dc9
-# ╟─f0f28c3a-aa3c-4111-b676-5fd22fb3238c
+# ╠═f0f28c3a-aa3c-4111-b676-5fd22fb3238c
 # ╟─218c8ebb-414e-40f8-ad7a-ad5b6a0a44f3
 # ╠═d0433ace-dcfa-4adf-8df1-f7e0784afb5a
 # ╠═7c48582c-3493-4c80-aab3-019aef3da65c
@@ -608,8 +622,9 @@ plt_vlm
 # ╠═a2e58e67-f7f1-444b-991f-442f304f86bf
 # ╟─4d86e477-7a9e-4eed-8b8f-e007411b2898
 # ╠═eea50a16-6798-4b53-8c36-ec647b592b23
+# ╟─e81ab1c3-228c-4a32-9275-43d5f9b134db
 # ╠═df7431fe-dcde-4456-a548-1ffafccb84b8
-# ╟─d48ea3f5-766c-4ce3-96f5-6f629685b721
+# ╠═e9ffaaed-b8b3-4825-8bb2-30a848a17abc
 # ╟─f02237a0-b9d2-4486-8608-cf99a5ea42bd
 # ╟─36431db2-ac86-48ce-8a91-16d9cca57dad
 # ╠═cf33519f-4b3e-4d84-9f48-1e76f4e8be47

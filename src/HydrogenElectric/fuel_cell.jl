@@ -105,3 +105,22 @@ function U_cell(j::Number, polarization_coefficients::Vector = [-0.213 0.873], i
 
     return a * j + b
 end
+
+"""
+η_FC(U_cell::Number)
+
+Compute the efficiency of a proton exchange membrane fuel cell.
+
+# Arguments
+- `U_cell::Number`: Cell potential difference (V)
+"""
+function η_FC(U_cell::Number)
+    n = 2           # Number of electrons involved
+    F = 96485.0     # Faraday constant (C/mol)
+    H2_HHV = 286.e3 # Higher Heating Value of hydrogen (J/mol)
+
+    U_ideal = H2_HHV / (n * F) # Ideal cell potential difference
+
+    η = U_cell / U_ideal
+    return η
+end
