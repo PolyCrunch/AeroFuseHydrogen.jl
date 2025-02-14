@@ -55,7 +55,7 @@ md"""# AeroFuse: Hydrogen-Electric Aircraft Design Demo
 md"""
 Start by including AeroFuse.jl, AeroFuseHydrogen.jl, and other necessary packages.
 
-Note: If you haven't already you will need to add the packages AeroFuse, Plots, Dataframe and PlutoUI to your Julia installation.
+Note: If you haven't already you will need to add the packages AeroFuse, Plots, DataFrames, LinearRegression, and PlutoUI to your Julia installation.
 """
 
 # ╔═╡ 25cfde65-2b81-4edf-b0db-8d525a81edc2
@@ -333,6 +333,12 @@ E_linear = E_cell[idx_iRangeMin:idx_iRangeMax];
 # ╔═╡ e17a3e03-88bf-4b9d-b3fb-5e20b4541c36
 E_fit = linregress(i_linear, E_linear)
 
+# ╔═╡ 4d86e477-7a9e-4eed-8b8f-e007411b2898
+md"""### Defining the Fuel Cell Stack"""
+
+# ╔═╡ eea50a16-6798-4b53-8c36-ec647b592b23
+#PEMFC = 
+
 # ╔═╡ d48ea3f5-766c-4ce3-96f5-6f629685b721
 i_extrem = [i[1] i[end]]';
 
@@ -582,10 +588,12 @@ plt_vlm
 # ╠═d0433ace-dcfa-4adf-8df1-f7e0784afb5a
 # ╠═7c48582c-3493-4c80-aab3-019aef3da65c
 # ╠═192ea8d5-df83-4944-9998-7b3006b32d68
-# ╠═541a4049-d17d-4ec8-8fd7-fe934ca53230
+# ╟─541a4049-d17d-4ec8-8fd7-fe934ca53230
 # ╠═5d7f3f13-eded-4e01-bb4e-925d24f2d883
 # ╠═ae560365-dddf-4aff-aff9-0dcd4227e1c4
 # ╠═e17a3e03-88bf-4b9d-b3fb-5e20b4541c36
+# ╟─4d86e477-7a9e-4eed-8b8f-e007411b2898
+# ╠═eea50a16-6798-4b53-8c36-ec647b592b23
 # ╟─d48ea3f5-766c-4ce3-96f5-6f629685b721
 # ╟─f02237a0-b9d2-4486-8608-cf99a5ea42bd
 # ╟─36431db2-ac86-48ce-8a91-16d9cca57dad

@@ -32,9 +32,9 @@ export pemfc_polarization
 include("HydrogenElectric/HydrogenElectric.jl")
 
 # Abstract types
-import .HydrogenElectric: AbstractHydrogenPropulsionSystem, AbstractFuelTank, AbstractEngine, AbstractPropeller
+import .HydrogenElectric: AbstractHydrogenPropulsionSystem, AbstractFuelTank, AbstractEngine, AbstractPropeller, AbstractFuelCell
 
-export AbstractHydrogenPropulsionSystem, AbstractFuelTank, AbstractEngine, AbstractPropeller
+export AbstractHydrogenPropulsionSystem, AbstractFuelTank, AbstractEngine, AbstractPropeller, AbstractFuelCell
 
 # Fuel tank
 import .HydrogenElectric: FuelTank, length, cosine_interpolation, CryogenicFuelTank, volume_to_length, internal_volume, dry_mass, wet_mass, coordinates
@@ -47,9 +47,9 @@ import .HydrogenElectric: tank_surface_temperature, boil_off
 export tank_surface_temperature, boil_off
 
 # Fuel cell
-#import .HydrogenElectric: 
+import .HydrogenElectric: PEMFCStack, j_cell, U_cell
 
-#export 
+export PEMFCStack, j_cell, U_cell
 
 
 ## Post-processing
