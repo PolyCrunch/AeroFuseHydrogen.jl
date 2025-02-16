@@ -261,7 +261,7 @@ t_insulation = 0.05;
 # ╔═╡ 82b332ac-5628-4b82-8735-f361dcdfc9b6
 tank = CryogenicFuelTank(
 	radius = fuse.radius - fuse_t_w,
-	length = volume_to_length(50., fuse.radius - fuse_t_w, t_insulation),
+	length = volume_to_length(30., fuse.radius - fuse_t_w, t_insulation),
 	insulation_thickness = t_insulation,
 	insulation_density = insulation_material.Density,
 	position = [0.4fuse.length, 0, 0]
@@ -302,7 +302,7 @@ md"""#### PEM Fuel Cell Polarization Curve
 Generate the PEMFC polarization curve for a range of **i** using *pemfc\_polarization(i, T, α, n, i\_loss, i\_0, i\_L, R\_i)*."""
 
 # ╔═╡ 1e80cb97-f238-43f7-b082-6ab2deacd701
-i = collect(LinRange(0., 1600, 100) / 1000);
+i = LinRange(0., 1600, 100) / 1000;
 
 # ╔═╡ 911a3b54-10f4-4ddb-bb89-f380c79b4476
 i_extrem = [i[1] i[end]]';
@@ -371,7 +371,7 @@ P_max = 4.e6 # Maximum power needed by the aircraft (W)
 A_min = - 4 * polarization_coeffs[1] * P_max / polarization_coeffs[2]^2 / 10000;
 
 # ╔═╡ 45f95a01-b50d-4f11-bc5c-412968c16dee
-print("Minimum fuel cell area required for a real 'j': " * string(round(A_min, digits=1)) * " m^2");
+print("Minimum fuel cell area required for a real 'i': " * string(round(A_min, digits=1)) * " m^2");
 
 # ╔═╡ cbeacb6e-f1ae-4152-aef5-426908cb5f6e
 order_A = floor(Int, log10(A_min));
@@ -422,6 +422,101 @@ PEMFC_length = length(PEMFC) # Fuel cell length (m)
 
 # ╔═╡ 5270c8d4-4703-423b-89a5-805679a374ae
 PEMFC_mass = mass(PEMFC) # Fuel cell mass (kg)
+
+# ╔═╡ 429db1e1-071f-41de-a02f-7d0297353928
+md"""Generate eta, m_dot versus Area plots (temporary)"""
+
+# ╔═╡ e2848f51-2145-4d37-a2c3-d73a67cd525d
+Areas = LinRange(523, 2000, 20);
+
+# ╔═╡ 448e3477-6be6-41fb-8794-cd95c9ea56db
+begin
+	eta_fullpower = zeros(size(Areas));
+	eta_thirdpower = zeros(size(Areas));
+
+	mdot_fullpower = zeros(size(Areas));
+	mdot_thirdpower = zeros(size(Areas));
+
+	length_fullpower = zeros(size(Areas));
+
+	mass_fullpower = zeros(size(Areas));
+	
+	for i in 1:length(Areas)
+		PEMFC_AreaStudy = PEMFCStack(
+			area_effective=Areas[i],
+			power_max = P_max,
+			height = 2.,
+			width = 2.,
+			layer_thickness=0.0043,
+			position = [0., 0., 0.]
+		)
+
+		eta_fullpower[i] = η_FC(PEMFC_AreaStudy, 1.);
+		eta_thirdpower[i] = η_FC(PEMFC_AreaStudy, 0.33);
+
+		mdot_fullpower[i] = fflow_H2(PEMFC_AreaStudy, 1.);
+		mdot_thirdpower[i] = fflow_H2(PEMFC_AreaStudy, 0.33);
+
+		length_fullpower[i] = length(PEMFC_AreaStudy);
+		mass_fullpower[i] = mass(PEMFC_AreaStudy);
+	end
+end
+
+# ╔═╡ 92e4aa80-c9fd-4aa0-940a-7ca4765141f5
+begin
+	plot(
+			Areas, eta_fullpower,
+			label = "Full power",
+			lw = 3.,
+			ylabel = "η",
+			xlabel = "Fuel Cell Area (m²)",
+			title = "Fuel cell efficiency versus effective area"
+		);
+		plot!(
+			Areas, eta_thirdpower,
+			label = "1/3 power",
+			lw = 3.,
+		);
+end
+
+# ╔═╡ 373a8b16-b3a2-4cfb-ae50-bc9962a6cbe5
+begin
+	plot(
+			Areas, mdot_fullpower,
+			label = "Full power",
+			lw = 3.,
+			ylabel = "H2 mass flow rate (kg/s)",
+			xlabel = "Fuel Cell Area (m²)",
+			title = "Hydrogen mass flow rate versus PEMFC effective area"
+		);
+		plot!(
+			Areas, mdot_thirdpower,
+			label = "1/3 power",
+			lw = 3.,
+		);
+end
+
+# ╔═╡ 5bfe15dd-29db-4a48-af6f-f8a04bb495e7
+begin
+	plot(
+			Areas, length_fullpower,
+			lw = 3.,
+			ylabel = "PEMFC Length (m)",
+			xlabel = "Fuel Cell Area (m²)",
+			title = "Fuel cell length versus effective area"
+		);
+end
+
+# ╔═╡ ef8669ca-1897-4397-ae00-3da40b64b487
+begin
+	plot(
+			Areas, mass_fullpower,
+			lw = 3.,
+			ylabel = "PEMFC mass (kg)",
+			xlabel = "Fuel Cell Area (m²)",
+			title = "Fuel cell mass versus effective area"
+		);
+end
 
 # ╔═╡ f02237a0-b9d2-4486-8608-cf99a5ea42bd
 md"## Stabilizers"
@@ -641,9 +736,9 @@ plt_vlm
 # ╟─9816aa83-4f98-4ea6-b149-749eacf833e6
 # ╟─ebf91bfe-01e2-4975-93fe-b6c7ad03846f
 # ╠═1e80cb97-f238-43f7-b082-6ab2deacd701
-# ╠═911a3b54-10f4-4ddb-bb89-f380c79b4476
+# ╟─911a3b54-10f4-4ddb-bb89-f380c79b4476
 # ╠═22043683-a69f-4394-b872-4be6eb4b5dc9
-# ╠═f0f28c3a-aa3c-4111-b676-5fd22fb3238c
+# ╟─f0f28c3a-aa3c-4111-b676-5fd22fb3238c
 # ╟─218c8ebb-414e-40f8-ad7a-ad5b6a0a44f3
 # ╠═d0433ace-dcfa-4adf-8df1-f7e0784afb5a
 # ╠═7c48582c-3493-4c80-aab3-019aef3da65c
@@ -656,7 +751,7 @@ plt_vlm
 # ╟─4d86e477-7a9e-4eed-8b8f-e007411b2898
 # ╠═e2457cb1-8718-4175-b7a2-e5ad6e864a43
 # ╠═eea50a16-6798-4b53-8c36-ec647b592b23
-# ╠═4e23f46e-9253-4b3b-92fa-1efe7049899a
+# ╟─4e23f46e-9253-4b3b-92fa-1efe7049899a
 # ╟─45f95a01-b50d-4f11-bc5c-412968c16dee
 # ╟─cbeacb6e-f1ae-4152-aef5-426908cb5f6e
 # ╟─479f80e3-8ab6-4f3d-bd47-a18f4671dfa9
@@ -669,6 +764,13 @@ plt_vlm
 # ╠═6895ed8b-acf4-4941-ada7-38ab54d77870
 # ╠═1d624369-c08a-4c65-8ac4-46e8605cf905
 # ╠═5270c8d4-4703-423b-89a5-805679a374ae
+# ╟─429db1e1-071f-41de-a02f-7d0297353928
+# ╠═e2848f51-2145-4d37-a2c3-d73a67cd525d
+# ╟─448e3477-6be6-41fb-8794-cd95c9ea56db
+# ╟─92e4aa80-c9fd-4aa0-940a-7ca4765141f5
+# ╟─373a8b16-b3a2-4cfb-ae50-bc9962a6cbe5
+# ╟─5bfe15dd-29db-4a48-af6f-f8a04bb495e7
+# ╟─ef8669ca-1897-4397-ae00-3da40b64b487
 # ╟─f02237a0-b9d2-4486-8608-cf99a5ea42bd
 # ╟─36431db2-ac86-48ce-8a91-16d9cca57dad
 # ╠═cf33519f-4b3e-4d84-9f48-1e76f4e8be47
