@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.0
+# v0.19.46
 
 using Markdown
 using InteractiveUtils
@@ -130,7 +130,7 @@ end;
 wing = Wing(
     foils       = [foil_w_r, foil_w_m, foil_w_t], # Airfoils (root to tip) ROOT AND TIP ACCURATE
     chords      = [3.31, 3.00, 1.20],             # Chord lengths ROOT AND TIP ACCURATE
-    spans       = [9.5, 28.4] / 2,                # Span lengths TIP ACCURATE
+    spans       = [9.5, 18.9] / 2,                # Span lengths TIP ACCURATE
     dihedrals   = fill(1, 2),                     # Dihedral angles (deg) GUESS
     sweeps      = fill(4.4, 2),                   # Sweep angles (deg) MAYBE ACCURATE (taken from a Uni exam)
     w_sweep     = 0.,                             # Leading-edge sweep
@@ -145,11 +145,33 @@ wing = Wing(
 # ╔═╡ d69b550d-1634-4f45-a660-3be009ddd19d
 begin
 	b_w = span(wing)								# Span length, m
-	S_w = projected_area(wing)						# Area, m^2
+	S_ref = projected_area(wing)					# Area, m^2
 	c_w = mean_aerodynamic_chord(wing)				# Mean aerodynamic chord, m
 	mac_w = mean_aerodynamic_center(wing, 0.25)		# Mean aerodynamic center (25%), m
 	mac40_wing = mean_aerodynamic_center(wing, 0.40)# Mean aerodynamic center (40%), m
 end;
+
+# ╔═╡ 9109e371-256d-4450-9ad1-34a6c1f079c8
+
+
+# ╔═╡ e805de16-e781-4178-84fb-d793bac6a00d
+
+
+# ╔═╡ c84c5839-b215-4f5d-b89a-24da4a7241c2
+md"""
+## Power Requirements
+Need weights to get constraint diagrams. Estimate empty weight, fuel weight, and GTOW."""
+
+# ╔═╡ 45193a1b-732f-4d38-b417-a23c65c76ce4
+md"""### Max L/D
+Estimate from wetted aspect ratio (Raymer)."""
+
+# ╔═╡ a4d378e7-40e5-467c-a126-6432076b32c1
+K_LD = 15.5; # Factor — assume civil jet
+
+# ╔═╡ 92b76c68-c68e-47ed-846b-9b7be027a438
+md"""### Specific fuel consumption
+Fuel mass flow rate / thrust"""
 
 # ╔═╡ 2b8ec21c-d8da-4e16-91c0-244857483463
 md"## Defining the fuel tank"
@@ -577,7 +599,7 @@ c_h = mean_aerodynamic_chord(htail);
 mac_h = mean_aerodynamic_center(htail);
 
 # ╔═╡ d9cc17ce-2c3c-4320-a93e-2e6db054470d
-V_h = S_h / S_w * (mac_h.x - mac_w.x) / c_w;
+V_h = S_h / S_ref * (mac_h.x - mac_w.x) / c_w;
 
 # ╔═╡ 08420a59-34c1-4a29-a1d9-b8a6aa56ff1f
 md"### Meshing"
@@ -594,6 +616,15 @@ vtail_mesh = WingMesh(vtail, [8], 6);
 
 # ╔═╡ 55a3b368-843e-47f1-a804-c5d3f582b1b9
 htail_mesh = WingMesh(htail, [10], 8);
+
+# ╔═╡ 8a73957f-b08e-41e7-8fa4-410558da04e5
+S_wet = (wetted_area(wing_mesh) + wetted_area(fuse, 0:0.1:1) + wetted_area(htail_mesh) + wetted_area(vtail_mesh)); # Approximate wetted area calculated from fuselage and flight surfaces. Doesn't account for intersection of surfaces and fuselage, nor does it account for engine nacelles
+
+# ╔═╡ 24bc5967-b0ea-4081-b3de-d4c362670787
+A_wetted = aspect_ratio(wing)/(S_wet/S_ref) # AR / (S_wet / S_ref)
+
+# ╔═╡ 0a750cbd-0842-42d4-9a00-99c4c69672fc
+LD_max = K_LD * sqrt(A_wetted) # Raymer
 
 # ╔═╡ 9f776e2f-1fa9-48f5-b554-6bf5a5d91441
 md"## Plot definition"
@@ -710,6 +741,15 @@ plt_vlm
 # ╠═7bb33068-efa5-40d2-9e63-0137a44181cb
 # ╠═3413ada0-592f-4a37-b5d0-6ff88baad66c
 # ╠═d69b550d-1634-4f45-a660-3be009ddd19d
+# ╠═9109e371-256d-4450-9ad1-34a6c1f079c8
+# ╠═e805de16-e781-4178-84fb-d793bac6a00d
+# ╟─c84c5839-b215-4f5d-b89a-24da4a7241c2
+# ╟─45193a1b-732f-4d38-b417-a23c65c76ce4
+# ╠═a4d378e7-40e5-467c-a126-6432076b32c1
+# ╠═8a73957f-b08e-41e7-8fa4-410558da04e5
+# ╠═24bc5967-b0ea-4081-b3de-d4c362670787
+# ╠═0a750cbd-0842-42d4-9a00-99c4c69672fc
+# ╟─92b76c68-c68e-47ed-846b-9b7be027a438
 # ╟─2b8ec21c-d8da-4e16-91c0-244857483463
 # ╟─a017efa0-cf08-4302-80f7-fae1ef55651c
 # ╟─b69a9c96-c979-4ced-bc85-fbe47ada1c9e
