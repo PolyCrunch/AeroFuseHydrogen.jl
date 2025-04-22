@@ -38,7 +38,7 @@ Define a proton exchange membrane fuel cell.
 - `affine :: AffineMap = AffineMap(AngleAxis(deg2rad(angle), axis...), position)`: Affine mapping for the position and orientation via `CoordinateTransformations.jl` (overrides `angle` and `axis` if specified)
 """
 function PEMFCStack(;
-    area_effective=500.0,
+    area_effective=120.0,
     power_max=1.e6,
     height=2.0,
     width=2.0,
