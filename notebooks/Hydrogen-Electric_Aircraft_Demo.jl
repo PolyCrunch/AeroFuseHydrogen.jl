@@ -174,7 +174,7 @@ $$C = \frac{\text{Fuel mass flow rate}}{\text{Thrust}} = \frac{\dot{m}}{P} \cdot
 md"Finding an appropriate $\dot{m}/P$"
 
 # ╔═╡ 8790bead-dd8b-4ac4-843d-d264243fa7e6
-C_power = sfc(200., 1.e6, 1., 1.) # nb effective area 200 is approx 90% higher than the minimum. kg/W-s
+C_power = psfc(200., 1.) # nb effective area 200 is approx 90% higher than the minimum. kg/W-s
 
 # ╔═╡ a3036e50-f599-4614-a14b-2ec1ef4a7b4e
 C_power * 1000 * 1000 # mg/W-s. N.B. 0.07-0.09 for piston-prop. Right order of magnitude, and hydrogen is energy rich!
@@ -199,8 +199,14 @@ V_cruise = a_cruise * M_cruise
 # ╔═╡ c6697863-76bd-4ead-8cd7-7b4818d5af6f
 η_prop = 0.8;
 
+# ╔═╡ b92eea20-cf80-4f30-b188-b9d7aa5279a1
+#exp((-2000e3 * sfc(200., 1.e6, V_cruise, η_prop))/(V_cruise * LD_max))
+
 # ╔═╡ 95aff88c-a99b-468a-bcd3-744051a29330
-sfc(2000., 1.e7, V_cruise, η_prop)
+#sfc(2000., 1.e7, V_cruise, η_prop)
+
+# ╔═╡ e8764a2c-db58-42c2-a2eb-e198512d7d8f
+#exp((-4500 * sfc(200., 1.e6, V_cruise, η_prop))/LD_max)
 
 # ╔═╡ ede2395b-047f-40d8-bdb3-389c97aaf862
 tempstack = PEMFCStack(area_effective=200., power_max=1.e6)
@@ -666,16 +672,10 @@ begin
 	Wi_W0 = 1; # Initial weight fraction
 	Wi_W0 *= 0.970; # Warmup and take-off [Raymer]. This could be lower as no warm up!
 	Wi_W0 *= 0.985; # Climb [Raymer]
-	Wi_W0 *= exp((-2000e3 * 9.81 * sfc(200., 1.e6, V_cruise, η_prop))/(LD_max)); # Cruise
-	Wi_W0 *= exp((-5400 * sfc(200., 1.e6, V_cruise, η_prop))/LD_max); # Loiter
+	Wi_W0 *= exp((-2000e3 * 9.81 * psfc(200., 1.e6))/(LD_max)); # Cruise
+	#Wi_W0 *= exp((-5400 * sfc(200., 1.e6, V_cruise, η_prop))/LD_max); # Loiter
 	Wi_W0 *= 0.995; # Land
 end
-
-# ╔═╡ b92eea20-cf80-4f30-b188-b9d7aa5279a1
-exp((-2000e3 * sfc(200., 1.e6, V_cruise, η_prop))/(V_cruise * LD_max))
-
-# ╔═╡ e8764a2c-db58-42c2-a2eb-e198512d7d8f
-exp((-4500 * sfc(200., 1.e6, V_cruise, η_prop))/LD_max)
 
 # ╔═╡ 9f776e2f-1fa9-48f5-b554-6bf5a5d91441
 md"## Plot definition"
