@@ -209,10 +209,13 @@ V_cruise = a_cruise * M_cruise
 #exp((-4500 * sfc(200., 1.e6, V_cruise, η_prop))/LD_max)
 
 # ╔═╡ ede2395b-047f-40d8-bdb3-389c97aaf862
-tempstack = PEMFCStack(area_effective=200., power_max=1.e6)
+#tempstack = PEMFCStack(area_effective=200., power_max=1.e6)
 
 # ╔═╡ d6d0250b-e49d-4fe8-98ee-967924027e1c
-tempmdot = fflow_H2(tempstack, 1)
+#tempmdot = fflow_H2(tempstack, 1)
+
+# ╔═╡ a2c5e9fd-ceba-43ab-9e91-cc17c68e2960
+exp((-5400 * 9.81 * psfc(200., 1.e6))/(η_prop)) # Loiter
 
 # ╔═╡ 2b8ec21c-d8da-4e16-91c0-244857483463
 md"## Defining the fuel tank"
@@ -672,10 +675,14 @@ begin
 	Wi_W0 = 1; # Initial weight fraction
 	Wi_W0 *= 0.970; # Warmup and take-off [Raymer]. This could be lower as no warm up!
 	Wi_W0 *= 0.985; # Climb [Raymer]
-	Wi_W0 *= exp((-2000e3 * 9.81 * psfc(200., 1.e6))/(LD_max)); # Cruise
-	#Wi_W0 *= exp((-5400 * sfc(200., 1.e6, V_cruise, η_prop))/LD_max); # Loiter
+	Wi_W0 *= exp((-2000e3 * 9.81 * psfc(200., 1.e6))/(η_prop * LD_max)); # Cruise
+	#Wi_W0 *= exp((-5400 * sfc(200., 1.e6, V_cruise, η_prop))/(0.866 * LD_max)); # Loiter
+	Wi_W0 *= exp((-5400 * 9.81 * psfc(200., 1.e6))/(η_prop)); # Loiter — this is really fucked
 	Wi_W0 *= 0.995; # Land
 end
+
+# ╔═╡ 90ea3ac7-e0ed-458f-95cd-16c4251d0a1e
+exp((-2000e3 * 9.81 * psfc(200., 1.e6))/(η_prop * LD_max)) # Cruise
 
 # ╔═╡ 9f776e2f-1fa9-48f5-b554-6bf5a5d91441
 md"## Plot definition"
@@ -814,6 +821,8 @@ plt_vlm
 # ╠═e8764a2c-db58-42c2-a2eb-e198512d7d8f
 # ╠═ede2395b-047f-40d8-bdb3-389c97aaf862
 # ╠═d6d0250b-e49d-4fe8-98ee-967924027e1c
+# ╠═a2c5e9fd-ceba-43ab-9e91-cc17c68e2960
+# ╠═90ea3ac7-e0ed-458f-95cd-16c4251d0a1e
 # ╟─2b8ec21c-d8da-4e16-91c0-244857483463
 # ╟─a017efa0-cf08-4302-80f7-fae1ef55651c
 # ╟─b69a9c96-c979-4ced-bc85-fbe47ada1c9e
