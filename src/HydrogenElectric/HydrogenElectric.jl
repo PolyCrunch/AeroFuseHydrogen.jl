@@ -22,6 +22,10 @@ abstract type AbstractEngine <: AbstractHydrogenPropulsionSystem end
 abstract type AbstractPropeller <: AbstractHydrogenPropulsionSystem end
 abstract type AbstractFuelCell <: AbstractHydrogenPropulsionSystem end
 
+## Propulsion system
+#==========================================================================================#
+include("propulsion.jl")
+
 ## Fuel tank
 #==========================================================================================#
 

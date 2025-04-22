@@ -151,12 +151,6 @@ begin
 	mac40_wing = mean_aerodynamic_center(wing, 0.40)# Mean aerodynamic center (40%), m
 end;
 
-# ╔═╡ 9109e371-256d-4450-9ad1-34a6c1f079c8
-
-
-# ╔═╡ e805de16-e781-4178-84fb-d793bac6a00d
-
-
 # ╔═╡ c84c5839-b215-4f5d-b89a-24da4a7241c2
 md"""
 ## Power Requirements
@@ -171,7 +165,16 @@ K_LD = 15.5; # Factor — assume civil jet
 
 # ╔═╡ 92b76c68-c68e-47ed-846b-9b7be027a438
 md"""### Specific fuel consumption
-Fuel mass flow rate / thrust"""
+Fuel mass flow rate / thrust
+
+$$C = \frac{\text{Fuel mass flow rate}}{\text{Thrust}} = \frac{\dot{m}}{P} \cdot \frac{V}{\eta_{propeller}}$$
+"""
+
+# ╔═╡ dd5ca173-b70a-4bc7-9c13-78cece8269ed
+md"Finding an appropriate $\dot{m}/P$"
+
+# ╔═╡ 8790bead-dd8b-4ac4-843d-d264243fa7e6
+
 
 # ╔═╡ 2b8ec21c-d8da-4e16-91c0-244857483463
 md"## Defining the fuel tank"
@@ -741,8 +744,6 @@ plt_vlm
 # ╠═7bb33068-efa5-40d2-9e63-0137a44181cb
 # ╠═3413ada0-592f-4a37-b5d0-6ff88baad66c
 # ╠═d69b550d-1634-4f45-a660-3be009ddd19d
-# ╠═9109e371-256d-4450-9ad1-34a6c1f079c8
-# ╠═e805de16-e781-4178-84fb-d793bac6a00d
 # ╟─c84c5839-b215-4f5d-b89a-24da4a7241c2
 # ╟─45193a1b-732f-4d38-b417-a23c65c76ce4
 # ╠═a4d378e7-40e5-467c-a126-6432076b32c1
@@ -750,6 +751,8 @@ plt_vlm
 # ╠═24bc5967-b0ea-4081-b3de-d4c362670787
 # ╠═0a750cbd-0842-42d4-9a00-99c4c69672fc
 # ╟─92b76c68-c68e-47ed-846b-9b7be027a438
+# ╟─dd5ca173-b70a-4bc7-9c13-78cece8269ed
+# ╠═8790bead-dd8b-4ac4-843d-d264243fa7e6
 # ╟─2b8ec21c-d8da-4e16-91c0-244857483463
 # ╟─a017efa0-cf08-4302-80f7-fae1ef55651c
 # ╟─b69a9c96-c979-4ced-bc85-fbe47ada1c9e
@@ -793,10 +796,10 @@ plt_vlm
 # ╠═eea50a16-6798-4b53-8c36-ec647b592b23
 # ╟─4e23f46e-9253-4b3b-92fa-1efe7049899a
 # ╟─45f95a01-b50d-4f11-bc5c-412968c16dee
-# ╟─cbeacb6e-f1ae-4152-aef5-426908cb5f6e
-# ╟─479f80e3-8ab6-4f3d-bd47-a18f4671dfa9
-# ╟─040809ae-69cf-4445-8a6c-82c404b7dabd
-# ╟─ec53c66a-9f14-4520-8d28-2f53a54bb447
+# ╠═cbeacb6e-f1ae-4152-aef5-426908cb5f6e
+# ╠═479f80e3-8ab6-4f3d-bd47-a18f4671dfa9
+# ╠═040809ae-69cf-4445-8a6c-82c404b7dabd
+# ╠═ec53c66a-9f14-4520-8d28-2f53a54bb447
 # ╟─e81ab1c3-228c-4a32-9275-43d5f9b134db
 # ╠═df7431fe-dcde-4456-a548-1ffafccb84b8
 # ╠═e9ffaaed-b8b3-4825-8bb2-30a848a17abc
