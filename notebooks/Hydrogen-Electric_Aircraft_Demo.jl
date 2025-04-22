@@ -174,7 +174,39 @@ $$C = \frac{\text{Fuel mass flow rate}}{\text{Thrust}} = \frac{\dot{m}}{P} \cdot
 md"Finding an appropriate $\dot{m}/P$"
 
 # ╔═╡ 8790bead-dd8b-4ac4-843d-d264243fa7e6
-C = sfc(200., 1.e6, 1.0, 100.0, 0.8); # nb effective area 200 is approx 90% higher than the minimum
+C_power = sfc(200., 1.e6, 1., 1.) # nb effective area 200 is approx 90% higher than the minimum. kg/W-s
+
+# ╔═╡ a3036e50-f599-4614-a14b-2ec1ef4a7b4e
+C_power * 1000 * 1000 # mg/W-s. N.B. 0.07-0.09 for piston-prop. Right order of magnitude, and hydrogen is energy rich!
+
+# ╔═╡ b8db061e-3dfb-4883-85f9-455ce2bd4912
+md"""
+### Fuel Weight Fraction
+"""
+
+# ╔═╡ a9cf68ca-cf0c-481c-b88c-3f4cf222ee5b
+h_cruise = 7500; # Similar to Dash 8 Q400
+
+# ╔═╡ 95910c74-faa4-404f-b0a2-a642cc0f8093
+a_cruise = sqrt(1.4 * 287 * T_air(h_cruise))
+
+# ╔═╡ 2ff4b8a7-5985-4033-855e-8d169fe2d6fb
+M_cruise = 0.5;
+
+# ╔═╡ be1dfd57-dddb-4d83-8a4d-cdaa13323f2c
+V_cruise = a_cruise * M_cruise
+
+# ╔═╡ c6697863-76bd-4ead-8cd7-7b4818d5af6f
+η_prop = 0.8;
+
+# ╔═╡ 95aff88c-a99b-468a-bcd3-744051a29330
+sfc(2000., 1.e7, V_cruise, η_prop)
+
+# ╔═╡ ede2395b-047f-40d8-bdb3-389c97aaf862
+tempstack = PEMFCStack(area_effective=200., power_max=1.e6)
+
+# ╔═╡ d6d0250b-e49d-4fe8-98ee-967924027e1c
+tempmdot = fflow_H2(tempstack, 1)
 
 # ╔═╡ 2b8ec21c-d8da-4e16-91c0-244857483463
 md"## Defining the fuel tank"
@@ -629,6 +661,22 @@ A_wetted = aspect_ratio(wing)/(S_wet/S_ref) # AR / (S_wet / S_ref)
 # ╔═╡ 0a750cbd-0842-42d4-9a00-99c4c69672fc
 LD_max = K_LD * sqrt(A_wetted) # Raymer
 
+# ╔═╡ e00ea2c0-dee4-43e1-ab9d-6c8de1e0c2aa
+begin
+	Wi_W0 = 1; # Initial weight fraction
+	Wi_W0 *= 0.970; # Warmup and take-off [Raymer]. This could be lower as no warm up!
+	Wi_W0 *= 0.985; # Climb [Raymer]
+	Wi_W0 *= exp((-2000e3 * 9.81 * sfc(200., 1.e6, V_cruise, η_prop))/(LD_max)); # Cruise
+	Wi_W0 *= exp((-5400 * sfc(200., 1.e6, V_cruise, η_prop))/LD_max); # Loiter
+	Wi_W0 *= 0.995; # Land
+end
+
+# ╔═╡ b92eea20-cf80-4f30-b188-b9d7aa5279a1
+exp((-2000e3 * sfc(200., 1.e6, V_cruise, η_prop))/(V_cruise * LD_max))
+
+# ╔═╡ e8764a2c-db58-42c2-a2eb-e198512d7d8f
+exp((-4500 * sfc(200., 1.e6, V_cruise, η_prop))/LD_max)
+
 # ╔═╡ 9f776e2f-1fa9-48f5-b554-6bf5a5d91441
 md"## Plot definition"
 
@@ -753,6 +801,19 @@ plt_vlm
 # ╟─92b76c68-c68e-47ed-846b-9b7be027a438
 # ╟─dd5ca173-b70a-4bc7-9c13-78cece8269ed
 # ╠═8790bead-dd8b-4ac4-843d-d264243fa7e6
+# ╠═a3036e50-f599-4614-a14b-2ec1ef4a7b4e
+# ╟─b8db061e-3dfb-4883-85f9-455ce2bd4912
+# ╠═a9cf68ca-cf0c-481c-b88c-3f4cf222ee5b
+# ╠═95910c74-faa4-404f-b0a2-a642cc0f8093
+# ╠═2ff4b8a7-5985-4033-855e-8d169fe2d6fb
+# ╠═be1dfd57-dddb-4d83-8a4d-cdaa13323f2c
+# ╠═c6697863-76bd-4ead-8cd7-7b4818d5af6f
+# ╠═e00ea2c0-dee4-43e1-ab9d-6c8de1e0c2aa
+# ╠═b92eea20-cf80-4f30-b188-b9d7aa5279a1
+# ╠═95aff88c-a99b-468a-bcd3-744051a29330
+# ╠═e8764a2c-db58-42c2-a2eb-e198512d7d8f
+# ╠═ede2395b-047f-40d8-bdb3-389c97aaf862
+# ╠═d6d0250b-e49d-4fe8-98ee-967924027e1c
 # ╟─2b8ec21c-d8da-4e16-91c0-244857483463
 # ╟─a017efa0-cf08-4302-80f7-fae1ef55651c
 # ╟─b69a9c96-c979-4ced-bc85-fbe47ada1c9e
