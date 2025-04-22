@@ -1,11 +1,8 @@
 """
 sfc(throttle::Number=1.0, V::Number=0.0, η_prop::Number=0.8)
-
-Estimate the specific fuel consumption (SFC) of a proton exchange membrane fuel cell propulsion system.
-
 """
-function sfc(throttle::Number=1.0, V::Number=0.0, η_prop::Number=0.8)
-    stack = PEMFCStack(); # Create a PEMFCStack object with default parameters
+function sfc(A_eff=120.::Number, P_max::Number=1.e6, throttle::Number=1.0, V::Number=0.0, η_prop::Number=0.8)
+    stack = PEMFCStack(area_effective=A_eff, power_max = P_max); # Create a PEMFCStack object with default parameters
     m_dot = fflow_H2(stack, throttle)
     P = stack.power_max * throttle
 
