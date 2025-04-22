@@ -174,7 +174,7 @@ $$C = \frac{\text{Fuel mass flow rate}}{\text{Thrust}} = \frac{\dot{m}}{P} \cdot
 md"Finding an appropriate $\dot{m}/P$"
 
 # ╔═╡ 8790bead-dd8b-4ac4-843d-d264243fa7e6
-C = sfc(1., 100., 0.8)
+C = sfc(200., 1.e6, 1.0, 100.0, 0.8); # nb effective area 200 is approx 90% higher than the minimum
 
 # ╔═╡ 2b8ec21c-d8da-4e16-91c0-244857483463
 md"## Defining the fuel tank"
