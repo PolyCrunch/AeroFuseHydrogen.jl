@@ -23,9 +23,16 @@ import .AtmosProperties: K_air, α_air, ν_air, p_air, T_air
 export K_air, α_air, ν_air, p_air, T_air
 
 ## Fuel Cell properties
+#==========================================================================================#
 include("Tools/PEMFCProps.jl")
 import .PEMFCProps: pemfc_polarization
 export pemfc_polarization
+
+## Weights
+#==========================================================================================#
+include("Tools/Weights.jl")
+import .Weights: crew_weight
+export crew_weight
 
 ## Hydrogen Electric
 #==========================================================================================#

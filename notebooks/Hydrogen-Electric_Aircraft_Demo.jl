@@ -202,16 +202,6 @@ V_cruise = a_cruise * M_cruise
 # ╔═╡ eda958b2-a71c-41f3-9643-3b3eb130224d
 Hjet_HH2 = 1/2.;
 
-# ╔═╡ ff947612-2f1e-49a7-9815-8dea097edc3c
-md"""### Crew Weight
-2 pilots, 2 flight attendants (from FAR 25).
-
-85kg * 2 + 75kg * 2. Assuming 15kg payload each
-"""
-
-# ╔═╡ 34d964cb-8bf1-456f-b35e-b7fe74270598
-W_crew = (85+15)*2 + (75+15)*2
-
 # ╔═╡ 3920cf3a-1144-4fe7-9a40-9b12a1a4ed9e
 md"""### Passenger Weight
 As fuel will be stored in the cabin, number of passengers will depend on size of tank."""
@@ -220,6 +210,12 @@ As fuel will be stored in the cabin, number of passengers will depend on size of
 # ╔═╡ 22a540fa-0659-4eb9-9d73-fb9516e5f715
 n_basepassengers = 80;
 
+# ╔═╡ ff947612-2f1e-49a7-9815-8dea097edc3c
+md"""### Crew Weight
+2 pilots, 1 flight attendant per 50 passengers (from FAR 25).
+
+85kg * 2 + 75kg * 2. Assuming 15kg payload each
+"""
 
 # ╔═╡ 7115cdf4-632c-45be-a3bd-2aaf152e42c9
 md"""### Empty Weight Fraction
@@ -228,6 +224,15 @@ Raymer, twin turboprop: We/W0 = 0.96 * W_0^{-0.05}
 Correction factor for Hydrogen: 1.16x"""
 
 # ╔═╡ 15772b5a-0f02-4505-bfca-8ce63a92ee13
+
+
+# ╔═╡ e58f446a-88fe-430a-9598-d5bf2dc931ee
+md"### $W_0$"
+
+# ╔═╡ 3791d432-b8b4-4759-8de0-7ebf3c8d19a1
+# oof
+
+# ╔═╡ 6c8ed38b-1b05-41ca-92f9-760501184e58
 
 
 # ╔═╡ 2b8ec21c-d8da-4e16-91c0-244857483463
@@ -699,6 +704,18 @@ end
 # ╔═╡ 3d586d4d-b457-4f7f-a4be-355b4aa3eee7
 Wf_W0 = 1.06 * (1 - Wi_W0)
 
+# ╔═╡ 5aae1670-29c4-409c-b5e6-1a317aa3538c
+L_fueltank = volume_to_length(Wf_W0*30481/ρ_LH2, fuse.radius - fuse_t_w, t_insulation)
+
+# ╔═╡ 5bf5ee8e-66c1-43ed-840a-85837318a5d7
+n_passengers = n_basepassengers - 4*ceil(L_fueltank/0.762)
+
+# ╔═╡ 54f80a85-c881-4f89-a6a8-f822ce966bc6
+W_passengers = n_passengers * (84 + 23);
+
+# ╔═╡ 34d964cb-8bf1-456f-b35e-b7fe74270598
+W_crew = (85+15)*2 + (75+15)*ceil(n_passengers/50)
+
 # ╔═╡ 9f776e2f-1fa9-48f5-b554-6bf5a5d91441
 md"## Plot definition"
 
@@ -833,12 +850,18 @@ plt_vlm
 # ╠═eda958b2-a71c-41f3-9643-3b3eb130224d
 # ╠═e00ea2c0-dee4-43e1-ab9d-6c8de1e0c2aa
 # ╠═3d586d4d-b457-4f7f-a4be-355b4aa3eee7
-# ╟─ff947612-2f1e-49a7-9815-8dea097edc3c
-# ╠═34d964cb-8bf1-456f-b35e-b7fe74270598
 # ╟─3920cf3a-1144-4fe7-9a40-9b12a1a4ed9e
 # ╠═22a540fa-0659-4eb9-9d73-fb9516e5f715
+# ╠═5aae1670-29c4-409c-b5e6-1a317aa3538c
+# ╠═5bf5ee8e-66c1-43ed-840a-85837318a5d7
+# ╠═54f80a85-c881-4f89-a6a8-f822ce966bc6
+# ╟─ff947612-2f1e-49a7-9815-8dea097edc3c
+# ╠═34d964cb-8bf1-456f-b35e-b7fe74270598
 # ╟─7115cdf4-632c-45be-a3bd-2aaf152e42c9
 # ╠═15772b5a-0f02-4505-bfca-8ce63a92ee13
+# ╟─e58f446a-88fe-430a-9598-d5bf2dc931ee
+# ╠═3791d432-b8b4-4759-8de0-7ebf3c8d19a1
+# ╠═6c8ed38b-1b05-41ca-92f9-760501184e58
 # ╟─2b8ec21c-d8da-4e16-91c0-244857483463
 # ╟─a017efa0-cf08-4302-80f7-fae1ef55651c
 # ╟─b69a9c96-c979-4ced-bc85-fbe47ada1c9e
