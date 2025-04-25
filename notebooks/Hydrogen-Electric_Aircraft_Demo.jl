@@ -223,16 +223,10 @@ Raymer, twin turboprop: We/W0 = 0.96 * W_0^{-0.05}
 
 Correction factor for Hydrogen: 1.16x"""
 
-# ╔═╡ 15772b5a-0f02-4505-bfca-8ce63a92ee13
-
-
 # ╔═╡ e58f446a-88fe-430a-9598-d5bf2dc931ee
 md"### $W_0$"
 
-# ╔═╡ 3791d432-b8b4-4759-8de0-7ebf3c8d19a1
-# oof
-
-# ╔═╡ 6c8ed38b-1b05-41ca-92f9-760501184e58
+# ╔═╡ 17c6adef-c6e7-4a1c-9b57-e281bcdaf37c
 
 
 # ╔═╡ 2b8ec21c-d8da-4e16-91c0-244857483463
@@ -701,20 +695,49 @@ begin
 	Wi_W0 *= 1 - (1 - 0.995) * Hjet_HH2; # Land
 end
 
-# ╔═╡ 3d586d4d-b457-4f7f-a4be-355b4aa3eee7
-Wf_W0 = 1.06 * (1 - Wi_W0)
+# ╔═╡ 15772b5a-0f02-4505-bfca-8ce63a92ee13
+begin
+	tol = 0.1;
+	W0_prev = 0;
+	global curstep = 0;
+	max_step = 10000;
 
-# ╔═╡ 5aae1670-29c4-409c-b5e6-1a317aa3538c
-L_fueltank = volume_to_length(Wf_W0*30481/ρ_LH2, fuse.radius - fuse_t_w, t_insulation)
+	# Fixed
+	Wf_W0 = 1.06 * (1 - Wi_W0);
+	
+	# Initial guesses
+	W0 = 30481; # Based on Dash 8 Q400 MTOW
 
-# ╔═╡ 5bf5ee8e-66c1-43ed-840a-85837318a5d7
-n_passengers = n_basepassengers - 4*ceil(L_fueltank/0.762)
+	while abs(W0 - W0_prev) > tol
+		global curstep += 1;
+		if curstep >= max_step
+			global W0 = -1
+			print("Failed to iterate within max_step")
+			break
+		end
+		global W0_prev = W0;
+		
+		global L_tank = volume_to_length(Wf_W0 * W0 / ρ_LH2, fuse.radius - fuse_t_w, t_insulation);
+		global n_passengers = n_basepassengers - 4 * Int(ceil(L_tank/0.762));
+		W_crew = crew_weight(2, n_passengers);
+		W_payload = n_passengers * (84 + 23);
+		global We_W0 = 1.12 * W0^(-0.05);
 
-# ╔═╡ 54f80a85-c881-4f89-a6a8-f822ce966bc6
-W_passengers = n_passengers * (84 + 23);
+		global W0 = (W_crew + W_payload) / (1 - Wf_W0 - We_W0)
+	end
+end
 
-# ╔═╡ 34d964cb-8bf1-456f-b35e-b7fe74270598
-W_crew = (85+15)*2 + (75+15)*ceil(n_passengers/50)
+# ╔═╡ 913db9f9-850b-4fe9-b4c5-1c872fc7ebf9
+print(W0)
+
+# ╔═╡ c7f6cae8-0116-4993-8aec-e1dc0a8a8e63
+print(L_tank)
+
+# ╔═╡ 6c8ed38b-1b05-41ca-92f9-760501184e58
+print(n_passengers)
+
+# ╔═╡ 077500bd-581a-46b0-a943-f05a036cf01a
+print(curstep)
 
 # ╔═╡ 9f776e2f-1fa9-48f5-b554-6bf5a5d91441
 md"## Plot definition"
@@ -849,19 +872,17 @@ plt_vlm
 # ╠═c6697863-76bd-4ead-8cd7-7b4818d5af6f
 # ╠═eda958b2-a71c-41f3-9643-3b3eb130224d
 # ╠═e00ea2c0-dee4-43e1-ab9d-6c8de1e0c2aa
-# ╠═3d586d4d-b457-4f7f-a4be-355b4aa3eee7
 # ╟─3920cf3a-1144-4fe7-9a40-9b12a1a4ed9e
 # ╠═22a540fa-0659-4eb9-9d73-fb9516e5f715
-# ╠═5aae1670-29c4-409c-b5e6-1a317aa3538c
-# ╠═5bf5ee8e-66c1-43ed-840a-85837318a5d7
-# ╠═54f80a85-c881-4f89-a6a8-f822ce966bc6
 # ╟─ff947612-2f1e-49a7-9815-8dea097edc3c
-# ╠═34d964cb-8bf1-456f-b35e-b7fe74270598
 # ╟─7115cdf4-632c-45be-a3bd-2aaf152e42c9
-# ╠═15772b5a-0f02-4505-bfca-8ce63a92ee13
 # ╟─e58f446a-88fe-430a-9598-d5bf2dc931ee
-# ╠═3791d432-b8b4-4759-8de0-7ebf3c8d19a1
+# ╠═15772b5a-0f02-4505-bfca-8ce63a92ee13
+# ╠═913db9f9-850b-4fe9-b4c5-1c872fc7ebf9
+# ╠═c7f6cae8-0116-4993-8aec-e1dc0a8a8e63
 # ╠═6c8ed38b-1b05-41ca-92f9-760501184e58
+# ╠═077500bd-581a-46b0-a943-f05a036cf01a
+# ╠═17c6adef-c6e7-4a1c-9b57-e281bcdaf37c
 # ╟─2b8ec21c-d8da-4e16-91c0-244857483463
 # ╟─a017efa0-cf08-4302-80f7-fae1ef55651c
 # ╟─b69a9c96-c979-4ced-bc85-fbe47ada1c9e
