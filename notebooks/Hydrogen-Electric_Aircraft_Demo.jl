@@ -199,23 +199,36 @@ V_cruise = a_cruise * M_cruise
 # ╔═╡ c6697863-76bd-4ead-8cd7-7b4818d5af6f
 η_prop = 0.8;
 
-# ╔═╡ b92eea20-cf80-4f30-b188-b9d7aa5279a1
-#exp((-2000e3 * sfc(200., 1.e6, V_cruise, η_prop))/(V_cruise * LD_max))
+# ╔═╡ eda958b2-a71c-41f3-9643-3b3eb130224d
+Hjet_HH2 = 1/2.;
 
-# ╔═╡ 95aff88c-a99b-468a-bcd3-744051a29330
-#sfc(2000., 1.e7, V_cruise, η_prop)
+# ╔═╡ ff947612-2f1e-49a7-9815-8dea097edc3c
+md"""### Crew Weight
+2 pilots, 2 flight attendants (from FAR 25).
 
-# ╔═╡ e8764a2c-db58-42c2-a2eb-e198512d7d8f
-#exp((-4500 * sfc(200., 1.e6, V_cruise, η_prop))/LD_max)
+85kg * 2 + 75kg * 2. Assuming 15kg payload each
+"""
 
-# ╔═╡ ede2395b-047f-40d8-bdb3-389c97aaf862
-#tempstack = PEMFCStack(area_effective=200., power_max=1.e6)
+# ╔═╡ 34d964cb-8bf1-456f-b35e-b7fe74270598
+W_crew = (85+15)*2 + (75+15)*2
 
-# ╔═╡ d6d0250b-e49d-4fe8-98ee-967924027e1c
-#tempmdot = fflow_H2(tempstack, 1)
+# ╔═╡ 3920cf3a-1144-4fe7-9a40-9b12a1a4ed9e
+md"""### Passenger Weight
+As fuel will be stored in the cabin, number of passengers will depend on size of tank."""
 
-# ╔═╡ a2c5e9fd-ceba-43ab-9e91-cc17c68e2960
-exp((-5400 * 9.81 * psfc(200., 1.e6))/(η_prop)) # Loiter
+
+# ╔═╡ 22a540fa-0659-4eb9-9d73-fb9516e5f715
+n_basepassengers = 80;
+
+
+# ╔═╡ 7115cdf4-632c-45be-a3bd-2aaf152e42c9
+md"""### Empty Weight Fraction
+Raymer, twin turboprop: We/W0 = 0.96 * W_0^{-0.05}
+
+Correction factor for Hydrogen: 1.16x"""
+
+# ╔═╡ 15772b5a-0f02-4505-bfca-8ce63a92ee13
+
 
 # ╔═╡ 2b8ec21c-d8da-4e16-91c0-244857483463
 md"## Defining the fuel tank"
@@ -673,16 +686,18 @@ LD_max = K_LD * sqrt(A_wetted) # Raymer
 # ╔═╡ e00ea2c0-dee4-43e1-ab9d-6c8de1e0c2aa
 begin
 	Wi_W0 = 1; # Initial weight fraction
-	Wi_W0 *= 0.970; # Warmup and take-off [Raymer]. This could be lower as no warm up!
-	Wi_W0 *= 0.985; # Climb [Raymer]
+	Wi_W0 *= 1 - (1 - 0.970) * Hjet_HH2; # Warmup and take-off [corrected from Raymer]. This could be lower as no warm up!
+	Wi_W0 *= 1 - (1 - 0.985) * Hjet_HH2; # Climb [Raymer]
 	Wi_W0 *= exp((-2000e3 * 9.81 * psfc(200., 1.e6))/(η_prop * LD_max)); # Cruise
 	#Wi_W0 *= exp((-5400 * sfc(200., 1.e6, V_cruise, η_prop))/(0.866 * LD_max)); # Loiter
-	Wi_W0 *= exp((-5400 * 9.81 * psfc(200., 1.e6))/(η_prop)); # Loiter — this is really fucked
-	Wi_W0 *= 0.995; # Land
+	Wi_W0 *= 1 - (1 - 0.995) * Hjet_HH2; # Land
+	Wi_W0 *= exp((-300e3 * 9.81 * psfc(200., 1.e6))/(η_prop * LD_max)); # Diversion 300km
+	Wi_W0 *= exp((-5400 * 9.81 * psfc(200., 1.e6))/(η_prop)); # 45 min loiter — this seems unrealistic
+	Wi_W0 *= 1 - (1 - 0.995) * Hjet_HH2; # Land
 end
 
-# ╔═╡ 90ea3ac7-e0ed-458f-95cd-16c4251d0a1e
-exp((-2000e3 * 9.81 * psfc(200., 1.e6))/(η_prop * LD_max)) # Cruise
+# ╔═╡ 3d586d4d-b457-4f7f-a4be-355b4aa3eee7
+Wf_W0 = 1.06 * (1 - Wi_W0)
 
 # ╔═╡ 9f776e2f-1fa9-48f5-b554-6bf5a5d91441
 md"## Plot definition"
@@ -815,14 +830,15 @@ plt_vlm
 # ╠═2ff4b8a7-5985-4033-855e-8d169fe2d6fb
 # ╠═be1dfd57-dddb-4d83-8a4d-cdaa13323f2c
 # ╠═c6697863-76bd-4ead-8cd7-7b4818d5af6f
+# ╠═eda958b2-a71c-41f3-9643-3b3eb130224d
 # ╠═e00ea2c0-dee4-43e1-ab9d-6c8de1e0c2aa
-# ╠═b92eea20-cf80-4f30-b188-b9d7aa5279a1
-# ╠═95aff88c-a99b-468a-bcd3-744051a29330
-# ╠═e8764a2c-db58-42c2-a2eb-e198512d7d8f
-# ╠═ede2395b-047f-40d8-bdb3-389c97aaf862
-# ╠═d6d0250b-e49d-4fe8-98ee-967924027e1c
-# ╠═a2c5e9fd-ceba-43ab-9e91-cc17c68e2960
-# ╠═90ea3ac7-e0ed-458f-95cd-16c4251d0a1e
+# ╠═3d586d4d-b457-4f7f-a4be-355b4aa3eee7
+# ╟─ff947612-2f1e-49a7-9815-8dea097edc3c
+# ╠═34d964cb-8bf1-456f-b35e-b7fe74270598
+# ╟─3920cf3a-1144-4fe7-9a40-9b12a1a4ed9e
+# ╠═22a540fa-0659-4eb9-9d73-fb9516e5f715
+# ╟─7115cdf4-632c-45be-a3bd-2aaf152e42c9
+# ╠═15772b5a-0f02-4505-bfca-8ce63a92ee13
 # ╟─2b8ec21c-d8da-4e16-91c0-244857483463
 # ╟─a017efa0-cf08-4302-80f7-fae1ef55651c
 # ╟─b69a9c96-c979-4ced-bc85-fbe47ada1c9e

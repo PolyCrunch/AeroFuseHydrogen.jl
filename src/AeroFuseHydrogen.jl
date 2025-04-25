@@ -42,9 +42,9 @@ import .HydrogenElectric: psfc
 export psfc
 
 # Fuel tank
-import .HydrogenElectric: FuelTank, length, cosine_interpolation, CryogenicFuelTank, volume_to_length, internal_volume, dry_mass, wet_mass, coordinates
+import .HydrogenElectric: FuelTank, ρ_LH2, length, cosine_interpolation, CryogenicFuelTank, volume_to_length, internal_volume, dry_mass, wet_mass, coordinates
 
-export FuelTank, length, cosine_interpolation, CryogenicFuelTank, volume_to_length, internal_volume, dry_mass, wet_mass, coordinates
+export FuelTank, ρ_LH2, length, cosine_interpolation, CryogenicFuelTank, volume_to_length, internal_volume, dry_mass, wet_mass, coordinates
 
 # Boil-off
 import .HydrogenElectric: tank_surface_temperature, boil_off

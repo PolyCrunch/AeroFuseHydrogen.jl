@@ -1,3 +1,5 @@
+ρ_LH2 = 70.8 # kg/m^3
+
 struct FuelTank{T<:Real} <: AbstractFuelTank
     length   ::T # I do not know what weights or radii represent.
     weights  ::Vector{T}
