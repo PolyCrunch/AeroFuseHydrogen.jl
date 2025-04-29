@@ -202,6 +202,21 @@ V_cruise = a_cruise * M_cruise
 # ╔═╡ eda958b2-a71c-41f3-9643-3b3eb130224d
 Hjet_HH2 = 1/2.;
 
+# ╔═╡ bb004a3a-40c3-4f13-975e-f0d6aa20612d
+W1_W0 = 1 - (1 - 0.970) * Hjet_HH2; # Warmup and take-off [corrected from Raymer]. This could be lower as no warm up!
+
+# ╔═╡ 60f4656e-b8fb-465a-bd3e-8647fbb785c8
+W2_W0 = 1 - (1 - 0.985) * Hjet_HH2; # Climb [Raymer]
+
+# ╔═╡ e86479c5-cbf6-42e1-8b7d-52684360f0b2
+W4_W0 = 1 - (1 - 0.995) * Hjet_HH2; # Land
+
+# ╔═╡ 75af705e-6508-438d-8094-ffec993d0060
+W6_W0 = exp((-5400 * 9.81 * psfc(200., 1.e6))/(η_prop)); # 45 min loiter — this seems unrealistic
+
+# ╔═╡ 17a2f25a-964a-4a73-996a-a18484f82add
+W7_W0 = 1 - (1 - 0.995) * Hjet_HH2; # Land
+
 # ╔═╡ 3920cf3a-1144-4fe7-9a40-9b12a1a4ed9e
 md"""### Passenger Weight
 As fuel will be stored in the cabin, number of passengers will depend on size of tank."""
@@ -226,8 +241,86 @@ Correction factor for Hydrogen: 1.16x"""
 # ╔═╡ e58f446a-88fe-430a-9598-d5bf2dc931ee
 md"### $W_0$"
 
-# ╔═╡ 17c6adef-c6e7-4a1c-9b57-e281bcdaf37c
+# ╔═╡ a77fce1f-0574-4666-ba3b-631716384ae0
+md"""
+### Constraint Diagrams
+"""
 
+# ╔═╡ cea3ed96-73aa-44ee-bdc5-2becba65987f
+W_S = LinRange(0, 6000, 1000);
+
+# ╔═╡ d037c253-032a-4a83-a246-5920cd8e57be
+md"""
+#### Take-Off
+1500 m seems like a good target.
+
+London City is 1508m — Inverness and Isle of Man are 1800-1900 m
+
+Actual take-off distance: what is required AEO
+
+Take-off distance required: 1.15x actual; or balanced field length
+
+Actual landing distance: what the aircraft would ideally require
+
+Landing distance required: 5/3 x actual landing distance
+
+
+Lots of maths, but for propeller 50ft obstacle clearance,
+
+$$TODA_{m} \geq 11.7 TOP_{SI}$$
+"""
+
+# ╔═╡ 50275134-8baa-48fe-be7b-93d17a029c85
+md"""##### 50ft Obstacle"""
+
+# ╔═╡ 91f05db8-972e-435e-aaf7-a207047e27e8
+CL_TO = 1.5 # RANDOM GUESS FOR NOW
+
+# ╔═╡ 4b738106-128e-4399-8edb-2c1b6e2a5512
+σ_TO = 1.; # SEA LEVEL FOR NOW
+
+# ╔═╡ 005399ec-fc82-445f-92a5-7172c2b4722d
+TODA_min = 1500; # metres. Needs justifying
+
+# ╔═╡ 9d98cc63-eec4-4294-8467-b1ca1117d243
+PW_TO50 = 11.7 * W_S / (TODA_min * σ_TO * CL_TO);
+
+# ╔═╡ a2e69f21-d4a7-4198-9af9-e3a6c6e332e8
+plot(
+	W_S,
+	PW_TO50,
+	label = "Take-off: 50ft obstacle",
+	xlabel = "Wing Loading (N/m^2)",
+	ylabel = "Power to weight (W/N)"
+);
+
+# ╔═╡ c727ec57-02ad-443c-b8e1-0303ed101e5d
+md"""##### BFL Estimate"""
+
+# ╔═╡ 6881d47f-4fc6-4885-9e6c-ebbcbca31005
+N_E = 2;
+
+# ╔═╡ cc47266b-899d-4519-b159-915b3ae14a54
+PW_TO_BFL = PW_TO50 * (0.297 - 0.019 * N_E) / 0.144;
+
+# ╔═╡ 25ef29da-3c7f-4c74-8092-f9175e9e1b18
+plot!(
+	W_S,
+	PW_TO_BFL,
+	label = "Take-off: BFL",
+	xlabel = "Wing Loading (N/m^2)",
+	ylabel = "Power to weight (W/N)"
+);
+
+# ╔═╡ 2ab7dc44-d355-4f57-ae3a-abf94e5695c1
+plot!(
+	[30481 * 9.81 / S_ref],
+	[3781 * 1000 * 2 / (30481 * 9.81)],
+	label = "Dash 8 Q400 Design Point",
+	xlabel = "Wing Loading (N/m^2)",
+	ylabel = "Power to weight (W/N)",
+	marker = :circle	
+)
 
 # ╔═╡ 2b8ec21c-d8da-4e16-91c0-244857483463
 md"## Defining the fuel tank"
@@ -335,27 +428,6 @@ md"""
 
 # ╔═╡ 7fa4e010-4ae8-4b77-9bc2-f12437adb7b3
 t_insulation = 0.05;
-
-# ╔═╡ 82b332ac-5628-4b82-8735-f361dcdfc9b6
-tank = CryogenicFuelTank(
-	radius = fuse.radius - fuse_t_w,
-	length = volume_to_length(30., fuse.radius - fuse_t_w, t_insulation),
-	insulation_thickness = t_insulation,
-	insulation_density = insulation_material.Density,
-	position = [0.4fuse.length, 0, 0]
-)
-
-# ╔═╡ 63475bbf-6993-4f6c-86b8-f3b608b63a8e
-tank_length = tank.length # Tank exterior length
-
-# ╔═╡ b9fddbc4-a2d7-48cf-ace4-f092a3c38b11
-tank_dry_mass = dry_mass(tank) # Calculate the dry mass of the tank (kg)
-
-# ╔═╡ a0c931b1-e9a5-4bf3-af6d-a9e6d0009998
-full_tank_mass = wet_mass(tank, 1) # Calculate the mass of a fuel tank. This function can also accept a vector of fractions
-
-# ╔═╡ e36dc0e2-015e-4132-a105-d145e17cceb8
-tank_capacity = internal_volume(tank) # Calculate the internal volume of the fuel tank
 
 # ╔═╡ 5446afd1-4326-41ab-94ec-199587c1411b
 md"""
@@ -682,23 +754,28 @@ A_wetted = aspect_ratio(wing)/(S_wet/S_ref) # AR / (S_wet / S_ref)
 # ╔═╡ 0a750cbd-0842-42d4-9a00-99c4c69672fc
 LD_max = K_LD * sqrt(A_wetted) # Raymer
 
+# ╔═╡ 34d83139-a0ce-4712-a884-a3c53a2df098
+W3_W0 = exp((-2000e3 * 9.81 * psfc(200., 1.e6))/(η_prop * LD_max)); # Cruise
+
+# ╔═╡ 50ebd56c-b6bc-4a0a-ad97-f9b8e94ac8bf
+W5_W0 = exp((-300e3 * 9.81 * psfc(200., 1.e6))/(η_prop * LD_max)); # Diversion 300km
+
 # ╔═╡ e00ea2c0-dee4-43e1-ab9d-6c8de1e0c2aa
 begin
 	Wi_W0 = 1; # Initial weight fraction
-	Wi_W0 *= 1 - (1 - 0.970) * Hjet_HH2; # Warmup and take-off [corrected from Raymer]. This could be lower as no warm up!
-	Wi_W0 *= 1 - (1 - 0.985) * Hjet_HH2; # Climb [Raymer]
-	Wi_W0 *= exp((-2000e3 * 9.81 * psfc(200., 1.e6))/(η_prop * LD_max)); # Cruise
-	#Wi_W0 *= exp((-5400 * sfc(200., 1.e6, V_cruise, η_prop))/(0.866 * LD_max)); # Loiter
-	Wi_W0 *= 1 - (1 - 0.995) * Hjet_HH2; # Land
-	Wi_W0 *= exp((-300e3 * 9.81 * psfc(200., 1.e6))/(η_prop * LD_max)); # Diversion 300km
-	Wi_W0 *= exp((-5400 * 9.81 * psfc(200., 1.e6))/(η_prop)); # 45 min loiter — this seems unrealistic
-	Wi_W0 *= 1 - (1 - 0.995) * Hjet_HH2; # Land
+	Wi_W0 *= W1_W0;
+	Wi_W0 *= W2_W0;
+	Wi_W0 *= W3_W0;
+	Wi_W0 *= W4_W0;
+	Wi_W0 *= W5_W0;
+	Wi_W0 *= W6_W0;
+	Wi_W0 *= W7_W0;
 end
 
 # ╔═╡ 15772b5a-0f02-4505-bfca-8ce63a92ee13
 begin
 	tol = 0.1;
-	W0_prev = 0;
+	global W0_prev = 0.0;
 	global curstep = 0;
 	max_step = 10000;
 
@@ -706,29 +783,30 @@ begin
 	Wf_W0 = 1.06 * (1 - Wi_W0);
 	
 	# Initial guesses
-	W0 = 30481; # Based on Dash 8 Q400 MTOW
+	global W0 = [30481.0]; # Based on Dash 8 Q400 MTOW
 
-	while abs(W0 - W0_prev) > tol
+	while abs(W0[end] - W0_prev) > tol
 		global curstep += 1;
 		if curstep >= max_step
-			global W0 = -1
 			print("Failed to iterate within max_step")
+			push!(W0, -1.0)
 			break
 		end
-		global W0_prev = W0;
+		global W0_prev = W0[end];
 		
-		global L_tank = volume_to_length(Wf_W0 * W0 / ρ_LH2, fuse.radius - fuse_t_w, t_insulation);
+		global L_tank = volume_to_length(Wf_W0 * W0[end] / ρ_LH2, fuse.radius - fuse_t_w, t_insulation);
 		global n_passengers = n_basepassengers - 4 * Int(ceil(L_tank/0.762));
 		W_crew = crew_weight(2, n_passengers);
 		W_payload = n_passengers * (84 + 23);
-		global We_W0 = 1.12 * W0^(-0.05);
+		We_W0 = 1.12 * W0[end]^(-0.05);
 
-		global W0 = (W_crew + W_payload) / (1 - Wf_W0 - We_W0)
+		W0_new = (W_crew + W_payload) / (1 - Wf_W0 - We_W0)
+		push!(W0, W0_new)
 	end
 end
 
 # ╔═╡ 913db9f9-850b-4fe9-b4c5-1c872fc7ebf9
-print(W0)
+print(W0[end])
 
 # ╔═╡ c7f6cae8-0116-4993-8aec-e1dc0a8a8e63
 print(L_tank)
@@ -738,6 +816,38 @@ print(n_passengers)
 
 # ╔═╡ 077500bd-581a-46b0-a943-f05a036cf01a
 print(curstep)
+
+# ╔═╡ 852baaab-ce24-48cc-8393-1a8ee7554874
+W0plot = plot(
+		1:curstep+1,
+		W0,
+		title = "Design MTOW Convergence",
+		xlabel = "Step",
+		ylabel = "Design MTOW (kg)",
+		legend = false
+	)
+
+# ╔═╡ 82b332ac-5628-4b82-8735-f361dcdfc9b6
+tank = CryogenicFuelTank(
+	radius = fuse.radius - fuse_t_w,
+	#length = volume_to_length(30., fuse.radius - fuse_t_w, t_insulation),
+	length = L_tank,
+	insulation_thickness = t_insulation,
+	insulation_density = insulation_material.Density,
+	position = [0.55fuse.length, 0, 0]
+)
+
+# ╔═╡ 63475bbf-6993-4f6c-86b8-f3b608b63a8e
+tank_length = tank.length # Tank exterior length
+
+# ╔═╡ b9fddbc4-a2d7-48cf-ace4-f092a3c38b11
+tank_dry_mass = dry_mass(tank) # Calculate the dry mass of the tank (kg)
+
+# ╔═╡ a0c931b1-e9a5-4bf3-af6d-a9e6d0009998
+full_tank_mass = wet_mass(tank, 1) # Calculate the mass of a fuel tank. This function can also accept a vector of fractions
+
+# ╔═╡ e36dc0e2-015e-4132-a105-d145e17cceb8
+tank_capacity = internal_volume(tank) # Calculate the internal volume of the fuel tank
 
 # ╔═╡ 9f776e2f-1fa9-48f5-b554-6bf5a5d91441
 md"## Plot definition"
@@ -764,6 +874,9 @@ Streamlines: $(strm_flag)
 """
 
 # ╔═╡ 11e3c0e6-534c-4b01-a961-5429d28985d7
+toggles
+
+# ╔═╡ f001804d-1bad-4800-8ab0-09717d605dfd
 toggles
 
 # ╔═╡ 9b8ce85f-2cb8-43a9-a536-0d44681b5dfa
@@ -871,6 +984,13 @@ plt_vlm
 # ╠═be1dfd57-dddb-4d83-8a4d-cdaa13323f2c
 # ╠═c6697863-76bd-4ead-8cd7-7b4818d5af6f
 # ╠═eda958b2-a71c-41f3-9643-3b3eb130224d
+# ╠═bb004a3a-40c3-4f13-975e-f0d6aa20612d
+# ╠═60f4656e-b8fb-465a-bd3e-8647fbb785c8
+# ╠═34d83139-a0ce-4712-a884-a3c53a2df098
+# ╠═e86479c5-cbf6-42e1-8b7d-52684360f0b2
+# ╠═50ebd56c-b6bc-4a0a-ad97-f9b8e94ac8bf
+# ╠═75af705e-6508-438d-8094-ffec993d0060
+# ╠═17a2f25a-964a-4a73-996a-a18484f82add
 # ╠═e00ea2c0-dee4-43e1-ab9d-6c8de1e0c2aa
 # ╟─3920cf3a-1144-4fe7-9a40-9b12a1a4ed9e
 # ╠═22a540fa-0659-4eb9-9d73-fb9516e5f715
@@ -882,7 +1002,21 @@ plt_vlm
 # ╠═c7f6cae8-0116-4993-8aec-e1dc0a8a8e63
 # ╠═6c8ed38b-1b05-41ca-92f9-760501184e58
 # ╠═077500bd-581a-46b0-a943-f05a036cf01a
-# ╠═17c6adef-c6e7-4a1c-9b57-e281bcdaf37c
+# ╟─852baaab-ce24-48cc-8393-1a8ee7554874
+# ╟─a77fce1f-0574-4666-ba3b-631716384ae0
+# ╠═cea3ed96-73aa-44ee-bdc5-2becba65987f
+# ╟─d037c253-032a-4a83-a246-5920cd8e57be
+# ╟─50275134-8baa-48fe-be7b-93d17a029c85
+# ╠═91f05db8-972e-435e-aaf7-a207047e27e8
+# ╠═4b738106-128e-4399-8edb-2c1b6e2a5512
+# ╠═005399ec-fc82-445f-92a5-7172c2b4722d
+# ╠═9d98cc63-eec4-4294-8467-b1ca1117d243
+# ╠═a2e69f21-d4a7-4198-9af9-e3a6c6e332e8
+# ╟─c727ec57-02ad-443c-b8e1-0303ed101e5d
+# ╠═6881d47f-4fc6-4885-9e6c-ebbcbca31005
+# ╠═cc47266b-899d-4519-b159-915b3ae14a54
+# ╠═25ef29da-3c7f-4c74-8092-f9175e9e1b18
+# ╠═2ab7dc44-d355-4f57-ae3a-abf94e5695c1
 # ╟─2b8ec21c-d8da-4e16-91c0-244857483463
 # ╟─a017efa0-cf08-4302-80f7-fae1ef55651c
 # ╟─b69a9c96-c979-4ced-bc85-fbe47ada1c9e
@@ -903,6 +1037,7 @@ plt_vlm
 # ╠═a0c931b1-e9a5-4bf3-af6d-a9e6d0009998
 # ╠═e36dc0e2-015e-4132-a105-d145e17cceb8
 # ╠═50e128f3-72d9-42b1-b987-540bf6e7e6d0
+# ╠═f001804d-1bad-4800-8ab0-09717d605dfd
 # ╟─5446afd1-4326-41ab-94ec-199587c1411b
 # ╠═f21b48c0-8e0c-4b67-9145-52a1480003ed
 # ╠═c82d7f29-08f4-4268-881f-e422864ab789
