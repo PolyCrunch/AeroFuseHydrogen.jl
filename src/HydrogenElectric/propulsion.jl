@@ -14,13 +14,13 @@ function psfc(A_eff=120.::Number, P::Number=1.e6)
 end
 
 """
-motor_mass(P_out::Number=1.e6, tech::TechLevel=TechLevel.Current)
+motor_mass(P_out::Number=1.e6, tech::TechLevel=Current)
 Calculate the mass of the motor based on the output power and technology level. Figures are based on linear regression of data on current and future motors.
 - P_out: Output power of the motor [W]
 - tech: Technology level (Current or Future)
 Returns the mass of the motor [kg].
 """
-function motor_mass(P_out::Number=1.e6, tech::TechLevel=TechLevel.Current)
+function motor_mass(P_out::Number=1.e6, tech::TechLevel=Current)
     if tech == Current
         # Current technology
         return 2.886e-4 * P_out; # Mass of the motor [kg]
