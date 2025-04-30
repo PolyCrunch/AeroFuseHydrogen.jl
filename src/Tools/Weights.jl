@@ -25,9 +25,34 @@ end
         )
     end
 
+    function lavatory_weight_factor(type::AircraftType)
+        # Lavatory weight factor
+        if type == Business
+            return 3.90; # Lavatory weight factor business
+        elseif type == ShortHaul
+            return 0.31; # Lavatory weight factor short-haul
+        elseif type == LongHaul
+            return 1.11; # Lavatory weight factor long-haul
+        else
+            error("Unknown aircraft type")
+        end
+    end
+
+    function food_weight_factor(range::RangeType)
+        # Food weight factor
+        if range == Short
+            return 1.02; # Food weight factor short-haul
+        elseif range == VeryLong
+            return 5.68; # Food weight factor very long-haul
+        else
+            error("Unknown range type")
+        end
+    end
+
+
     function furnishings_weight(N_flightdeck::Int = 2, N_pax::Int = 60, N_cabincrew::Int = 2, P_cabin::Number = 38251., W_0::Number = 30000., type::AircraftType = ShortHaul, range::RangeType = Short)
-        K_lav::double # Lavatory weight factor
-        K_buf::double # Food weight factor
+        K_lav = lavatory_weight_factor(type) # Lavatory weight factor
+        K_buf = food_weight_factor(range) # Food weight factor
 
         if type == Business
             K_lav = 3.90; # Lavatory weight factor business

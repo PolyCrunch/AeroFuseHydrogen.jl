@@ -277,11 +277,14 @@ begin
 end
   ╠═╡ =#
 
+# ╔═╡ c7f6cae8-0116-4993-8aec-e1dc0a8a8e63
+print(L_tank)
+
 # ╔═╡ 6f2d5d12-263d-4b7c-80f1-6426df8334b3
 md"### $W_0$... using a fixed empty weight based on Dash 8"
 
 # ╔═╡ bfb71c6f-6d95-4575-bea0-a90b91a08441
-# motor mass
+furnishings_weight(2, 60, 2)
 
 # ╔═╡ df79508b-2df5-45c9-81be-bfa28398bba2
 mass_motor = motor_mass(8.e6, Future)
@@ -473,6 +476,28 @@ md"""
 
 # ╔═╡ 7fa4e010-4ae8-4b77-9bc2-f12437adb7b3
 t_insulation = 0.05;
+
+# ╔═╡ 82b332ac-5628-4b82-8735-f361dcdfc9b6
+tank = CryogenicFuelTank(
+	radius = fuse.radius - fuse_t_w,
+	#length = volume_to_length(30., fuse.radius - fuse_t_w, t_insulation),
+	length = L_tank,
+	insulation_thickness = t_insulation,
+	insulation_density = insulation_material.Density,
+	position = [0.55fuse.length, 0, 0]
+)
+
+# ╔═╡ 63475bbf-6993-4f6c-86b8-f3b608b63a8e
+tank_length = tank.length # Tank exterior length
+
+# ╔═╡ b9fddbc4-a2d7-48cf-ace4-f092a3c38b11
+tank_dry_mass = dry_mass(tank) # Calculate the dry mass of the tank (kg)
+
+# ╔═╡ a0c931b1-e9a5-4bf3-af6d-a9e6d0009998
+full_tank_mass = wet_mass(tank, 1) # Calculate the mass of a fuel tank. This function can also accept a vector of fractions
+
+# ╔═╡ e36dc0e2-015e-4132-a105-d145e17cceb8
+tank_capacity = internal_volume(tank) # Calculate the internal volume of the fuel tank
 
 # ╔═╡ 5446afd1-4326-41ab-94ec-199587c1411b
 md"""
@@ -824,9 +849,12 @@ begin
 	global curstep = 0;
 	max_step = 10000;
 
+	We_base = 17819. - 2*718.; # Mass of base Dash 8 Q400 without engines
+	P_tot = 7562000.; # Total engine power of base Dash 8 Q400
+
 	# Fixed
 	Wf_W0 = 1.06 * (1 - Wi_W0);
-	We = 17819;
+	P_cabin = 38251.; # Cabin pressure, in Pa
 	
 	# Initial guesses
 	global W0 = [30481.0]; # Based on Dash 8 Q400 MTOW
@@ -839,13 +867,32 @@ begin
 			break
 		end
 		global W0_prev = W0[end];
+
+		concept_tank = CryogenicFuelTank(
+			radius=fuse.radius - fuse_t_w,
+			length=volume_to_length(Wf_W0 * W0[end] / ρ_LH2, fuse.radius - fuse_t_w, t_insulation),
+			insulation_thickness=0.05,
+			insulation_density=35.3
+		)
+
+		concept_fc = PEMFCStack(
+			area_effective=840.,
+			power_max = P_tot,
+			height=2*(fuse.radius - fuse_t_w),
+			width=2*(fuse.radius - fuse_t_w)
+		)
 		
-		global L_tank = volume_to_length(Wf_W0 * W0[end] / ρ_LH2, fuse.radius - fuse_t_w, t_insulation);
-		global n_passengers = n_basepassengers - 4 * Int(ceil(L_tank/0.762));
+		global n_passengers = n_basepassengers - 4 * Int(ceil(concept_tank.length/0.762));
 		W_crew = crew_weight(2, n_passengers);
 		W_payload = n_passengers * (84 + 23);
-		#We_W0 = 1.12 * W0[end]^(-0.05);
 
+		We = We_base;
+		We += dry_mass(concept_tank);
+		We += mass(concept_fc);
+		We += motor_mass(P_tot, Future);
+
+
+		global drymass = dry_mass(concept_tank)
 		W0_new = (W_crew + W_payload + We) / (1 - Wf_W0)
 		push!(W0, W0_new)
 	end
@@ -853,9 +900,6 @@ end
 
 # ╔═╡ 913db9f9-850b-4fe9-b4c5-1c872fc7ebf9
 print(W0[end])
-
-# ╔═╡ c7f6cae8-0116-4993-8aec-e1dc0a8a8e63
-print(L_tank)
 
 # ╔═╡ 6c8ed38b-1b05-41ca-92f9-760501184e58
 print(n_passengers)
@@ -872,28 +916,6 @@ W0plot = plot(
 		ylabel = "Design MTOW (kg)",
 		legend = false
 	)
-
-# ╔═╡ 82b332ac-5628-4b82-8735-f361dcdfc9b6
-tank = CryogenicFuelTank(
-	radius = fuse.radius - fuse_t_w,
-	#length = volume_to_length(30., fuse.radius - fuse_t_w, t_insulation),
-	length = L_tank,
-	insulation_thickness = t_insulation,
-	insulation_density = insulation_material.Density,
-	position = [0.55fuse.length, 0, 0]
-)
-
-# ╔═╡ 63475bbf-6993-4f6c-86b8-f3b608b63a8e
-tank_length = tank.length # Tank exterior length
-
-# ╔═╡ b9fddbc4-a2d7-48cf-ace4-f092a3c38b11
-tank_dry_mass = dry_mass(tank) # Calculate the dry mass of the tank (kg)
-
-# ╔═╡ a0c931b1-e9a5-4bf3-af6d-a9e6d0009998
-full_tank_mass = wet_mass(tank, 1) # Calculate the mass of a fuel tank. This function can also accept a vector of fractions
-
-# ╔═╡ e36dc0e2-015e-4132-a105-d145e17cceb8
-tank_capacity = internal_volume(tank) # Calculate the internal volume of the fuel tank
 
 # ╔═╡ 9f776e2f-1fa9-48f5-b554-6bf5a5d91441
 md"## Plot definition"
