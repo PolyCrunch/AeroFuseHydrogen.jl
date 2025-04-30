@@ -241,6 +241,9 @@ Correction factor for Hydrogen: 1.16x"""
 # ╔═╡ e58f446a-88fe-430a-9598-d5bf2dc931ee
 md"### $W_0$"
 
+# ╔═╡ 6f2d5d12-263d-4b7c-80f1-6426df8334b3
+md"### $W_0$... using a fixed empty weight based on Dash 8"
+
 # ╔═╡ a77fce1f-0574-4666-ba3b-631716384ae0
 md"""
 ### Constraint Diagrams
@@ -772,39 +775,6 @@ begin
 	Wi_W0 *= W7_W0;
 end
 
-# ╔═╡ 15772b5a-0f02-4505-bfca-8ce63a92ee13
-begin
-	tol = 0.1;
-	global W0_prev = 0.0;
-	global curstep = 0;
-	max_step = 10000;
-
-	# Fixed
-	Wf_W0 = 1.06 * (1 - Wi_W0);
-	
-	# Initial guesses
-	global W0 = [30481.0]; # Based on Dash 8 Q400 MTOW
-
-	while abs(W0[end] - W0_prev) > tol
-		global curstep += 1;
-		if curstep >= max_step
-			print("Failed to iterate within max_step")
-			push!(W0, -1.0)
-			break
-		end
-		global W0_prev = W0[end];
-		
-		global L_tank = volume_to_length(Wf_W0 * W0[end] / ρ_LH2, fuse.radius - fuse_t_w, t_insulation);
-		global n_passengers = n_basepassengers - 4 * Int(ceil(L_tank/0.762));
-		W_crew = crew_weight(2, n_passengers);
-		W_payload = n_passengers * (84 + 23);
-		We_W0 = 1.12 * W0[end]^(-0.05);
-
-		W0_new = (W_crew + W_payload) / (1 - Wf_W0 - We_W0)
-		push!(W0, W0_new)
-	end
-end
-
 # ╔═╡ 913db9f9-850b-4fe9-b4c5-1c872fc7ebf9
 print(W0[end])
 
@@ -941,6 +911,76 @@ plt_vlm
 # ╔═╡ f03893b1-7518-47d3-ae88-da688aff9591
 plt_vlm
 
+# ╔═╡ 16996cd1-b98a-4ab7-9674-e45b8548eda7
+begin
+	tol = 0.1;
+	global W0_prev = 0.0;
+	global curstep = 0;
+	max_step = 10000;
+
+	# Fixed
+	Wf_W0 = 1.06 * (1 - Wi_W0);
+	We = 17819;
+	
+	# Initial guesses
+	global W0 = [30481.0]; # Based on Dash 8 Q400 MTOW
+
+	while abs(W0[end] - W0_prev) > tol
+		global curstep += 1;
+		if curstep >= max_step
+			print("Failed to iterate within max_step")
+			push!(W0, -1.0)
+			break
+		end
+		global W0_prev = W0[end];
+		
+		global L_tank = volume_to_length(Wf_W0 * W0[end] / ρ_LH2, fuse.radius - fuse_t_w, t_insulation);
+		global n_passengers = n_basepassengers - 4 * Int(ceil(L_tank/0.762));
+		W_crew = crew_weight(2, n_passengers);
+		W_payload = n_passengers * (84 + 23);
+		#We_W0 = 1.12 * W0[end]^(-0.05);
+
+		W0_new = (W_crew + W_payload + We) / (1 - Wf_W0)
+		push!(W0, W0_new)
+	end
+end
+
+# ╔═╡ 15772b5a-0f02-4505-bfca-8ce63a92ee13
+# ╠═╡ disabled = true
+#=╠═╡
+begin
+	tol = 0.1;
+	global W0_prev = 0.0;
+	global curstep = 0;
+	max_step = 10000;
+
+	# Fixed
+	Wf_W0 = 1.06 * (1 - Wi_W0);
+	
+	# Initial guesses
+	global W0 = [30481.0]; # Based on Dash 8 Q400 MTOW
+
+	while abs(W0[end] - W0_prev) > tol
+		global curstep += 1;
+		if curstep >= max_step
+			print("Failed to iterate within max_step")
+			push!(W0, -1.0)
+			break
+		end
+		global W0_prev = W0[end];
+		
+		global L_tank = volume_to_length(Wf_W0 * W0[end] / ρ_LH2, fuse.radius - fuse_t_w, t_insulation);
+		global n_passengers = n_basepassengers - 4 * Int(ceil(L_tank/0.762));
+		W_crew = crew_weight(2, n_passengers);
+		W_payload = n_passengers * (84 + 23);
+		We_W0 = 1.12 * W0[end]^(-0.05);
+
+		W0_new = (W_crew + W_payload) / (1 - Wf_W0 - We_W0)
+		push!(W0, W0_new)
+	end
+end
+  ╠═╡ =#
+
 # ╔═╡ Cell order:
 # ╟─316a98fa-f3e4-4b46-8c19-c5dbfa6a550f
 # ╟─cf3ff4ea-03ed-4b53-982c-45d9d71a3ba2
@@ -1003,6 +1043,8 @@ plt_vlm
 # ╠═6c8ed38b-1b05-41ca-92f9-760501184e58
 # ╠═077500bd-581a-46b0-a943-f05a036cf01a
 # ╟─852baaab-ce24-48cc-8393-1a8ee7554874
+# ╟─6f2d5d12-263d-4b7c-80f1-6426df8334b3
+# ╠═16996cd1-b98a-4ab7-9674-e45b8548eda7
 # ╟─a77fce1f-0574-4666-ba3b-631716384ae0
 # ╠═cea3ed96-73aa-44ee-bdc5-2becba65987f
 # ╟─d037c253-032a-4a83-a246-5920cd8e57be
