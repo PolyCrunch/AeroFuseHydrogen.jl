@@ -244,6 +244,30 @@ md"### $W_0$"
 # ╔═╡ 6f2d5d12-263d-4b7c-80f1-6426df8334b3
 md"### $W_0$... using a fixed empty weight based on Dash 8"
 
+# ╔═╡ bfb71c6f-6d95-4575-bea0-a90b91a08441
+# motor mass
+
+# ╔═╡ e4c50e1e-5031-4113-a62b-2a7fcc301b1c
+motor_data = read_data("Data/motors_current.csv")
+
+# ╔═╡ 9d76f7cc-71dc-4cf7-8183-d5ee0a5fbc73
+powers = reshape(motor_data.Continuous_Power, :, 1);
+
+# ╔═╡ cacea1db-5c6e-411f-992f-9ff00b440c19
+masses = reshape(motor_data.Mass, :, 1);
+
+# ╔═╡ 67673bc9-aab9-459a-a47d-f2c9c6684fb5
+motor_fit = linregress(
+	powers,
+	masses,
+	intercept=false);
+
+# ╔═╡ 21d9850a-52e9-4217-b291-3e9b50424db4
+motorslope = LinearRegression.slope(motor_fit)
+
+# ╔═╡ ba69b49a-f8aa-4079-a311-06908bf518a6
+#LinearRegression.slope(E_fit); LinearRegression.bias(E_fit)
+
 # ╔═╡ a77fce1f-0574-4666-ba3b-631716384ae0
 md"""
 ### Constraint Diagrams
@@ -1045,6 +1069,13 @@ end
 # ╟─852baaab-ce24-48cc-8393-1a8ee7554874
 # ╟─6f2d5d12-263d-4b7c-80f1-6426df8334b3
 # ╠═16996cd1-b98a-4ab7-9674-e45b8548eda7
+# ╠═bfb71c6f-6d95-4575-bea0-a90b91a08441
+# ╠═e4c50e1e-5031-4113-a62b-2a7fcc301b1c
+# ╠═9d76f7cc-71dc-4cf7-8183-d5ee0a5fbc73
+# ╠═cacea1db-5c6e-411f-992f-9ff00b440c19
+# ╠═67673bc9-aab9-459a-a47d-f2c9c6684fb5
+# ╠═21d9850a-52e9-4217-b291-3e9b50424db4
+# ╠═ba69b49a-f8aa-4079-a311-06908bf518a6
 # ╟─a77fce1f-0574-4666-ba3b-631716384ae0
 # ╠═cea3ed96-73aa-44ee-bdc5-2becba65987f
 # ╟─d037c253-032a-4a83-a246-5920cd8e57be
