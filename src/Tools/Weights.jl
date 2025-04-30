@@ -80,7 +80,7 @@ end
         15 * N_cabincrew + K_lav * N_pax^1.33 +
         0.771 * (W_0 / 1000); # Weight of furnishings [kg], Roskam Part V
 
-        return W_furnishings;
+        return W_furnishings / 2.20462; # Convert weight from lb to kg
     end
 
 end
