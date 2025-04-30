@@ -21,7 +21,7 @@ end
     end
 
 
-    function crew_weight(n_flightdeck::Int, n_passengers::Int)::Double
+    function crew_weight(n_flightdeck::Int, n_passengers::Int)::Number
         # Weight of crew
         @assert n_flightdeck >= 0 "Number of flight deck crew must be non-negative"
         @assert n_passengers >= 0 "Number of passengers must be non-negative"
@@ -29,12 +29,12 @@ end
         n_cabin = n_cabincrew; # One cabin crew for every 50 passengers
 
         return (
-            n_flightdeck * (85 + 15) + # Flight deck crew
-            n_cabin * (75 + 15) # Cabin crew
+            n_flightdeck * (85. + 15.) + # Flight deck crew
+            n_cabin * (75. + 15.) # Cabin crew
         )
     end
 
-    function lavatory_weight_factor(type::AircraftType)::Double
+    function lavatory_weight_factor(type::AircraftType)::Number
         # Lavatory weight factor
         if type == Business
             return 3.90; # Lavatory weight factor business
@@ -47,7 +47,7 @@ end
         end
     end
 
-    function food_weight_factor(range::RangeType)
+    function food_weight_factor(range::RangeType)::Number
         # Food weight factor
         if range == Short
             return 1.02; # Food weight factor short-haul
@@ -59,7 +59,7 @@ end
     end
 
 
-    function furnishings_weight(N_flightdeck::Int = 2, N_pax::Int = 60, N_cabincrew::Int = 2, P_cabin::Number = 38251., W_0::Number = 30000., type::AircraftType = ShortHaul, range::RangeType = Short)::Double
+    function furnishings_weight(N_flightdeck::Int = 2, N_pax::Int = 60, N_cabincrew::Int = 2, P_cabin::Number = 38251., W_0::Number = 30000., type::AircraftType = ShortHaul, range::RangeType = Short)::Number
         K_lav = lavatory_weight_factor(type) # Lavatory weight factor
         K_buf = food_weight_factor(range) # Food weight factor
 
