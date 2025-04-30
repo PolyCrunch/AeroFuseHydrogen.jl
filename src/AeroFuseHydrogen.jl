@@ -44,9 +44,9 @@ import .HydrogenElectric: AbstractHydrogenPropulsionSystem, AbstractFuelTank, Ab
 export AbstractHydrogenPropulsionSystem, AbstractFuelTank, AbstractEngine, AbstractPropeller, AbstractFuelCell
 
 # Propulsion system
-import .HydrogenElectric: TechLevel, psfc, motor_mass
+import .HydrogenElectric: TechLevel, psfc, motor_mass, Current, Future
 
-export TechLevel, psfc, motor_mass
+export TechLevel, psfc, motor_mass, Current, Future
 
 # Fuel tank
 import .HydrogenElectric: FuelTank, ρ_LH2, length, cosine_interpolation, CryogenicFuelTank, volume_to_length, internal_volume, dry_mass, wet_mass, coordinates

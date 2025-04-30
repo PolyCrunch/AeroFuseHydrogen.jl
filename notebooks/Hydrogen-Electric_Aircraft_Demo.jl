@@ -284,7 +284,7 @@ md"### $W_0$... using a fixed empty weight based on Dash 8"
 # motor mass
 
 # ╔═╡ df79508b-2df5-45c9-81be-bfa28398bba2
-mass_motor = motor_mass(8.e6)
+mass_motor = motor_mass(8.e6, TechLevel(1))
 
 # ╔═╡ a77fce1f-0574-4666-ba3b-631716384ae0
 md"""
