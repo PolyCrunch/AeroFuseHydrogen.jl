@@ -31,8 +31,8 @@ export pemfc_polarization
 ## Weights
 #==========================================================================================#
 include("Tools/Weights.jl")
-import .Weights: AircraftType, RangeType, crew_weight, furnishings_weight, Business, ShortHaul, LongHaul, Short, VeryLong
-export AircraftType, RangeType, crew_weight, furnishings_weight, Business, ShortHaul, LongHaul, Short, VeryLong
+import .Weights: AircraftType, RangeType, n_cabincrew, crew_weight, furnishings_weight, Business, ShortHaul, LongHaul, Short, VeryLong
+export AircraftType, RangeType, n_cabincrew, crew_weight, furnishings_weight, Business, ShortHaul, LongHaul, Short, VeryLong
 
 ## Hydrogen Electric
 #==========================================================================================#

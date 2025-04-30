@@ -225,6 +225,9 @@ As fuel will be stored in the cabin, number of passengers will depend on size of
 # ╔═╡ 22a540fa-0659-4eb9-9d73-fb9516e5f715
 n_basepassengers = 80;
 
+# ╔═╡ bb3a629d-b63f-42dc-a074-d5df13ca0aee
+W0_base = 30481.;
+
 # ╔═╡ ff947612-2f1e-49a7-9815-8dea097edc3c
 md"""### Crew Weight
 2 pilots, 1 flight attendant per 50 passengers (from FAR 25).
@@ -278,13 +281,10 @@ end
   ╠═╡ =#
 
 # ╔═╡ c7f6cae8-0116-4993-8aec-e1dc0a8a8e63
-print(L_tank)
+#print(L_tank)
 
 # ╔═╡ 6f2d5d12-263d-4b7c-80f1-6426df8334b3
 md"### $W_0$... using a fixed empty weight based on Dash 8"
-
-# ╔═╡ bfb71c6f-6d95-4575-bea0-a90b91a08441
-furnishings_weight(2, 60, 2)
 
 # ╔═╡ df79508b-2df5-45c9-81be-bfa28398bba2
 mass_motor = motor_mass(8.e6, Future)
@@ -887,9 +887,11 @@ begin
 		W_payload = n_passengers * (84 + 23);
 
 		We = We_base;
-		We += dry_mass(concept_tank);
-		We += mass(concept_fc);
-		We += motor_mass(P_tot, Future);
+		We += dry_mass(concept_tank); # Tank mass
+		We += mass(concept_fc); # FC mass
+		We += motor_mass(P_tot, Future); # Motor mass
+		We -= furnishings_weight(2, n_basepassengers, 2, p_air(2200), W0_base, ShortHaul, Short); # Subtract the total weight of furnishings (base)
+		
 
 
 		global drymass = dry_mass(concept_tank)
@@ -1062,6 +1064,7 @@ plt_vlm
 # ╠═e00ea2c0-dee4-43e1-ab9d-6c8de1e0c2aa
 # ╟─3920cf3a-1144-4fe7-9a40-9b12a1a4ed9e
 # ╠═22a540fa-0659-4eb9-9d73-fb9516e5f715
+# ╠═bb3a629d-b63f-42dc-a074-d5df13ca0aee
 # ╟─ff947612-2f1e-49a7-9815-8dea097edc3c
 # ╟─7115cdf4-632c-45be-a3bd-2aaf152e42c9
 # ╟─e58f446a-88fe-430a-9598-d5bf2dc931ee
@@ -1073,7 +1076,6 @@ plt_vlm
 # ╟─852baaab-ce24-48cc-8393-1a8ee7554874
 # ╟─6f2d5d12-263d-4b7c-80f1-6426df8334b3
 # ╠═16996cd1-b98a-4ab7-9674-e45b8548eda7
-# ╠═bfb71c6f-6d95-4575-bea0-a90b91a08441
 # ╠═df79508b-2df5-45c9-81be-bfa28398bba2
 # ╟─a77fce1f-0574-4666-ba3b-631716384ae0
 # ╠═cea3ed96-73aa-44ee-bdc5-2becba65987f
