@@ -1,5 +1,17 @@
 module Weights
 
+@enum AircraftType begin
+    Business
+    ShortHaul
+    LongHaul
+end
+
+@enum RangeType begin
+    Short
+    VeryLong
+end
+
+
     function crew_weight(n_flightdeck::Int, n_passengers::Int)
         # Weight of crew
         @assert n_flightdeck >= 0 "Number of flight deck crew must be non-negative"
@@ -11,6 +23,39 @@ module Weights
             n_flightdeck * (85 + 15) + # Flight deck crew
             n_cabin * (75 + 15) # Cabin crew
         )
+    end
+
+    function furnishings_weight(N_flightdeck::Int = 2, N_pax::Int = 60, N_cabincrew::Int = 2, P_cabin::Number = 38251., W_0::Number = 30000., type::AircraftType = ShortHaul, range::RangeType = Short)
+        K_lav::double # Lavatory weight factor
+        K_buf::double # Food weight factor
+
+        if type == Business
+            K_lav = 3.90; # Lavatory weight factor business
+        elseif type == ShortHaul
+            K_lav = 0.31; # Lavatory weight factor short-haul
+        elseif type == LongHaul
+            K_lav = 1.11; # Lavatory weight factor long-haul
+        else
+            error("Unknown aircraft type")
+        end
+
+        if range == Short
+            K_buf = 1.02; # Food weight factor short-haul
+        elseif range == VeryLong
+            K_buf = 5.68; # Food weight factor very long-haul
+        else
+            error("Unknown range type")
+        end
+
+        P_cabin *= 0.000145038; # Convert cabin pressure from Pa to psi
+        W_0 *= 2.20462; # Convert weight from kg to lb
+
+        # Calculate the weight of the furnishings
+        W_furnishings = 55 * N_flightdeck + 32 * N_pax +
+        15 * N_cabincrew + K_lav * N_pax^1.33 +
+        0.771 * (W_0 / 1000); # Weight of furnishings [kg], Roskam Part V
+
+        return W_furnishings;
     end
 
 end
