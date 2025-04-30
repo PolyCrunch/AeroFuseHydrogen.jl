@@ -884,6 +884,7 @@ begin
 		
 		global n_passengers = n_basepassengers - 4 * Int(ceil(concept_tank.length/0.762));
 		W_crew = crew_weight(2, n_passengers);
+		n_cc = n_cabincrew(n_passengers);
 		W_payload = n_passengers * (84 + 23);
 
 		We = We_base;
@@ -891,6 +892,7 @@ begin
 		We += mass(concept_fc); # FC mass
 		We += motor_mass(P_tot, Future); # Motor mass
 		We -= furnishings_weight(2, n_basepassengers, 2, p_air(2200), W0_base, ShortHaul, Short); # Subtract the total weight of furnishings (base)
+		We += furnishings_weight(2, n_passengers, n_cabincrew, p_air(2200), W0[end], ShortHaul, Short); # Add the new total weight of the furnishings
 		
 
 
