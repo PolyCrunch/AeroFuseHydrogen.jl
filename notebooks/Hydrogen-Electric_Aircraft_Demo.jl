@@ -82,6 +82,15 @@ For propulsion it will use an electric motor (with propeller) at the front of th
 ![Three-perspective of a De Havilland Canada Dash 8 Q-400](https://www.aviastar.org/pictures/canada/bombardier_dash-8-400.gif)
 """
 
+# ╔═╡ 4f444e4d-67a4-46ae-a228-f50ab4a08521
+CLmax = 1.9;
+
+# ╔═╡ eddf94fe-34f8-4f30-b655-af2227ae3d5f
+CLmax_TO = 2.5;
+
+# ╔═╡ 1381ea38-6afc-4eea-bef3-9e31cc2e4a48
+CLmax_LD = 2.7;
+
 # ╔═╡ 6242fa28-1d3f-45d7-949a-646d2c7a9f52
 md"## Defining the fuselage"
 
@@ -295,7 +304,7 @@ md"""
 """
 
 # ╔═╡ cea3ed96-73aa-44ee-bdc5-2becba65987f
-W_S = LinRange(0, 6000, 1000);
+W_S = LinRange(0, 10000, 100);
 
 # ╔═╡ d037c253-032a-4a83-a246-5920cd8e57be
 md"""
@@ -322,25 +331,16 @@ $$TODA_{m} \geq 11.7 TOP_{SI}$$
 md"""##### 50ft Obstacle"""
 
 # ╔═╡ 91f05db8-972e-435e-aaf7-a207047e27e8
-CL_TO = 1.5 # RANDOM GUESS FOR NOW
+CL_TO = CLmax_TO * 0.88; # RANDOM GUESS FOR NOW
 
 # ╔═╡ 4b738106-128e-4399-8edb-2c1b6e2a5512
-σ_TO = 1.; # SEA LEVEL FOR NOW
+σ_TO_LDG = 1.; # SEA LEVEL FOR NOW
 
 # ╔═╡ 005399ec-fc82-445f-92a5-7172c2b4722d
 TODA_min = 1500; # metres. Needs justifying
 
 # ╔═╡ 9d98cc63-eec4-4294-8467-b1ca1117d243
-PW_TO50 = 11.7 * W_S / (TODA_min * σ_TO * CL_TO);
-
-# ╔═╡ a2e69f21-d4a7-4198-9af9-e3a6c6e332e8
-plot(
-	W_S,
-	PW_TO50,
-	label = "Take-off: 50ft obstacle",
-	xlabel = "Wing Loading (N/m^2)",
-	ylabel = "Power to weight (W/N)"
-);
+PW_TO50 = 11.7 * W_S / (TODA_min * σ_TO_LDG * CL_TO);
 
 # ╔═╡ c727ec57-02ad-443c-b8e1-0303ed101e5d
 md"""##### BFL Estimate"""
@@ -351,24 +351,53 @@ N_E = 2;
 # ╔═╡ cc47266b-899d-4519-b159-915b3ae14a54
 PW_TO_BFL = PW_TO50 * (0.297 - 0.019 * N_E) / 0.144;
 
-# ╔═╡ 25ef29da-3c7f-4c74-8092-f9175e9e1b18
-plot!(
-	W_S,
-	PW_TO_BFL,
-	label = "Take-off: BFL",
-	xlabel = "Wing Loading (N/m^2)",
-	ylabel = "Power to weight (W/N)"
-);
+# ╔═╡ 0726c8be-9699-4d05-ae2d-3a24db308ae4
+md"""#### Landing Distance"""
 
-# ╔═╡ 2ab7dc44-d355-4f57-ae3a-abf94e5695c1
-plot!(
-	[30481 * 9.81 / S_ref],
-	[3781 * 1000 * 2 / (30481 * 9.81)],
-	label = "Dash 8 Q400 Design Point",
-	xlabel = "Wing Loading (N/m^2)",
-	ylabel = "Power to weight (W/N)",
-	marker = :circle	
-)
+# ╔═╡ bd40dd8a-8f7e-4f68-a052-be71620a1f9e
+begin
+	ALD = TODA_min / (5/3); # 5/3 is mandatory safety factor
+	Sa = 305; # For a 3 degree glideslope
+	KR = 0.66; # Assume thrust reversers
+
+	global WS_ldg = (ALD - Sa) * σ_TO_LDG * CLmax_LD / (0.51 * KR);
+end
+
+# ╔═╡ 8af17db4-6710-4e4d-8384-e3768d43e609
+md"""#### Flight Phases
+$$\bigg( \frac{P}{W} \bigg)_0 = \frac{V_\infty \alpha}{\eta_{prop} \beta} \bigg[ \frac{1}{V_\infty} \frac{dh}{dt} + \frac{1}{g} \frac{dV_\infty}{dt} + \frac{\frac{1}{2}\rho V_\infty^2 C_{D_0}}{\alpha W_0/S_{ref}} + \frac{\alpha n^2 W_0/S_{ref}}{\frac{1}{2}\rho V_\infty^2 \pi AR e} \bigg]$$"""
+
+# ╔═╡ 9ed18a34-e391-4802-92df-eae5f9e02dc8
+V_cruise
+
+# ╔═╡ 94eaf8be-b197-4606-9908-bc8317b1c6d0
+begin
+	# Curves
+	plot(
+		W_S,
+		[PW_TO50 PW_TO_BFL],
+		label = ["Take-off: 50ft obstacle" "Take-off: BFL"],
+		
+	);
+
+	# Vertical lines
+	plot!(
+		[WS_ldg; WS_ldg],
+		[0; 65],
+		label = "Landing",
+		xlabel = "Wing loading (N/m^2)",
+		ylabel = "Power to weight (W/N)"
+	);
+
+	plot!(
+		[30481 * 9.81 / S_ref],
+		[3781 * 1000 * 2 / (30481 * 9.81)],
+		label = "Dash 8 Q400 Design Point",
+		xlabel = "Wing Loading (N/m^2)",
+		ylabel = "Power to weight (W/N)",
+		marker = :circle	
+	)
+end
 
 # ╔═╡ 2b8ec21c-d8da-4e16-91c0-244857483463
 md"## Defining the fuel tank"
@@ -887,12 +916,12 @@ begin
 		n_cc = n_cabincrew(n_passengers);
 		W_payload = n_passengers * (84 + 23);
 
-		We = We_base;
+		global We = We_base;
 		We += dry_mass(concept_tank); # Tank mass
 		We += mass(concept_fc); # FC mass
 		We += motor_mass(P_tot, Future); # Motor mass
 		We -= furnishings_weight(2, n_basepassengers, 2, p_air(2200), W0_base, ShortHaul, Short); # Subtract the total weight of furnishings (base)
-		We += furnishings_weight(2, n_passengers, n_cabincrew, p_air(2200), W0[end], ShortHaul, Short); # Add the new total weight of the furnishings
+		We += furnishings_weight(2, n_passengers, n_cc, p_air(2200), W0[end], ShortHaul, Short); # Add the new total weight of the furnishings
 		
 
 
@@ -920,6 +949,17 @@ W0plot = plot(
 		ylabel = "Design MTOW (kg)",
 		legend = false
 	)
+
+# ╔═╡ 8ce1c30e-b602-4411-b671-1cc5f267e646
+We
+
+# ╔═╡ 5c5775e4-6fde-4906-8e2f-02f8249c4a8e
+begin
+	# Top of initial climb: 7500 m (25,000 ft)
+	α = W0[end] * W1_W0 * W2_W0;
+	β = 1;
+
+end
 
 # ╔═╡ 9f776e2f-1fa9-48f5-b554-6bf5a5d91441
 md"## Plot definition"
@@ -1028,6 +1068,9 @@ plt_vlm
 # ╠═559bcd99-f43f-4228-9632-2aa5cd93a1fb
 # ╟─b1e81925-32b5-45c0-888c-4b38a34e27b6
 # ╟─b81ca63b-46e9-4808-8225-c36132e70084
+# ╠═4f444e4d-67a4-46ae-a228-f50ab4a08521
+# ╠═eddf94fe-34f8-4f30-b655-af2227ae3d5f
+# ╠═1381ea38-6afc-4eea-bef3-9e31cc2e4a48
 # ╟─6242fa28-1d3f-45d7-949a-646d2c7a9f52
 # ╠═0badf910-ef0d-4f6a-99b0-9a1a5d8a7213
 # ╠═62dd8881-9b07-465d-a83e-d93eafc7225a
@@ -1079,6 +1122,7 @@ plt_vlm
 # ╟─6f2d5d12-263d-4b7c-80f1-6426df8334b3
 # ╠═16996cd1-b98a-4ab7-9674-e45b8548eda7
 # ╠═df79508b-2df5-45c9-81be-bfa28398bba2
+# ╠═8ce1c30e-b602-4411-b671-1cc5f267e646
 # ╟─a77fce1f-0574-4666-ba3b-631716384ae0
 # ╠═cea3ed96-73aa-44ee-bdc5-2becba65987f
 # ╟─d037c253-032a-4a83-a246-5920cd8e57be
@@ -1087,12 +1131,15 @@ plt_vlm
 # ╠═4b738106-128e-4399-8edb-2c1b6e2a5512
 # ╠═005399ec-fc82-445f-92a5-7172c2b4722d
 # ╠═9d98cc63-eec4-4294-8467-b1ca1117d243
-# ╠═a2e69f21-d4a7-4198-9af9-e3a6c6e332e8
 # ╟─c727ec57-02ad-443c-b8e1-0303ed101e5d
 # ╠═6881d47f-4fc6-4885-9e6c-ebbcbca31005
 # ╠═cc47266b-899d-4519-b159-915b3ae14a54
-# ╠═25ef29da-3c7f-4c74-8092-f9175e9e1b18
-# ╠═2ab7dc44-d355-4f57-ae3a-abf94e5695c1
+# ╟─0726c8be-9699-4d05-ae2d-3a24db308ae4
+# ╟─bd40dd8a-8f7e-4f68-a052-be71620a1f9e
+# ╟─8af17db4-6710-4e4d-8384-e3768d43e609
+# ╠═5c5775e4-6fde-4906-8e2f-02f8249c4a8e
+# ╠═9ed18a34-e391-4802-92df-eae5f9e02dc8
+# ╠═94eaf8be-b197-4606-9908-bc8317b1c6d0
 # ╟─2b8ec21c-d8da-4e16-91c0-244857483463
 # ╟─a017efa0-cf08-4302-80f7-fae1ef55651c
 # ╟─b69a9c96-c979-4ced-bc85-fbe47ada1c9e
