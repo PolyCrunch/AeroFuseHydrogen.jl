@@ -19,8 +19,8 @@ export read_data
 ## Atmospheric properties
 #==========================================================================================#
 include("Tools/AtmosProperties.jl")
-import .AtmosProperties: K_air, α_air, ν_air, p_air, T_air, TAS
-export K_air, α_air, ν_air, p_air, T_air, TAS
+import .AtmosProperties: K_air, α_air, ν_air, p_air, T_air, ρ_air. TAS
+export K_air, α_air, ν_air, p_air, T_air, ρ_air, TAS
 
 ## Fuel Cell properties
 #==========================================================================================#

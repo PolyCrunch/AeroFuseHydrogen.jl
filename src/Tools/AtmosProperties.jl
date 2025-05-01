@@ -56,12 +56,17 @@ function T_air(h::Real=0)
     return T
 end
 
+function ρ_air(h::Real=0)::Real
+    ρ = 1.225 * (1 - 2.2558e-5 * h)^4.2559; # kg/m^3
+
+    return ρ
+end
+
 
 function TAS(h::Real=0, EAS::Real=0)::Real
     @assert (0 <= h < 11000) "Altitude out of range 0 ≤ h < 11000 m"
-    ρ = 1.225 * (1 - 2.2558e-5 * h)^4.2559; # kg/m^3
 
-    TAS = EAS * sqrt(1.225 / ρ); # m/s
+    TAS = EAS * sqrt(ρ_air(h) / ρ); # m/s
     return TAS
 end
 
