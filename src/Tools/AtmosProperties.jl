@@ -66,7 +66,7 @@ end
 function TAS(h::Real=0, EAS::Real=0)::Real
     @assert (0 <= h < 11000) "Altitude out of range 0 ≤ h < 11000 m"
 
-    TAS = EAS * sqrt(ρ_air(h) / ρ); # m/s
+    TAS = EAS * sqrt(1.225 / ρ_air(h)); # m/s
     return TAS
 end
 

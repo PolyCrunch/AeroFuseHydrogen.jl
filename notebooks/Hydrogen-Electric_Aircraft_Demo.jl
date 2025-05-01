@@ -958,9 +958,10 @@ begin
 	# Top of initial climb: 7500 m (25,000 ft)
 	α = W0[end] * W1_W0 * W2_W0;
 	β = 1;
-	V = TAS(7500, 120);
+	h = 7500;
+	V = TAS(h, 120);
 	G = 0.05;
-	
+	ρ = ρ_air(h);
 end
 
 # ╔═╡ 9f776e2f-1fa9-48f5-b554-6bf5a5d91441
