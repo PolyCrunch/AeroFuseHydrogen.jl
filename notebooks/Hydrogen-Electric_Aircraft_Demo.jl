@@ -82,14 +82,20 @@ For propulsion it will use an electric motor (with propeller) at the front of th
 ![Three-perspective of a De Havilland Canada Dash 8 Q-400](https://www.aviastar.org/pictures/canada/bombardier_dash-8-400.gif)
 """
 
-# ╔═╡ 4f444e4d-67a4-46ae-a228-f50ab4a08521
-CLmax = 1.9;
+# ╔═╡ 88b272f9-ad2c-4aab-b784-6907dc87ea2d
+begin
+	global CLmax = 1.9;
+	global CLmax_TO = 2.5;
+	global CLmax_LD = 2.7;
 
-# ╔═╡ eddf94fe-34f8-4f30-b655-af2227ae3d5f
-CLmax_TO = 2.5;
+	global CD_0 = 0.0478; # Need confirming. Taken from some random person's thesis
+	global CD0_TO = 0.0828; # Added 0.04 from Levis
+	global CD0_LD = 0.1328; # Added 0.11 from Levis
 
-# ╔═╡ 1381ea38-6afc-4eea-bef3-9e31cc2e4a48
-CLmax_LD = 2.7;
+	global e = 0.75;
+	global e_TO = e - 0.05 - 0.05;
+	global e_LD = e - 0.05 - 0.10;
+end
 
 # ╔═╡ 6242fa28-1d3f-45d7-949a-646d2c7a9f52
 md"## Defining the fuselage"
@@ -160,6 +166,9 @@ begin
 	mac40_wing = mean_aerodynamic_center(wing, 0.40)# Mean aerodynamic center (40%), m
 end;
 
+# ╔═╡ bae8f6a4-a130-4c02-8dd4-1b7fc78fb104
+AR = aspect_ratio(wing);
+
 # ╔═╡ c84c5839-b215-4f5d-b89a-24da4a7241c2
 md"""
 ## Power Requirements
@@ -220,11 +229,14 @@ W2_W0 = 1 - (1 - 0.985) * Hjet_HH2; # Climb [Raymer]
 # ╔═╡ e86479c5-cbf6-42e1-8b7d-52684360f0b2
 W4_W0 = 1 - (1 - 0.995) * Hjet_HH2; # Land
 
+# ╔═╡ 8f7b0cf4-6d09-4d20-a130-90c7368dc39b
+W5_W0 = 1 - (1 - 0.985) * Hjet_HH2; # Climb [Raymer]
+
 # ╔═╡ 75af705e-6508-438d-8094-ffec993d0060
-W6_W0 = exp((-5400 * 9.81 * psfc(200., 1.e6))/(η_prop)); # 45 min loiter — this seems unrealistic
+W7_W0 = exp((-5400 * 9.81 * psfc(200., 1.e6))/(η_prop)); # 45 min loiter — this seems unrealistic
 
 # ╔═╡ 17a2f25a-964a-4a73-996a-a18484f82add
-W7_W0 = 1 - (1 - 0.995) * Hjet_HH2; # Land
+W8_W0 = 1 - (1 - 0.995) * Hjet_HH2; # Land
 
 # ╔═╡ 3920cf3a-1144-4fe7-9a40-9b12a1a4ed9e
 md"""### Passenger Weight
@@ -253,47 +265,8 @@ Correction factor for Hydrogen: 1.16x"""
 # ╔═╡ e58f446a-88fe-430a-9598-d5bf2dc931ee
 md"### $W_0$"
 
-# ╔═╡ 15772b5a-0f02-4505-bfca-8ce63a92ee13
-# ╠═╡ disabled = true
-#=╠═╡
-begin
-	tol = 0.1;
-	global W0_prev = 0.0;
-	global curstep = 0;
-	max_step = 10000;
-
-	# Fixed
-	Wf_W0 = 1.06 * (1 - Wi_W0);
-	
-	# Initial guesses
-	global W0 = [30481.0]; # Based on Dash 8 Q400 MTOW
-
-	while abs(W0[end] - W0_prev) > tol
-		global curstep += 1;
-		if curstep >= max_step
-			print("Failed to iterate within max_step")
-			push!(W0, -1.0)
-			break
-		end
-		global W0_prev = W0[end];
-		
-		global L_tank = volume_to_length(Wf_W0 * W0[end] / ρ_LH2, fuse.radius - fuse_t_w, t_insulation);
-		global n_passengers = n_basepassengers - 4 * Int(ceil(L_tank/0.762));
-		W_crew = crew_weight(2, n_passengers);
-		W_payload = n_passengers * (84 + 23);
-		We_W0 = 1.12 * W0[end]^(-0.05);
-
-		W0_new = (W_crew + W_payload) / (1 - Wf_W0 - We_W0)
-		push!(W0, W0_new)
-	end
-end
-  ╠═╡ =#
-
 # ╔═╡ c7f6cae8-0116-4993-8aec-e1dc0a8a8e63
 #print(L_tank)
-
-# ╔═╡ 6f2d5d12-263d-4b7c-80f1-6426df8334b3
-md"### $W_0$... using a fixed empty weight based on Dash 8"
 
 # ╔═╡ df79508b-2df5-45c9-81be-bfa28398bba2
 mass_motor = motor_mass(8.e6, Future)
@@ -365,39 +338,21 @@ end
 
 # ╔═╡ 8af17db4-6710-4e4d-8384-e3768d43e609
 md"""#### Flight Phases
-$$\bigg( \frac{P}{W} \bigg)_0 = \frac{V_\infty \alpha}{\eta_{prop} \beta} \bigg[ \frac{1}{V_\infty} \frac{dh}{dt} + \frac{1}{g} \frac{dV_\infty}{dt} + \frac{\frac{1}{2}\rho V_\infty^2 C_{D_0}}{\alpha W_0/S_{ref}} + \frac{\alpha n^2 W_0/S_{ref}}{\frac{1}{2}\rho V_\infty^2 \pi AR e} \bigg]$$"""
+$$\bigg( \frac{P}{W} \bigg)_0 = \frac{V_\infty \alpha}{\eta_{prop} \beta} \bigg[ \frac{1}{V_\infty} \frac{dh}{dt} + \frac{1}{g} \frac{dV_\infty}{dt} + \frac{\frac{1}{2}\rho V_\infty^2 C_{D_0}}{\alpha W_0/S_{ref}} + \frac{\alpha n^2 W_0/S_{ref}}{\frac{1}{2}\rho V_\infty^2 \pi AR e} \bigg]$$
 
-# ╔═╡ 9ed18a34-e391-4802-92df-eae5f9e02dc8
-V_cruise
 
-# ╔═╡ 94eaf8be-b197-4606-9908-bc8317b1c6d0
-begin
-	# Curves
-	plot(
-		W_S,
-		[PW_TO50 PW_TO_BFL],
-		label = ["Take-off: 50ft obstacle" "Take-off: BFL"],
-		
-	);
+For climb:
 
-	# Vertical lines
-	plot!(
-		[WS_ldg; WS_ldg],
-		[0; 65],
-		label = "Landing",
-		xlabel = "Wing loading (N/m^2)",
-		ylabel = "Power to weight (W/N)"
-	);
+$$\bigg( \frac{P}{W} \bigg)_0 = \frac{V_\infty \alpha}{\eta_{prop} \beta} \bigg[ G + \frac{C_{D_0}}{\alpha C_L} + \frac{\alpha C_L}{\pi AR e} \bigg]$$
 
-	plot!(
-		[30481 * 9.81 / S_ref],
-		[3781 * 1000 * 2 / (30481 * 9.81)],
-		label = "Dash 8 Q400 Design Point",
-		xlabel = "Wing Loading (N/m^2)",
-		ylabel = "Power to weight (W/N)",
-		marker = :circle	
-	)
-end
+
+
+For cruise:
+
+$$\bigg( \frac{P}{W} \bigg)_0 = \frac{V_\infty \alpha}{\eta_{prop} \beta} \bigg[ 
+\frac{\frac{1}{2}\rho V_\infty^2 C_{D_0}}{\alpha W_0/S_{ref}} + \frac{\alpha n^2 W_0/S_{ref}}{\frac{1}{2}\rho V_\infty^2 \pi AR e}
+\bigg]$$
+"""
 
 # ╔═╡ 2b8ec21c-d8da-4e16-91c0-244857483463
 md"## Defining the fuel tank"
@@ -505,28 +460,6 @@ md"""
 
 # ╔═╡ 7fa4e010-4ae8-4b77-9bc2-f12437adb7b3
 t_insulation = 0.05;
-
-# ╔═╡ 82b332ac-5628-4b82-8735-f361dcdfc9b6
-tank = CryogenicFuelTank(
-	radius = fuse.radius - fuse_t_w,
-	#length = volume_to_length(30., fuse.radius - fuse_t_w, t_insulation),
-	length = L_tank,
-	insulation_thickness = t_insulation,
-	insulation_density = insulation_material.Density,
-	position = [0.55fuse.length, 0, 0]
-)
-
-# ╔═╡ 63475bbf-6993-4f6c-86b8-f3b608b63a8e
-tank_length = tank.length # Tank exterior length
-
-# ╔═╡ b9fddbc4-a2d7-48cf-ace4-f092a3c38b11
-tank_dry_mass = dry_mass(tank) # Calculate the dry mass of the tank (kg)
-
-# ╔═╡ a0c931b1-e9a5-4bf3-af6d-a9e6d0009998
-full_tank_mass = wet_mass(tank, 1) # Calculate the mass of a fuel tank. This function can also accept a vector of fractions
-
-# ╔═╡ e36dc0e2-015e-4132-a105-d145e17cceb8
-tank_capacity = internal_volume(tank) # Calculate the internal volume of the fuel tank
 
 # ╔═╡ 5446afd1-4326-41ab-94ec-199587c1411b
 md"""
@@ -857,7 +790,7 @@ LD_max = K_LD * sqrt(A_wetted) # Raymer
 W3_W0 = exp((-2000e3 * 9.81 * psfc(200., 1.e6))/(η_prop * LD_max)); # Cruise
 
 # ╔═╡ 50ebd56c-b6bc-4a0a-ad97-f9b8e94ac8bf
-W5_W0 = exp((-300e3 * 9.81 * psfc(200., 1.e6))/(η_prop * LD_max)); # Diversion 300km
+W6_W0 = exp((-300e3 * 9.81 * psfc(200., 1.e6))/(η_prop * LD_max)); # Diversion 300km
 
 # ╔═╡ e00ea2c0-dee4-43e1-ab9d-6c8de1e0c2aa
 begin
@@ -869,6 +802,7 @@ begin
 	Wi_W0 *= W5_W0;
 	Wi_W0 *= W6_W0;
 	Wi_W0 *= W7_W0;
+	Wi_W0 *= W8_W0;
 end
 
 # ╔═╡ 16996cd1-b98a-4ab7-9674-e45b8548eda7
@@ -882,7 +816,7 @@ begin
 	P_tot = 7562000.; # Total engine power of base Dash 8 Q400
 
 	# Fixed
-	Wf_W0 = 1.06 * (1 - Wi_W0);
+	global Wf_W0 = 1.12 * (1 - Wi_W0); # Allow extra fuel mass for excess boil-off. Justify this later.
 	P_cabin = 38251.; # Cabin pressure, in Pa
 	
 	# Initial guesses
@@ -932,13 +866,43 @@ begin
 end
 
 # ╔═╡ 913db9f9-850b-4fe9-b4c5-1c872fc7ebf9
-print(W0[end])
+W0[end]
 
 # ╔═╡ 6c8ed38b-1b05-41ca-92f9-760501184e58
-print(n_passengers)
+n_passengers
 
 # ╔═╡ 077500bd-581a-46b0-a943-f05a036cf01a
-print(curstep)
+curstep
+
+# ╔═╡ a658e85d-1402-4b3f-a8b2-c4205572d2d3
+Wf = Wf_W0 * W0[end]
+
+# ╔═╡ 72ba560b-198f-457a-ba1e-3ddb3628864a
+Vf = Wf / ρ_LH2
+
+# ╔═╡ 82b332ac-5628-4b82-8735-f361dcdfc9b6
+tank = CryogenicFuelTank(
+	radius = fuse.radius - fuse_t_w,
+	length = volume_to_length(Vf, fuse.radius - fuse_t_w, t_insulation),
+	insulation_thickness = t_insulation,
+	insulation_density = insulation_material.Density,
+	position = [0.55fuse.length, 0, 0]
+)
+
+# ╔═╡ 63475bbf-6993-4f6c-86b8-f3b608b63a8e
+tank_length = tank.length # Tank exterior length
+
+# ╔═╡ b9fddbc4-a2d7-48cf-ace4-f092a3c38b11
+tank_dry_mass = dry_mass(tank) # Calculate the dry mass of the tank (kg)
+
+# ╔═╡ a0c931b1-e9a5-4bf3-af6d-a9e6d0009998
+full_tank_mass = wet_mass(tank, 1) # Calculate the mass of a fuel tank. This function can also accept a vector of fractions
+
+# ╔═╡ e36dc0e2-015e-4132-a105-d145e17cceb8
+tank_capacity = internal_volume(tank) # Calculate the internal volume of the fuel tank
+
+# ╔═╡ 5fb06c72-03e3-4e10-b14c-2aa55413d675
+mdot = boil_off(tank, K_insulation, T_s_0, T∞, T_LH2, ϵ)
 
 # ╔═╡ 852baaab-ce24-48cc-8393-1a8ee7554874
 W0plot = plot(
@@ -953,16 +917,97 @@ W0plot = plot(
 # ╔═╡ 8ce1c30e-b602-4411-b671-1cc5f267e646
 We
 
-# ╔═╡ 5c5775e4-6fde-4906-8e2f-02f8249c4a8e
+# ╔═╡ aab531a1-910a-4ef3-b161-5cef662a2c38
 begin
 	# Top of initial climb: 7500 m (25,000 ft)
-	α = W0[end] * W1_W0 * W2_W0;
+	W_cl1 = W0[end] * W1_W0 * W2_W0;
+	α_cl1 = W_cl1 / W0[end];
 	β = 1;
-	h = 7500;
-	V = TAS(h, 120);
-	G = 0.05;
-	ρ = ρ_air(h);
+	V_cl1 = TAS(h_cruise, 80);
+	G_cl = 0.05;
+	ρ_cr = ρ_air(h_cruise);
+	
+	CL_cl1 = α_cl1 * W_S / (0.5 * ρ_cr * V_cl1^2);
+	global PW_climb1 = (V_cl1 * α_cl1)/(η_prop * β) .* ( G_cl .+ (CD_0)./(α_cl1 .* CL_cl1) .+ (α_cl1 .* CL_cl1)./(π * AR * e) );
+end;
+
+# ╔═╡ bf75995b-317b-4ade-a46a-51ed947240c3
+# ╠═╡ disabled = true
+#=╠═╡
+begin
+	# Disabled as similar to climb 1
+	# Top of second climb: 7500 m (25,000 ft)
+	W_cl2 = W0[end] * W1_W0 * W2_W0 * W3_W0 * W4_W0 * W5_W0;
+	α_cl2 = W_cl2 / W0[end];
+	V_cl2 = V_cl1;
+
+	CL_cl2 = α_cl2 * W_S / (0.5 * ρ_cr * V_cl2^2);
+	global PW_climb2 = (V_cl2 * α_cl2)/(η_prop * β) .* ( G_cl .+ (CD_0)./(α_cl2 .* CL_cl2) .+ (α_cl2 .* CL_cl2)./(π * AR * e) );
+end;
+  ╠═╡ =#
+
+# ╔═╡ 013f96c8-441d-49cb-b8f5-aa3c138aaedd
+begin
+	# OEI climb with gear, 0.5%. Assume one engine available results in 60% thrust as before, as often max power > continuous power
+	W_cl_oei_gear = W0[end] * W1_W0;
+	α_cl_oei_gear = W_cl_oei_gear / W0[end];
+	β_oei = 0.6;
+	V_cl_oei_gear = 80; # 80 m/s; ground level
+	G_cl_oei_gear = 0.005;
+	ρ_gnd = 1.225;
+
+	CL_cl_oei_gear = α_cl_oei_gear * W_S / (0.5 * ρ_gnd * V_cl_oei_gear^2);
+	global PW_cl_oei_gear = (V_cl_oei_gear * α_cl_oei_gear)/(η_prop * β_oei) .* ( G_cl_oei_gear .+ (CD0_TO)./(α_cl_oei_gear .* CL_cl_oei_gear) .+ (α_cl_oei_gear .* CL_cl_oei_gear)./(π * AR * e_TO));
+end;
+
+# ╔═╡ bae57b19-402e-4169-9ae6-c2d86248e798
+begin
+	# OEI climb without gear, 3%. Assume one engine available results in 60% thrust as before, as often max power > continuous power
+	W_cl_oei = W0[end] * W1_W0;
+	α_cl_oei = W_cl_oei_gear / W0[end];
+	V_cl_oei = 80; # 80 m/s; ground level
+	G_cl_oei = 0.03;
+
+	CL_cl_oei = α_cl_oei * W_S / (0.5 * ρ_gnd * V_cl_oei^2);
+	global PW_cl_oei = (V_cl_oei * α_cl_oei)/(η_prop * β_oei) .* ( G_cl_oei .+ (CD_0)./(α_cl_oei .* CL_cl_oei) .+ (α_cl_oei .* CL_cl_oei)./(π * AR * e));
+end;
+
+# ╔═╡ 94eaf8be-b197-4606-9908-bc8317b1c6d0
+begin
+	# Curves
+	plot(
+		W_S,
+		[PW_TO50 PW_TO_BFL PW_climb1 PW_cl_oei_gear PW_cl_oei],
+		label = ["Take-off: 50ft obstacle" "Take-off: BFL" "5.0% Top of Climb 1" "0.5% Climb, Gear Down, OEI" "3.0% Climb, OEI"],
+	);
+
+	# Vertical lines
+	plot!(
+		[WS_ldg; WS_ldg],
+		[0; 100],
+		label = "Landing 1500 m",
+		xlabel = "Wing loading (N/m^2)",
+		ylabel = "Power to weight (W/N)"
+	);
+
+	plot!(
+		[30481 * 9.81 / S_ref],
+		[3781 * 1000 * 2 / (30481 * 9.81)],
+		label = "Dash 8 Q400 Design Point",
+		marker = :circle,
+		xlims = (0, 10000),
+		ylims = (0, 100)
+	)
 end
+
+# ╔═╡ 4cab2aca-0379-4f36-aec7-3bac193143d4
+begin
+	# Cruise at 7500 m
+	α_cr = W_cl1 / W0[end]; # Same as top of climb 1
+	V_cr = TAS(h_cruise, V_cruise);
+
+	
+end;
 
 # ╔═╡ 9f776e2f-1fa9-48f5-b554-6bf5a5d91441
 md"## Plot definition"
@@ -1071,9 +1116,7 @@ plt_vlm
 # ╠═559bcd99-f43f-4228-9632-2aa5cd93a1fb
 # ╟─b1e81925-32b5-45c0-888c-4b38a34e27b6
 # ╟─b81ca63b-46e9-4808-8225-c36132e70084
-# ╠═4f444e4d-67a4-46ae-a228-f50ab4a08521
-# ╠═eddf94fe-34f8-4f30-b655-af2227ae3d5f
-# ╠═1381ea38-6afc-4eea-bef3-9e31cc2e4a48
+# ╠═88b272f9-ad2c-4aab-b784-6907dc87ea2d
 # ╟─6242fa28-1d3f-45d7-949a-646d2c7a9f52
 # ╠═0badf910-ef0d-4f6a-99b0-9a1a5d8a7213
 # ╠═62dd8881-9b07-465d-a83e-d93eafc7225a
@@ -1085,6 +1128,7 @@ plt_vlm
 # ╠═7bb33068-efa5-40d2-9e63-0137a44181cb
 # ╠═3413ada0-592f-4a37-b5d0-6ff88baad66c
 # ╠═d69b550d-1634-4f45-a660-3be009ddd19d
+# ╠═bae8f6a4-a130-4c02-8dd4-1b7fc78fb104
 # ╟─c84c5839-b215-4f5d-b89a-24da4a7241c2
 # ╟─45193a1b-732f-4d38-b417-a23c65c76ce4
 # ╠═a4d378e7-40e5-467c-a126-6432076b32c1
@@ -1106,6 +1150,7 @@ plt_vlm
 # ╠═60f4656e-b8fb-465a-bd3e-8647fbb785c8
 # ╠═34d83139-a0ce-4712-a884-a3c53a2df098
 # ╠═e86479c5-cbf6-42e1-8b7d-52684360f0b2
+# ╠═8f7b0cf4-6d09-4d20-a130-90c7368dc39b
 # ╠═50ebd56c-b6bc-4a0a-ad97-f9b8e94ac8bf
 # ╠═75af705e-6508-438d-8094-ffec993d0060
 # ╠═17a2f25a-964a-4a73-996a-a18484f82add
@@ -1116,14 +1161,14 @@ plt_vlm
 # ╟─ff947612-2f1e-49a7-9815-8dea097edc3c
 # ╟─7115cdf4-632c-45be-a3bd-2aaf152e42c9
 # ╟─e58f446a-88fe-430a-9598-d5bf2dc931ee
-# ╠═15772b5a-0f02-4505-bfca-8ce63a92ee13
+# ╠═16996cd1-b98a-4ab7-9674-e45b8548eda7
 # ╠═913db9f9-850b-4fe9-b4c5-1c872fc7ebf9
 # ╠═c7f6cae8-0116-4993-8aec-e1dc0a8a8e63
 # ╠═6c8ed38b-1b05-41ca-92f9-760501184e58
 # ╠═077500bd-581a-46b0-a943-f05a036cf01a
+# ╠═a658e85d-1402-4b3f-a8b2-c4205572d2d3
+# ╠═72ba560b-198f-457a-ba1e-3ddb3628864a
 # ╟─852baaab-ce24-48cc-8393-1a8ee7554874
-# ╟─6f2d5d12-263d-4b7c-80f1-6426df8334b3
-# ╠═16996cd1-b98a-4ab7-9674-e45b8548eda7
 # ╠═df79508b-2df5-45c9-81be-bfa28398bba2
 # ╠═8ce1c30e-b602-4411-b671-1cc5f267e646
 # ╟─a77fce1f-0574-4666-ba3b-631716384ae0
@@ -1139,9 +1184,12 @@ plt_vlm
 # ╠═cc47266b-899d-4519-b159-915b3ae14a54
 # ╟─0726c8be-9699-4d05-ae2d-3a24db308ae4
 # ╟─bd40dd8a-8f7e-4f68-a052-be71620a1f9e
-# ╟─8af17db4-6710-4e4d-8384-e3768d43e609
-# ╠═5c5775e4-6fde-4906-8e2f-02f8249c4a8e
-# ╠═9ed18a34-e391-4802-92df-eae5f9e02dc8
+# ╠═8af17db4-6710-4e4d-8384-e3768d43e609
+# ╠═aab531a1-910a-4ef3-b161-5cef662a2c38
+# ╠═bf75995b-317b-4ade-a46a-51ed947240c3
+# ╠═013f96c8-441d-49cb-b8f5-aa3c138aaedd
+# ╠═bae57b19-402e-4169-9ae6-c2d86248e798
+# ╠═4cab2aca-0379-4f36-aec7-3bac193143d4
 # ╠═94eaf8be-b197-4606-9908-bc8317b1c6d0
 # ╟─2b8ec21c-d8da-4e16-91c0-244857483463
 # ╟─a017efa0-cf08-4302-80f7-fae1ef55651c
@@ -1162,6 +1210,7 @@ plt_vlm
 # ╠═b9fddbc4-a2d7-48cf-ace4-f092a3c38b11
 # ╠═a0c931b1-e9a5-4bf3-af6d-a9e6d0009998
 # ╠═e36dc0e2-015e-4132-a105-d145e17cceb8
+# ╠═5fb06c72-03e3-4e10-b14c-2aa55413d675
 # ╠═50e128f3-72d9-42b1-b987-540bf6e7e6d0
 # ╠═f001804d-1bad-4800-8ab0-09717d605dfd
 # ╟─5446afd1-4326-41ab-94ec-199587c1411b
