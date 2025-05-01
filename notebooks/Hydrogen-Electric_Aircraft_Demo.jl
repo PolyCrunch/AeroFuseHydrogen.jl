@@ -209,7 +209,7 @@ h_cruise = 7500; # Similar to Dash 8 Q400
 a_cruise = sqrt(1.4 * 287 * T_air(h_cruise))
 
 # ╔═╡ 2ff4b8a7-5985-4033-855e-8d169fe2d6fb
-M_cruise = 0.5;
+M_cruise = 0.4;
 
 # ╔═╡ be1dfd57-dddb-4d83-8a4d-cdaa13323f2c
 V_cruise = a_cruise * M_cruise
@@ -353,6 +353,9 @@ $$\bigg( \frac{P}{W} \bigg)_0 = \frac{V_\infty \alpha}{\eta_{prop} \beta} \bigg[
 \frac{\frac{1}{2}\rho V_\infty^2 C_{D_0}}{\alpha W_0/S_{ref}} + \frac{\alpha n^2 W_0/S_{ref}}{\frac{1}{2}\rho V_\infty^2 \pi AR e}
 \bigg]$$
 """
+
+# ╔═╡ bfa9173b-202a-47af-ba45-fcc3586916ba
+V_cruise
 
 # ╔═╡ 2b8ec21c-d8da-4e16-91c0-244857483463
 md"## Defining the fuel tank"
@@ -924,7 +927,7 @@ begin
 	α_cl1 = W_cl1 / W0[end];
 	β = 1;
 	V_cl1 = TAS(h_cruise, 80);
-	G_cl = 0.05;
+	G_cl = 0.06;
 	ρ_cr = ρ_air(h_cruise);
 	
 	CL_cl1 = α_cl1 * W_S / (0.5 * ρ_cr * V_cl1^2);
@@ -960,6 +963,14 @@ begin
 	global PW_cl_oei_gear = (V_cl_oei_gear * α_cl_oei_gear)/(η_prop * β_oei) .* ( G_cl_oei_gear .+ (CD0_TO)./(α_cl_oei_gear .* CL_cl_oei_gear) .+ (α_cl_oei_gear .* CL_cl_oei_gear)./(π * AR * e_TO));
 end;
 
+# ╔═╡ 10fafc93-3c68-43e5-ac17-832a329b2d68
+begin
+	# Stall
+	V_st = 55; # At ground level
+
+	WS_stall = 0.5 * ρ_gnd * V_st^2 * CLmax_LD;
+end;
+
 # ╔═╡ bae57b19-402e-4169-9ae6-c2d86248e798
 begin
 	# OEI climb without gear, 3%. Assume one engine available results in 60% thrust as before, as often max power > continuous power
@@ -972,42 +983,66 @@ begin
 	global PW_cl_oei = (V_cl_oei * α_cl_oei)/(η_prop * β_oei) .* ( G_cl_oei .+ (CD_0)./(α_cl_oei .* CL_cl_oei) .+ (α_cl_oei .* CL_cl_oei)./(π * AR * e));
 end;
 
-# ╔═╡ 94eaf8be-b197-4606-9908-bc8317b1c6d0
-begin
-	# Curves
-	plot(
-		W_S,
-		[PW_TO50 PW_TO_BFL PW_climb1 PW_cl_oei_gear PW_cl_oei],
-		label = ["Take-off: 50ft obstacle" "Take-off: BFL" "5.0% Top of Climb 1" "0.5% Climb, Gear Down, OEI" "3.0% Climb, OEI"],
-	);
-
-	# Vertical lines
-	plot!(
-		[WS_ldg; WS_ldg],
-		[0; 100],
-		label = "Landing 1500 m",
-		xlabel = "Wing loading (N/m^2)",
-		ylabel = "Power to weight (W/N)"
-	);
-
-	plot!(
-		[30481 * 9.81 / S_ref],
-		[3781 * 1000 * 2 / (30481 * 9.81)],
-		label = "Dash 8 Q400 Design Point",
-		marker = :circle,
-		xlims = (0, 10000),
-		ylims = (0, 100)
-	)
-end
-
 # ╔═╡ 4cab2aca-0379-4f36-aec7-3bac193143d4
 begin
 	# Cruise at 7500 m
 	α_cr = W_cl1 / W0[end]; # Same as top of climb 1
 	V_cr = TAS(h_cruise, V_cruise);
 
-	
+	CL_cr = α_cr * W_S / (0.5 * ρ_cr * V_cr^2);
+
+	global PW_cr = (V_cr * α_cr)/(η_prop * β) .* ( (CD_0)./(α_cr .* CL_cr) .+ (α_cr .* CL_cr)./(π * AR * e));
 end;
+
+# ╔═╡ bf9dd9a8-5f84-4787-bc7f-b06de47b24a9
+begin
+	# Wing Loading to match original Dash 8 Wing
+	# Our loading:
+	WS_req = W0[end] * 9.81 / S_ref;
+end;
+
+# ╔═╡ 94eaf8be-b197-4606-9908-bc8317b1c6d0
+begin
+	# Curves
+	plot(
+		W_S,
+		[PW_TO50 PW_TO_BFL PW_climb1 PW_cl_oei_gear PW_cl_oei PW_cr],
+		label = ["Take-off: 50ft obstacle" "Take-off: BFL" "5.0% Top of Climb 1" "0.5% Climb, Gear Down, OEI" "3.0% Climb, OEI" "Cruise"],
+		xlabel = "Wing loading (N/m²)",
+		ylabel = "Power to weight (W/N)",
+		xlims = (0, 10000),
+		ylims = (0, 100)
+	);
+
+	# Vertical lines
+	plot!(
+		[[WS_ldg; WS_ldg] [WS_stall; WS_stall] [WS_req; WS_req]],
+		[0; 100],
+		label = ["Landing 1500 m" "Stall" "Wing loading for unmodified wing"]
+	);
+
+	plot!(
+		[30481 * 9.81 / S_ref],
+		[3781 * 1000 * 2 / (30481 * 9.81)],
+		label = "Dash 8 Q400 Design Point",
+		marker = :circle
+	)
+
+	plot!(
+		[[WS_req; WS_req]],
+		[0; 100],
+		label = "Wing loading required for unmodified wing",
+		color = :gray,
+		line = :dash
+	)
+
+	plot!(
+		[WS_req],
+		[34],
+		label = "HFC Dash 8 Q400 Design Point",
+		marker = :star
+	)
+end
 
 # ╔═╡ 9f776e2f-1fa9-48f5-b554-6bf5a5d91441
 md"## Plot definition"
@@ -1183,13 +1218,16 @@ plt_vlm
 # ╠═6881d47f-4fc6-4885-9e6c-ebbcbca31005
 # ╠═cc47266b-899d-4519-b159-915b3ae14a54
 # ╟─0726c8be-9699-4d05-ae2d-3a24db308ae4
-# ╟─bd40dd8a-8f7e-4f68-a052-be71620a1f9e
-# ╠═8af17db4-6710-4e4d-8384-e3768d43e609
+# ╠═bd40dd8a-8f7e-4f68-a052-be71620a1f9e
+# ╟─8af17db4-6710-4e4d-8384-e3768d43e609
 # ╠═aab531a1-910a-4ef3-b161-5cef662a2c38
 # ╠═bf75995b-317b-4ade-a46a-51ed947240c3
 # ╠═013f96c8-441d-49cb-b8f5-aa3c138aaedd
 # ╠═bae57b19-402e-4169-9ae6-c2d86248e798
 # ╠═4cab2aca-0379-4f36-aec7-3bac193143d4
+# ╠═bfa9173b-202a-47af-ba45-fcc3586916ba
+# ╠═10fafc93-3c68-43e5-ac17-832a329b2d68
+# ╠═bf9dd9a8-5f84-4787-bc7f-b06de47b24a9
 # ╠═94eaf8be-b197-4606-9908-bc8317b1c6d0
 # ╟─2b8ec21c-d8da-4e16-91c0-244857483463
 # ╟─a017efa0-cf08-4302-80f7-fae1ef55651c
