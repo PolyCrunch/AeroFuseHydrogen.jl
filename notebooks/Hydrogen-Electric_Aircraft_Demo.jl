@@ -209,7 +209,7 @@ h_cruise = 7500; # Similar to Dash 8 Q400
 a_cruise = sqrt(1.4 * 287 * T_air(h_cruise))
 
 # ╔═╡ 2ff4b8a7-5985-4033-855e-8d169fe2d6fb
-M_cruise = 0.4;
+M_cruise = 0.35;
 
 # ╔═╡ be1dfd57-dddb-4d83-8a4d-cdaa13323f2c
 V_cruise = a_cruise * M_cruise
@@ -353,6 +353,21 @@ $$\bigg( \frac{P}{W} \bigg)_0 = \frac{V_\infty \alpha}{\eta_{prop} \beta} \bigg[
 \frac{\frac{1}{2}\rho V_\infty^2 C_{D_0}}{\alpha W_0/S_{ref}} + \frac{\alpha n^2 W_0/S_{ref}}{\frac{1}{2}\rho V_\infty^2 \pi AR e}
 \bigg]$$
 """
+
+# ╔═╡ bf75995b-317b-4ade-a46a-51ed947240c3
+# ╠═╡ disabled = true
+#=╠═╡
+begin
+	# Disabled as similar to climb 1
+	# Top of second climb: 7500 m (25,000 ft)
+	W_cl2 = W0[end] * W1_W0 * W2_W0 * W3_W0 * W4_W0 * W5_W0;
+	α_cl2 = W_cl2 / W0[end];
+	V_cl2 = V_cl1;
+
+	CL_cl2 = α_cl2 * W_S / (0.5 * ρ_cr * V_cl2^2);
+	global PW_climb2 = (V_cl2 * α_cl2)/(η_prop * β) .* ( G_cl .+ (CD_0)./(α_cl2 .* CL_cl2) .+ (α_cl2 .* CL_cl2)./(π * AR * e) );
+end;
+  ╠═╡ =#
 
 # ╔═╡ bfa9173b-202a-47af-ba45-fcc3586916ba
 V_cruise
@@ -934,21 +949,6 @@ begin
 	global PW_climb1 = (V_cl1 * α_cl1)/(η_prop * β) .* ( G_cl .+ (CD_0)./(α_cl1 .* CL_cl1) .+ (α_cl1 .* CL_cl1)./(π * AR * e) );
 end;
 
-# ╔═╡ bf75995b-317b-4ade-a46a-51ed947240c3
-# ╠═╡ disabled = true
-#=╠═╡
-begin
-	# Disabled as similar to climb 1
-	# Top of second climb: 7500 m (25,000 ft)
-	W_cl2 = W0[end] * W1_W0 * W2_W0 * W3_W0 * W4_W0 * W5_W0;
-	α_cl2 = W_cl2 / W0[end];
-	V_cl2 = V_cl1;
-
-	CL_cl2 = α_cl2 * W_S / (0.5 * ρ_cr * V_cl2^2);
-	global PW_climb2 = (V_cl2 * α_cl2)/(η_prop * β) .* ( G_cl .+ (CD_0)./(α_cl2 .* CL_cl2) .+ (α_cl2 .* CL_cl2)./(π * AR * e) );
-end;
-  ╠═╡ =#
-
 # ╔═╡ 013f96c8-441d-49cb-b8f5-aa3c138aaedd
 begin
 	# OEI climb with gear, 0.5%. Assume one engine available results in 60% thrust as before, as often max power > continuous power
@@ -1016,9 +1016,9 @@ begin
 
 	# Vertical lines
 	plot!(
-		[[WS_ldg; WS_ldg] [WS_stall; WS_stall] [WS_req; WS_req]],
+		[[WS_ldg; WS_ldg] [WS_stall; WS_stall]],
 		[0; 100],
-		label = ["Landing 1500 m" "Stall" "Wing loading for unmodified wing"]
+		label = ["Landing 1500 m" "Stall"]
 	);
 
 	plot!(
@@ -1033,12 +1033,12 @@ begin
 		[0; 100],
 		label = "Wing loading required for unmodified wing",
 		color = :gray,
-		line = :dash
+		line = :dashdot
 	)
 
 	plot!(
 		[WS_req],
-		[34],
+		[25],
 		label = "HFC Dash 8 Q400 Design Point",
 		marker = :star
 	)
