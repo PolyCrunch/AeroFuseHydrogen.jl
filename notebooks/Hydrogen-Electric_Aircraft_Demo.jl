@@ -339,7 +339,13 @@ md"""#### Landing Distance"""
 #end
 
 # ╔═╡ 3717e560-147c-49df-b5f0-324b06664a73
-
+WS_ldg = WS_Landing(
+	ALD = TODA_min / (5/3),
+	S_a = 305.,
+	K_R = 0.66,
+	σ = 1.0,
+	CL_max = CLmax_LD
+)
 
 # ╔═╡ 8af17db4-6710-4e4d-8384-e3768d43e609
 md"""#### Flight Phases
