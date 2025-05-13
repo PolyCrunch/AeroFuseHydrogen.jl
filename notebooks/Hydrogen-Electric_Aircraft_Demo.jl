@@ -264,25 +264,10 @@ Raymer, twin turboprop: We/W0 = 0.96 * W_0^{-0.05}
 
 Correction factor for Hydrogen: 1.16x"""
 
-# ╔═╡ e58f446a-88fe-430a-9598-d5bf2dc931ee
-md"### $W_0$"
-
-# ╔═╡ c7f6cae8-0116-4993-8aec-e1dc0a8a8e63
-#print(L_tank)
-
-# ╔═╡ df79508b-2df5-45c9-81be-bfa28398bba2
-mass_motor = motor_mass(8.e6, Future)
-
-# ╔═╡ a77fce1f-0574-4666-ba3b-631716384ae0
+# ╔═╡ a2eca0b9-730c-4be0-9e7e-d10d9f7ca664
 md"""
-### Constraint Diagrams
+### Constraint Diagrams Prep
 """
-
-# ╔═╡ cea3ed96-73aa-44ee-bdc5-2becba65987f
-W_S = LinRange(0, 10000, 100);
-
-# ╔═╡ cff8b71d-1870-486f-ad06-732813265742
-ρ_gnd = 1.225;
 
 # ╔═╡ d037c253-032a-4a83-a246-5920cd8e57be
 md"""
@@ -305,8 +290,8 @@ Lots of maths, but for propeller 50ft obstacle clearance,
 $$TODA_{m} \geq 11.7 TOP_{SI}$$
 """
 
-# ╔═╡ 50275134-8baa-48fe-be7b-93d17a029c85
-md"""##### 50ft Obstacle"""
+# ╔═╡ cff8b71d-1870-486f-ad06-732813265742
+ρ_gnd = 1.225;
 
 # ╔═╡ 91f05db8-972e-435e-aaf7-a207047e27e8
 CL_TO = CLmax_TO * 0.88; # RANDOM GUESS FOR NOW
@@ -317,29 +302,14 @@ CL_TO = CLmax_TO * 0.88; # RANDOM GUESS FOR NOW
 # ╔═╡ 005399ec-fc82-445f-92a5-7172c2b4722d
 TODA_min = 1500; # metres. Needs justifying
 
-# ╔═╡ 9d98cc63-eec4-4294-8467-b1ca1117d243
-PW_TO50 = 11.7 * W_S / (TODA_min * σ_TO_LDG * CL_TO);
-
-# ╔═╡ c727ec57-02ad-443c-b8e1-0303ed101e5d
-md"""##### BFL Estimate"""
-
 # ╔═╡ 6881d47f-4fc6-4885-9e6c-ebbcbca31005
 N_E = 2;
-
-# ╔═╡ cc47266b-899d-4519-b159-915b3ae14a54
-PW_TO_BFL = PW_TO50 * (0.297 - 0.019 * N_E) / 0.144;
 
 # ╔═╡ 0726c8be-9699-4d05-ae2d-3a24db308ae4
 md"""#### Landing Distance"""
 
-# ╔═╡ 3717e560-147c-49df-b5f0-324b06664a73
-WS_ldg = WS_Landing(
-	ALD = TODA_min / (5/3), # 5/3 is a mandatory safety factor
-	S_a = 305., # Corresponds to a three degree glideslope
-	K_R = 0.66, # Assume thrust reversers
-	σ = 1.0, # Density ratio
-	CL_max = CLmax_LD
-)
+# ╔═╡ fcc34f42-2b64-4c4f-8b91-b5f95ddadfd0
+ρ_cr = ρ_air(h_cruise);
 
 # ╔═╡ 8af17db4-6710-4e4d-8384-e3768d43e609
 md"""#### Flight Phases
@@ -359,70 +329,110 @@ $$\bigg( \frac{P}{W} \bigg)_0 = \frac{V_\infty \alpha}{\eta_{prop} \beta} \bigg[
 \bigg]$$
 """
 
-# ╔═╡ fcc34f42-2b64-4c4f-8b91-b5f95ddadfd0
-ρ_cr = ρ_air(h_cruise);
-
-# ╔═╡ e73593b1-8b47-4bfb-963a-e9ffca67e73f
-PW_climb1 = PW_Climb(W_S;
-	 α = W1_W0 * W2_W0,
-	 β = 1.,
-	 V = TAS(h_cruise, 80.),
-	 G = 0.06, # Climb gradient
-	 ρ = ρ_cr
-	);
-
 # ╔═╡ 13be94f1-bfc7-44a0-9985-0a3783cd8265
 β_OEI = 0.6;
 
-# ╔═╡ cf7a2352-6d92-4405-a857-970e9e25990a
+# ╔═╡ e58f446a-88fe-430a-9598-d5bf2dc931ee
+md"### $W_0$"
+
+# ╔═╡ a77fce1f-0574-4666-ba3b-631716384ae0
+md"""
+### Constraint Diagrams
+"""
+
+# ╔═╡ cea3ed96-73aa-44ee-bdc5-2becba65987f
+W_S = LinRange(0, 10000, 100);
+
+# ╔═╡ b50bf2eb-3bbb-4ce8-b0af-063d69bbeb26
+WS_ldg = WS_Landing(;
+				    ALD = TODA_min / (5. / 3.),
+					S_a = 305.,
+					K_R = 0.66,
+					σ = σ_TO_LDG
+				   );
+
+# ╔═╡ 1d60645e-6d85-4f14-8554-6a0383fe92ea
+WS_stall = WS_Stall(;
+				   V_stall = 55.,
+				   ρ = ρ_gnd,
+				   CL_max = CLmax_LD);
+
+# ╔═╡ aae8d9a3-aa33-4467-adbd-6a639221fbf5
+PW_TO50 = PW_50ftTakeoff(W_S;
+						TODA_min = TODA_min,
+						σ = σ_TO_LDG,
+						CL_TO = CL_TO);
+
+# ╔═╡ 4c948bb0-7399-4e0f-a9aa-c239aec74566
+PW_TO_BFL = PW_BFLTakeoff(W_S;
+						 N_E = N_E,
+						 TODA_min = TODA_min,
+						 σ = σ_TO_LDG,
+						 CL_TO = CL_TO);
+
+# ╔═╡ 29a1727c-6eea-4bf3-89c3-789ef8a4f7ac
+PW_climb1 = PW_Climb(W_S;
+			 α = W1_W0 * W2_W0,
+			 β = 1.,
+			 V = TAS(h_cruise, 80.),
+			 G = 0.06, # Climb gradient
+			 ρ = ρ_cr
+			);
+
+# ╔═╡ 8b62eee7-6a6f-43d9-b0f2-e4e48d156a45
 PW_cl_oei_gear = PW_Climb(W_S;
-     # OEI climb with gear, 0.5%. Assume one engine available results in 60%
-     # thrust, as often max power > continuous power.
-	 α = W1_W0,
-	 β = β_OEI,
-	 V = 80., # Assume sea level
-	 G = 0.005, # Regulatory requirement
-	 ρ = ρ_gnd,
-	 η_prop = η_prop,
-	 CD_0 = CD0_TO,
-	 AR = AR,
-	 e = e_TO
-	 );
+		     # OEI climb with gear, 0.5%. Assume one engine available results in 60%
+		     # thrust, as often max power > continuous power.
+			 α = W1_W0,
+			 β = β_OEI,
+			 V = 80., # Assume sea level
+			 G = 0.005, # Regulatory requirement
+			 ρ = ρ_gnd,
+			 η_prop = η_prop,
+			 CD_0 = CD0_TO,
+			 AR = AR,
+			 e = e_TO
+			 );
 
-# ╔═╡ 518581b3-317b-4bb2-b70e-f6c2d6fda20e
+# ╔═╡ 6a90d93d-246e-46e8-aab8-b604de989823
 PW_cl_oei = PW_Climb(W_S;
-	# OEI climb without gear, 3%. Assume one engine available results in 60%
-    # thrust, as often max power > continuous power.
-	α = W1_W0,
-	β = β_OEI,
-	V = 80.,
-	G = 0.03, # Regulatory requirement
-	ρ = ρ_gnd,
-	η_prop = η_prop,
-	CD_0 = CD_0,
-	AR = AR,
-	e = e
-	);
+			# OEI climb without gear, 3%. Assume one engine available results in 60%
+			# thrust, as often max power > continuous power.
+			α = W1_W0,
+			β = β_OEI,
+			V = 80.,
+			G = 0.03, # Regulatory requirement
+			ρ = ρ_gnd,
+			η_prop = η_prop,
+			CD_0 = CD_0,
+			AR = AR,
+			e = e
+			);
 
-# ╔═╡ 235ae760-0b21-4cb4-8965-21fd5b643340
+# ╔═╡ 9bf58181-6a29-4587-bec5-cf5999d0ca32
 PW_cr = PW_Cruise(W_S;
-	 # Cruise at 7500 m
-	 α = W1_W0 * W2_W0, # Most constraining weight expected to be same as top of climb 1
-	 β = 1.,
-	 V = TAS(h_cruise, V_cruise),
-	 η_prop = η_prop,
-	 ρ = ρ_cr,
-	 CD_0 = CD_0,
-	 AR = AR,
-	 e = e
-	 );
+			 # Cruise at 7500 m
+			 α = W1_W0 * W2_W0, # Most constraining weight expected to be same as top of climb 1
+			 β = 1.,
+			 V = TAS(h_cruise, V_cruise),
+			 η_prop = η_prop,
+			 ρ = ρ_cr,
+			 CD_0 = CD_0,
+			 AR = AR,
+			 e = e
+		 	);
 
-# ╔═╡ 10fafc93-3c68-43e5-ac17-832a329b2d68
-WS_stall = WS_Stall(
-	V_stall = 55.,
-	ρ = ρ_gnd,
-	CL_max = CLmax_LD
-);
+# ╔═╡ bf75995b-317b-4ade-a46a-51ed947240c3
+# ╠═╡ disabled = true
+#=╠═╡
+PW_climb2 = PW_Climb(W_S;
+ 	# Disabled as similar to climb 1
+	α = W1_W0 * W2_W0 * W3_W0 * W4_W0 * W5_W0,
+	β = 1.,
+	V = TAS(h_cruise, 80.),
+	G = 0.06,
+	ρ = ρ_cr);
+  ╠═╡ =#
 
 # ╔═╡ 2b8ec21c-d8da-4e16-91c0-244857483463
 md"## Defining the fuel tank"
@@ -858,18 +868,6 @@ LD_max = K_LD * sqrt(A_wetted) # Raymer
 # ╔═╡ 34d83139-a0ce-4712-a884-a3c53a2df098
 W3_W0 = exp((-2000e3 * 9.81 * psfc(200., 1.e6))/(η_prop * LD_max)); # Cruise
 
-# ╔═╡ bf75995b-317b-4ade-a46a-51ed947240c3
-# ╠═╡ disabled = true
-#=╠═╡
-PW_climb2 = PW_Climb(W_S;
- 	# Disabled as similar to climb 1
-	α = W1_W0 * W2_W0 * W3_W0 * W4_W0 * W5_W0,
-	β = 1.,
-	V = TAS(h_cruise, 80.),
-	G = 0.06,
-	ρ = ρ_cr);
-  ╠═╡ =#
-
 # ╔═╡ 50ebd56c-b6bc-4a0a-ad97-f9b8e94ac8bf
 W6_W0 = exp((-300e3 * 9.81 * psfc(200., 1.e6))/(η_prop * LD_max)); # Diversion 300km
 
@@ -894,7 +892,7 @@ begin
 	max_step = 10000;
 
 	We_base = 17819. - 2*718.; # Mass of base Dash 8 Q400 without engines
-	P_tot = 7562000.; # Total engine power of base Dash 8 Q400
+	#P_tot = 7562000.; # Total engine power of base Dash 8 Q400
 
 	# Fixed
 	global Wf_W0 = 1.12 * (1 - Wi_W0); # Allow extra fuel mass for excess boil-off. Justify this later.
@@ -911,6 +909,74 @@ begin
 			break
 		end
 		global W0_prev = W0[end];
+
+		# !====================== CONSTRAINT DIAGRAMS ============================!
+		# Use constraint diagrams to estimate total power required
+		
+		# This will assume that the wing loading is within the stall and landing limits. Recalculate the constraints after the final iteration to verify this.
+		
+		global WS_req = W0_prev * 9.81 / S_ref;
+		global PW_max = 0.;
+
+		local PW_climb1 = PW_Climb(WS_req;
+			 α = W1_W0 * W2_W0,
+			 β = 1.,
+			 V = TAS(h_cruise, 80.),
+			 G = 0.06, # Climb gradient
+			 ρ = ρ_cr
+			);
+
+		PW_max = max(PW_max, PW_climb1)
+
+		local PW_cl_oei_gear = PW_Climb(WS_req;
+		     # OEI climb with gear, 0.5%. Assume one engine available results in 60%
+		     # thrust, as often max power > continuous power.
+			 α = W1_W0,
+			 β = β_OEI,
+			 V = 80., # Assume sea level
+			 G = 0.005, # Regulatory requirement
+			 ρ = ρ_gnd,
+			 η_prop = η_prop,
+			 CD_0 = CD0_TO,
+			 AR = AR,
+			 e = e_TO
+			 );
+
+		PW_max = max(PW_max, PW_cl_oei_gear)
+
+		local PW_cl_oei = PW_Climb(WS_req;
+			# OEI climb without gear, 3%. Assume one engine available results in 60%
+			# thrust, as often max power > continuous power.
+			α = W1_W0,
+			β = β_OEI,
+			V = 80.,
+			G = 0.03, # Regulatory requirement
+			ρ = ρ_gnd,
+			η_prop = η_prop,
+			CD_0 = CD_0,
+			AR = AR,
+			e = e
+			);
+
+		PW_max = max(PW_max, PW_cl_oei)
+
+		local PW_cr = PW_Cruise(WS_req;
+			 # Cruise at 7500 m
+			 α = W1_W0 * W2_W0, # Most constraining weight expected to be same as top of climb 1
+			 β = 1.,
+			 V = TAS(h_cruise, V_cruise),
+			 η_prop = η_prop,
+			 ρ = ρ_cr,
+			 CD_0 = CD_0,
+			 AR = AR,
+			 e = e
+		 	);
+
+		PW_max = max(PW_max, PW_cr)
+
+		global P_tot = PW_max * W0_prev * 9.81;
+
+		# !=======================================================================!
 
 		concept_tank = CryogenicFuelTank(
 			radius=fuse.radius - fuse_t_w,
@@ -945,6 +1011,9 @@ begin
 		push!(W0, W0_new)
 	end
 end
+
+# ╔═╡ 60912178-17b6-42d8-971d-17184aa1d8d9
+P_tot
 
 # ╔═╡ 913db9f9-850b-4fe9-b4c5-1c872fc7ebf9
 W0[end]
@@ -998,10 +1067,6 @@ W0plot = plot(
 # ╔═╡ 8ce1c30e-b602-4411-b671-1cc5f267e646
 We
 
-# ╔═╡ bf9dd9a8-5f84-4787-bc7f-b06de47b24a9
-# Wing Loading to match original Dash 8 Wing
-WS_req = W0[end] * 9.81 / S_ref;
-
 # ╔═╡ 94eaf8be-b197-4606-9908-bc8317b1c6d0
 begin
 	# Curves
@@ -1039,7 +1104,7 @@ begin
 
 	plot!(
 		[WS_req],
-		[25],
+		[PW_max],
 		label = "HFC Dash 8 Q400 Design Point",
 		marker = :star
 	)
@@ -1196,42 +1261,39 @@ plt_vlm
 # ╠═bb3a629d-b63f-42dc-a074-d5df13ca0aee
 # ╟─ff947612-2f1e-49a7-9815-8dea097edc3c
 # ╟─7115cdf4-632c-45be-a3bd-2aaf152e42c9
+# ╠═a2eca0b9-730c-4be0-9e7e-d10d9f7ca664
+# ╟─d037c253-032a-4a83-a246-5920cd8e57be
+# ╠═cff8b71d-1870-486f-ad06-732813265742
+# ╠═91f05db8-972e-435e-aaf7-a207047e27e8
+# ╠═4b738106-128e-4399-8edb-2c1b6e2a5512
+# ╠═005399ec-fc82-445f-92a5-7172c2b4722d
+# ╠═6881d47f-4fc6-4885-9e6c-ebbcbca31005
+# ╟─0726c8be-9699-4d05-ae2d-3a24db308ae4
+# ╠═fcc34f42-2b64-4c4f-8b91-b5f95ddadfd0
+# ╟─8af17db4-6710-4e4d-8384-e3768d43e609
+# ╠═13be94f1-bfc7-44a0-9985-0a3783cd8265
 # ╟─e58f446a-88fe-430a-9598-d5bf2dc931ee
 # ╠═16996cd1-b98a-4ab7-9674-e45b8548eda7
+# ╠═60912178-17b6-42d8-971d-17184aa1d8d9
 # ╠═913db9f9-850b-4fe9-b4c5-1c872fc7ebf9
-# ╠═c7f6cae8-0116-4993-8aec-e1dc0a8a8e63
 # ╠═6c8ed38b-1b05-41ca-92f9-760501184e58
 # ╠═077500bd-581a-46b0-a943-f05a036cf01a
 # ╠═a658e85d-1402-4b3f-a8b2-c4205572d2d3
 # ╠═72ba560b-198f-457a-ba1e-3ddb3628864a
 # ╟─852baaab-ce24-48cc-8393-1a8ee7554874
-# ╠═df79508b-2df5-45c9-81be-bfa28398bba2
 # ╠═8ce1c30e-b602-4411-b671-1cc5f267e646
 # ╟─a77fce1f-0574-4666-ba3b-631716384ae0
 # ╠═cea3ed96-73aa-44ee-bdc5-2becba65987f
-# ╠═cff8b71d-1870-486f-ad06-732813265742
-# ╟─d037c253-032a-4a83-a246-5920cd8e57be
-# ╟─50275134-8baa-48fe-be7b-93d17a029c85
-# ╠═91f05db8-972e-435e-aaf7-a207047e27e8
-# ╠═4b738106-128e-4399-8edb-2c1b6e2a5512
-# ╠═005399ec-fc82-445f-92a5-7172c2b4722d
-# ╠═9d98cc63-eec4-4294-8467-b1ca1117d243
-# ╟─c727ec57-02ad-443c-b8e1-0303ed101e5d
-# ╠═6881d47f-4fc6-4885-9e6c-ebbcbca31005
-# ╠═cc47266b-899d-4519-b159-915b3ae14a54
-# ╟─0726c8be-9699-4d05-ae2d-3a24db308ae4
-# ╠═3717e560-147c-49df-b5f0-324b06664a73
-# ╟─8af17db4-6710-4e4d-8384-e3768d43e609
-# ╠═fcc34f42-2b64-4c4f-8b91-b5f95ddadfd0
-# ╠═e73593b1-8b47-4bfb-963a-e9ffca67e73f
+# ╠═b50bf2eb-3bbb-4ce8-b0af-063d69bbeb26
+# ╠═1d60645e-6d85-4f14-8554-6a0383fe92ea
+# ╠═aae8d9a3-aa33-4467-adbd-6a639221fbf5
+# ╠═4c948bb0-7399-4e0f-a9aa-c239aec74566
+# ╠═29a1727c-6eea-4bf3-89c3-789ef8a4f7ac
+# ╠═8b62eee7-6a6f-43d9-b0f2-e4e48d156a45
+# ╠═6a90d93d-246e-46e8-aab8-b604de989823
+# ╠═9bf58181-6a29-4587-bec5-cf5999d0ca32
 # ╠═bf75995b-317b-4ade-a46a-51ed947240c3
-# ╠═13be94f1-bfc7-44a0-9985-0a3783cd8265
-# ╠═cf7a2352-6d92-4405-a857-970e9e25990a
-# ╠═518581b3-317b-4bb2-b70e-f6c2d6fda20e
-# ╠═235ae760-0b21-4cb4-8965-21fd5b643340
-# ╠═10fafc93-3c68-43e5-ac17-832a329b2d68
-# ╠═bf9dd9a8-5f84-4787-bc7f-b06de47b24a9
-# ╟─94eaf8be-b197-4606-9908-bc8317b1c6d0
+# ╠═94eaf8be-b197-4606-9908-bc8317b1c6d0
 # ╟─2b8ec21c-d8da-4e16-91c0-244857483463
 # ╟─a017efa0-cf08-4302-80f7-fae1ef55651c
 # ╟─b69a9c96-c979-4ced-bc85-fbe47ada1c9e

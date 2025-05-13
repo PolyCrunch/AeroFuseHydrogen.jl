@@ -15,7 +15,7 @@ end
 
 function PW_50ftTakeoff(W_S; TODA_min::Real = 1500., σ::Real = 1., CL_TO::Real = 2.2)
     # Estimate the power-to-weight ratio required for takeoff over a 50ft obstacle
-    P_W = 11.7 .* Float64(W_S) ./ (TODA_min * σ * CL_TO);
+    P_W = 11.7 .* W_S ./ (TODA_min * σ * CL_TO);
 
     return P_W
 end
