@@ -371,21 +371,6 @@ PW_climb1 = PW_Climb(W_S;
 	 ρ = ρ_cr
 	);
 
-# ╔═╡ bf75995b-317b-4ade-a46a-51ed947240c3
-# ╠═╡ disabled = true
-#=╠═╡
-begin
-	# Disabled as similar to climb 1
-	# Top of second climb: 7500 m (25,000 ft)
-	W_cl2 = W0[end] * W1_W0 * W2_W0 * W3_W0 * W4_W0 * W5_W0;
-	α_cl2 = W_cl2 / W0[end];
-	V_cl2 = V_cl1;
-
-	CL_cl2 = α_cl2 * W_S / (0.5 * ρ_cr * V_cl2^2);
-	global PW_climb2 = (V_cl2 * α_cl2)/(η_prop * β) .* ( G_cl .+ (CD_0)./(α_cl2 .* CL_cl2) .+ (α_cl2 .* CL_cl2)./(π * AR * e) );
-end;
-  ╠═╡ =#
-
 # ╔═╡ 13be94f1-bfc7-44a0-9985-0a3783cd8265
 β_OEI = 0.6;
 
@@ -419,23 +404,10 @@ PW_cl_oei = PW_Climb(W_S;
 	e = e
 	);
 
-# ╔═╡ 4cab2aca-0379-4f36-aec7-3bac193143d4
-# ╠═╡ disabled = true
-#=╠═╡
-begin
-	# Cruise at 7500 m
-	α_cr = W_cl1 / W0[end]; # Same as top of climb 1
-	V_cr = TAS(h_cruise, V_cruise);
-
-	CL_cr = α_cr * W_S / (0.5 * ρ_cr * V_cr^2);
-
-	global PW_cr = (V_cr * α_cr)/(η_prop * β) .* ( (CD_0)./(α_cr .* CL_cr) .+ (α_cr .* CL_cr)./(π * AR * e));
-end;
-  ╠═╡ =#
-
 # ╔═╡ 235ae760-0b21-4cb4-8965-21fd5b643340
 PW_cr = PW_Cruise(W_S;
-	 α = W1_W0 * W2_W0,
+	 # Cruise at 7500 m
+	 α = W1_W0 * W2_W0, # Most constraining weight expected to be same as top of climb 1
 	 β = 1.,
 	 V = TAS(h_cruise, V_cruise),
 	 η_prop = η_prop,
@@ -443,20 +415,14 @@ PW_cr = PW_Cruise(W_S;
 	 CD_0 = CD_0,
 	 AR = AR,
 	 e = e
-	 )
+	 );
 
 # ╔═╡ 10fafc93-3c68-43e5-ac17-832a329b2d68
-#begin
-#	# Stall
-#	V_st = 55; # At ground level
-#
-#	WS_stall = 0.5 * ρ_gnd * V_st^2 * CLmax_LD;
-#end;
 WS_stall = WS_Stall(
 	V_stall = 55.,
 	ρ = ρ_gnd,
 	CL_max = CLmax_LD
-)
+);
 
 # ╔═╡ 2b8ec21c-d8da-4e16-91c0-244857483463
 md"## Defining the fuel tank"
@@ -524,7 +490,6 @@ end
 
 # ╔═╡ c829759c-914e-4d1d-a037-9c59bf0f97c9
 begin
-	ρ_LH2 = 70.8; # Density of Hydrogen, kg /m^3
 	boiloffplot = plot(
 		100 * t_w,
 		360 * M,
@@ -893,6 +858,18 @@ LD_max = K_LD * sqrt(A_wetted) # Raymer
 # ╔═╡ 34d83139-a0ce-4712-a884-a3c53a2df098
 W3_W0 = exp((-2000e3 * 9.81 * psfc(200., 1.e6))/(η_prop * LD_max)); # Cruise
 
+# ╔═╡ bf75995b-317b-4ade-a46a-51ed947240c3
+# ╠═╡ disabled = true
+#=╠═╡
+PW_climb2 = PW_Climb(W_S;
+ 	# Disabled as similar to climb 1
+	α = W1_W0 * W2_W0 * W3_W0 * W4_W0 * W5_W0,
+	β = 1.,
+	V = TAS(h_cruise, 80.),
+	G = 0.06,
+	ρ = ρ_cr);
+  ╠═╡ =#
+
 # ╔═╡ 50ebd56c-b6bc-4a0a-ad97-f9b8e94ac8bf
 W6_W0 = exp((-300e3 * 9.81 * psfc(200., 1.e6))/(η_prop * LD_max)); # Diversion 300km
 
@@ -1022,11 +999,8 @@ W0plot = plot(
 We
 
 # ╔═╡ bf9dd9a8-5f84-4787-bc7f-b06de47b24a9
-begin
-	# Wing Loading to match original Dash 8 Wing
-	# Our loading:
-	WS_req = W0[end] * 9.81 / S_ref;
-end;
+# Wing Loading to match original Dash 8 Wing
+WS_req = W0[end] * 9.81 / S_ref;
 
 # ╔═╡ 94eaf8be-b197-4606-9908-bc8317b1c6d0
 begin
@@ -1254,7 +1228,6 @@ plt_vlm
 # ╠═13be94f1-bfc7-44a0-9985-0a3783cd8265
 # ╠═cf7a2352-6d92-4405-a857-970e9e25990a
 # ╠═518581b3-317b-4bb2-b70e-f6c2d6fda20e
-# ╠═4cab2aca-0379-4f36-aec7-3bac193143d4
 # ╠═235ae760-0b21-4cb4-8965-21fd5b643340
 # ╠═10fafc93-3c68-43e5-ac17-832a329b2d68
 # ╠═bf9dd9a8-5f84-4787-bc7f-b06de47b24a9
