@@ -22,7 +22,7 @@ end
 
 function PW_BFLTakeoff(W_S; N_E::Int = 2, TODA_min::Real = 1500., σ::Real = 1., CL_TO::Real = 2.2)
     # Estimate the power-to-weight ratio required for takeoff over a balanced field length
-    P_W = PW_50ftTakeoff(W_S, TODA_min, σ, CL_TO) .* (0.297 - 0.019 * Float64(N_E)) ./ 0.144;
+    P_W = PW_50ftTakeoff(W_S; TODA_min, σ, CL_TO) .* (0.297 - 0.019 * Float64(N_E)) ./ 0.144;
 
     return P_W
 end
