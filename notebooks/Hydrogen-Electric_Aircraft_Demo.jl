@@ -343,11 +343,32 @@ md"""
 # ╔═╡ cea3ed96-73aa-44ee-bdc5-2becba65987f
 W_S = LinRange(0, 10000, 100);
 
+# ╔═╡ b50bf2eb-3bbb-4ce8-b0af-063d69bbeb26
+WS_ldg = WS_Landing(;
+				    ALD = TODA_min / (5. / 3.),
+					S_a = 305.,
+					K_R = 0.66,
+					σ = σ_TO_LDG
+				   );
+
+# ╔═╡ 1d60645e-6d85-4f14-8554-6a0383fe92ea
+WS_stall = WS_Stall(;
+				   V_stall = 55.,
+				   ρ = ρ_gnd,
+				   CL_max = CLmax_LD);
+
 # ╔═╡ aae8d9a3-aa33-4467-adbd-6a639221fbf5
 PW_TO50 = PW_50ftTakeoff(W_S;
 						TODA_min = TODA_min,
 						σ = σ_TO_LDG,
-						CL_TO = CL_TO)
+						CL_TO = CL_TO);
+
+# ╔═╡ 4c948bb0-7399-4e0f-a9aa-c239aec74566
+PW_TO_BFL = PW_BFLTakeoff(W_S;
+						 N_E = N_E,
+						 TODA_min = TODA_min,
+						 σ = σ_TO_LDG,
+						 CL_TO = CL_TO);
 
 # ╔═╡ 29a1727c-6eea-4bf3-89c3-789ef8a4f7ac
 PW_climb1 = PW_Climb(W_S;
@@ -401,48 +422,17 @@ PW_cr = PW_Cruise(W_S;
 			 e = e
 		 	);
 
-# ╔═╡ 94eaf8be-b197-4606-9908-bc8317b1c6d0
-begin
-	# Curves
-	plot(
-		W_S,
-		[PW_TO50 PW_TO_BFL PW_climb1 PW_cl_oei_gear PW_cl_oei PW_cr],
-		label = ["Take-off: 50ft obstacle" "Take-off: BFL" "5.0% Top of Climb 1" "0.5% Climb, Gear Down, OEI" "3.0% Climb, OEI" "Cruise"],
-		xlabel = "Wing Loading (W₀/S) (N/m²)",
-		ylabel = "Power Loading (P/W)₀ (W/N)",
-		xlims = (0, 10000),
-		ylims = (0, 100)
-	);
-
-	# Vertical lines
-	plot!(
-		[[WS_ldg; WS_ldg] [WS_stall; WS_stall]],
-		[0; 100],
-		label = ["Landing 1500 m" "Stall"]
-	);
-
-	plot!(
-		[30481 * 9.81 / S_ref],
-		[3781 * 1000 * 2 / (30481 * 9.81)],
-		label = "Dash 8 Q400 Design Point",
-		marker = :circle
-	)
-
-	plot!(
-		[[WS_req; WS_req]],
-		[0; 100],
-		label = "Wing loading required for unmodified wing",
-		color = :gray,
-		line = :dashdot
-	)
-
-	plot!(
-		[WS_req],
-		[25],
-		label = "HFC Dash 8 Q400 Design Point",
-		marker = :star
-	)
-end
+# ╔═╡ bf75995b-317b-4ade-a46a-51ed947240c3
+# ╠═╡ disabled = true
+#=╠═╡
+PW_climb2 = PW_Climb(W_S;
+ 	# Disabled as similar to climb 1
+	α = W1_W0 * W2_W0 * W3_W0 * W4_W0 * W5_W0,
+	β = 1.,
+	V = TAS(h_cruise, 80.),
+	G = 0.06,
+	ρ = ρ_cr);
+  ╠═╡ =#
 
 # ╔═╡ 2b8ec21c-d8da-4e16-91c0-244857483463
 md"## Defining the fuel tank"
@@ -878,18 +868,6 @@ LD_max = K_LD * sqrt(A_wetted) # Raymer
 # ╔═╡ 34d83139-a0ce-4712-a884-a3c53a2df098
 W3_W0 = exp((-2000e3 * 9.81 * psfc(200., 1.e6))/(η_prop * LD_max)); # Cruise
 
-# ╔═╡ bf75995b-317b-4ade-a46a-51ed947240c3
-# ╠═╡ disabled = true
-#=╠═╡
-PW_climb2 = PW_Climb(W_S;
- 	# Disabled as similar to climb 1
-	α = W1_W0 * W2_W0 * W3_W0 * W4_W0 * W5_W0,
-	β = 1.,
-	V = TAS(h_cruise, 80.),
-	G = 0.06,
-	ρ = ρ_cr);
-  ╠═╡ =#
-
 # ╔═╡ 50ebd56c-b6bc-4a0a-ad97-f9b8e94ac8bf
 W6_W0 = exp((-300e3 * 9.81 * psfc(200., 1.e6))/(η_prop * LD_max)); # Diversion 300km
 
@@ -937,10 +915,10 @@ begin
 		
 		# This will assume that the wing loading is within the stall and landing limits. Recalculate the constraints after the final iteration to verify this.
 		
-		WS_req = W0_prev * 9.81 / S_ref;
+		global WS_req = W0_prev * 9.81 / S_ref;
 		global PW_max = 0.;
 
-		PW_climb1 = PW_Climb(WS_req;
+		local PW_climb1 = PW_Climb(WS_req;
 			 α = W1_W0 * W2_W0,
 			 β = 1.,
 			 V = TAS(h_cruise, 80.),
@@ -950,7 +928,7 @@ begin
 
 		PW_max = max(PW_max, PW_climb1)
 
-		PW_cl_oei_gear = PW_Climb(WS_req;
+		local PW_cl_oei_gear = PW_Climb(WS_req;
 		     # OEI climb with gear, 0.5%. Assume one engine available results in 60%
 		     # thrust, as often max power > continuous power.
 			 α = W1_W0,
@@ -966,7 +944,7 @@ begin
 
 		PW_max = max(PW_max, PW_cl_oei_gear)
 
-		PW_cl_oei = PW_Climb(WS_req;
+		local PW_cl_oei = PW_Climb(WS_req;
 			# OEI climb without gear, 3%. Assume one engine available results in 60%
 			# thrust, as often max power > continuous power.
 			α = W1_W0,
@@ -982,7 +960,7 @@ begin
 
 		PW_max = max(PW_max, PW_cl_oei)
 
-		PW_cr = PW_Cruise(WS_req;
+		local PW_cr = PW_Cruise(WS_req;
 			 # Cruise at 7500 m
 			 α = W1_W0 * W2_W0, # Most constraining weight expected to be same as top of climb 1
 			 β = 1.,
@@ -1088,6 +1066,49 @@ W0plot = plot(
 
 # ╔═╡ 8ce1c30e-b602-4411-b671-1cc5f267e646
 We
+
+# ╔═╡ 94eaf8be-b197-4606-9908-bc8317b1c6d0
+begin
+	# Curves
+	plot(
+		W_S,
+		[PW_TO50 PW_TO_BFL PW_climb1 PW_cl_oei_gear PW_cl_oei PW_cr],
+		label = ["Take-off: 50ft obstacle" "Take-off: BFL" "5.0% Top of Climb 1" "0.5% Climb, Gear Down, OEI" "3.0% Climb, OEI" "Cruise"],
+		xlabel = "Wing Loading (W₀/S) (N/m²)",
+		ylabel = "Power Loading (P/W)₀ (W/N)",
+		xlims = (0, 10000),
+		ylims = (0, 100)
+	);
+
+	# Vertical lines
+	plot!(
+		[[WS_ldg; WS_ldg] [WS_stall; WS_stall]],
+		[0; 100],
+		label = ["Landing 1500 m" "Stall"]
+	);
+
+	plot!(
+		[30481 * 9.81 / S_ref],
+		[3781 * 1000 * 2 / (30481 * 9.81)],
+		label = "Dash 8 Q400 Design Point",
+		marker = :circle
+	)
+
+	plot!(
+		[[WS_req; WS_req]],
+		[0; 100],
+		label = "Wing loading required for unmodified wing",
+		color = :gray,
+		line = :dashdot
+	)
+
+	plot!(
+		[WS_req],
+		[PW_max],
+		label = "HFC Dash 8 Q400 Design Point",
+		marker = :star
+	)
+end
 
 # ╔═╡ 9f776e2f-1fa9-48f5-b554-6bf5a5d91441
 md"## Plot definition"
@@ -1263,13 +1284,16 @@ plt_vlm
 # ╠═8ce1c30e-b602-4411-b671-1cc5f267e646
 # ╟─a77fce1f-0574-4666-ba3b-631716384ae0
 # ╠═cea3ed96-73aa-44ee-bdc5-2becba65987f
+# ╠═b50bf2eb-3bbb-4ce8-b0af-063d69bbeb26
+# ╠═1d60645e-6d85-4f14-8554-6a0383fe92ea
 # ╠═aae8d9a3-aa33-4467-adbd-6a639221fbf5
+# ╠═4c948bb0-7399-4e0f-a9aa-c239aec74566
 # ╠═29a1727c-6eea-4bf3-89c3-789ef8a4f7ac
 # ╠═8b62eee7-6a6f-43d9-b0f2-e4e48d156a45
 # ╠═6a90d93d-246e-46e8-aab8-b604de989823
 # ╠═9bf58181-6a29-4587-bec5-cf5999d0ca32
 # ╠═bf75995b-317b-4ade-a46a-51ed947240c3
-# ╟─94eaf8be-b197-4606-9908-bc8317b1c6d0
+# ╠═94eaf8be-b197-4606-9908-bc8317b1c6d0
 # ╟─2b8ec21c-d8da-4e16-91c0-244857483463
 # ╟─a017efa0-cf08-4302-80f7-fae1ef55651c
 # ╟─b69a9c96-c979-4ced-bc85-fbe47ada1c9e
