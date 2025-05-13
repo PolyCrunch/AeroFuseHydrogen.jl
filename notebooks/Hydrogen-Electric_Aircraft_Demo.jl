@@ -1,17 +1,19 @@
 ### A Pluto.jl notebook ###
-# v0.19.46
+# v0.20.8
 
 using Markdown
 using InteractiveUtils
 
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
-    quote
+    #! format: off
+    return quote
         local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
         local el = $(esc(element))
         global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
         el
     end
+    #! format: on
 end
 
 # ╔═╡ 3d26ac1a-f679-4ff8-a6d5-e52fc83bcae1
@@ -370,7 +372,7 @@ end;
   ╠═╡ =#
 
 # ╔═╡ bfa9173b-202a-47af-ba45-fcc3586916ba
-V_cruise
+CLmax_LD
 
 # ╔═╡ 2b8ec21c-d8da-4e16-91c0-244857483463
 md"## Defining the fuel tank"
@@ -1008,8 +1010,8 @@ begin
 		W_S,
 		[PW_TO50 PW_TO_BFL PW_climb1 PW_cl_oei_gear PW_cl_oei PW_cr],
 		label = ["Take-off: 50ft obstacle" "Take-off: BFL" "5.0% Top of Climb 1" "0.5% Climb, Gear Down, OEI" "3.0% Climb, OEI" "Cruise"],
-		xlabel = "Wing loading (N/m²)",
-		ylabel = "Power to weight (W/N)",
+		xlabel = "Wing Loading (W₀/S) (N/m²)",
+		ylabel = "Power Loading (P/W)₀ (W/N)",
 		xlims = (0, 10000),
 		ylims = (0, 100)
 	);
@@ -1228,7 +1230,7 @@ plt_vlm
 # ╠═bfa9173b-202a-47af-ba45-fcc3586916ba
 # ╠═10fafc93-3c68-43e5-ac17-832a329b2d68
 # ╠═bf9dd9a8-5f84-4787-bc7f-b06de47b24a9
-# ╠═94eaf8be-b197-4606-9908-bc8317b1c6d0
+# ╟─94eaf8be-b197-4606-9908-bc8317b1c6d0
 # ╟─2b8ec21c-d8da-4e16-91c0-244857483463
 # ╟─a017efa0-cf08-4302-80f7-fae1ef55651c
 # ╟─b69a9c96-c979-4ced-bc85-fbe47ada1c9e

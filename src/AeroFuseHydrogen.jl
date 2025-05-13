@@ -34,6 +34,12 @@ include("Tools/Weights.jl")
 import .Weights: AircraftType, RangeType, n_cabincrew, crew_weight, furnishings_weight, Business, ShortHaul, LongHaul, Short, VeryLong
 export AircraftType, RangeType, n_cabincrew, crew_weight, furnishings_weight, Business, ShortHaul, LongHaul, Short, VeryLong
 
+## Conceptual Design
+#==========================================================================================#
+include("Tools/ConceptualDesign.jl")
+import .ConceptualDesign: WS_Stall, WS_Landing, PW_50ftTakeoff, PW_BFLTakeoff, PW_Climb, PW_Cruise
+export WS_Stall, WS_Landing, PW_50ftTakeoff, PW_BFLTakeoff, PW_Climb, PW_Cruise
+
 ## Hydrogen Electric
 #==========================================================================================#
 include("HydrogenElectric/HydrogenElectric.jl")
