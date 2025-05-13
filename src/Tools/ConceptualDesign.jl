@@ -8,7 +8,7 @@ end
 
 function WS_Landing(ALD::Real = 1000., S_a::Real = 305., K_R::Real = 0.66, σ::Real = 1.0, CL_max = 2.7::Real)
     # Estimate the wing loading limit for landing
-    WS::Real = (ALD - S_a) * σ * CL_max / (0.51 * KR);
+    WS::Real = (ALD - S_a) * σ * CL_max / (0.51 * K_R);
 
     return WS
 end

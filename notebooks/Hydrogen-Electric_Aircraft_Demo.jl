@@ -330,13 +330,16 @@ PW_TO_BFL = PW_TO50 * (0.297 - 0.019 * N_E) / 0.144;
 md"""#### Landing Distance"""
 
 # ╔═╡ bd40dd8a-8f7e-4f68-a052-be71620a1f9e
-begin
-	ALD = TODA_min / (5/3); # 5/3 is mandatory safety factor
-	Sa = 305; # For a 3 degree glideslope
-	KR = 0.66; # Assume thrust reversers
+#begin
+#	ALD = TODA_min / (5/3); # 5/3 is mandatory safety factor
+#	Sa = 305; # For a 3 degree glideslope
+#	KR = 0.66; # Assume thrust reversers
+#
+#	global WS_ldg = (ALD - Sa) * σ_TO_LDG * CLmax_LD / (0.51 * KR);
+#end
 
-	global WS_ldg = (ALD - Sa) * σ_TO_LDG * CLmax_LD / (0.51 * KR);
-end
+# ╔═╡ 3717e560-147c-49df-b5f0-324b06664a73
+
 
 # ╔═╡ 8af17db4-6710-4e4d-8384-e3768d43e609
 md"""#### Flight Phases
@@ -1221,6 +1224,7 @@ plt_vlm
 # ╠═cc47266b-899d-4519-b159-915b3ae14a54
 # ╟─0726c8be-9699-4d05-ae2d-3a24db308ae4
 # ╠═bd40dd8a-8f7e-4f68-a052-be71620a1f9e
+# ╠═3717e560-147c-49df-b5f0-324b06664a73
 # ╟─8af17db4-6710-4e4d-8384-e3768d43e609
 # ╠═aab531a1-910a-4ef3-b161-5cef662a2c38
 # ╠═bf75995b-317b-4ade-a46a-51ed947240c3
