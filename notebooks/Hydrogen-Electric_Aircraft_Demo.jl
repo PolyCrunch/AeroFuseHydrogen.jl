@@ -359,13 +359,16 @@ $$\bigg( \frac{P}{W} \bigg)_0 = \frac{V_\infty \alpha}{\eta_{prop} \beta} \bigg[
 \bigg]$$
 """
 
+# ╔═╡ fcc34f42-2b64-4c4f-8b91-b5f95ddadfd0
+ρ_cr = ρ_air(h_cruise);
+
 # ╔═╡ e73593b1-8b47-4bfb-963a-e9ffca67e73f
 PW_climb1 = PW_Climb(W_S;
 	 α = W1_W0 * W2_W0,
 	 β = 1.,
 	 V = TAS(h_cruise, 80.),
 	 G = 0.06, # Climb gradient
-	 ρ = ρ_air(h_cruise)
+	 ρ = ρ_cr
 	);
 
 # ╔═╡ bf75995b-317b-4ade-a46a-51ed947240c3
@@ -416,13 +419,44 @@ PW_cl_oei = PW_Climb(W_S;
 	e = e
 	);
 
-# ╔═╡ 10fafc93-3c68-43e5-ac17-832a329b2d68
+# ╔═╡ 4cab2aca-0379-4f36-aec7-3bac193143d4
+# ╠═╡ disabled = true
+#=╠═╡
 begin
-	# Stall
-	V_st = 55; # At ground level
+	# Cruise at 7500 m
+	α_cr = W_cl1 / W0[end]; # Same as top of climb 1
+	V_cr = TAS(h_cruise, V_cruise);
 
-	WS_stall = 0.5 * ρ_gnd * V_st^2 * CLmax_LD;
+	CL_cr = α_cr * W_S / (0.5 * ρ_cr * V_cr^2);
+
+	global PW_cr = (V_cr * α_cr)/(η_prop * β) .* ( (CD_0)./(α_cr .* CL_cr) .+ (α_cr .* CL_cr)./(π * AR * e));
 end;
+  ╠═╡ =#
+
+# ╔═╡ 235ae760-0b21-4cb4-8965-21fd5b643340
+PW_cr = PW_Cruise(W_S;
+	 α = W1_W0 * W2_W0,
+	 β = 1.,
+	 V = TAS(h_cruise, V_cruise),
+	 η_prop = η_prop,
+	 ρ = ρ_cr,
+	 CD_0 = CD_0,
+	 AR = AR,
+	 e = e
+	 )
+
+# ╔═╡ 10fafc93-3c68-43e5-ac17-832a329b2d68
+#begin
+#	# Stall
+#	V_st = 55; # At ground level
+#
+#	WS_stall = 0.5 * ρ_gnd * V_st^2 * CLmax_LD;
+#end;
+WS_stall = WS_Stall(
+	V_stall = 55.,
+	ρ = ρ_gnd,
+	CL_max = CLmax_LD
+)
 
 # ╔═╡ 2b8ec21c-d8da-4e16-91c0-244857483463
 md"## Defining the fuel tank"
@@ -1129,32 +1163,6 @@ plt_vlm
 # ╔═╡ f03893b1-7518-47d3-ae88-da688aff9591
 plt_vlm
 
-# ╔═╡ 235ae760-0b21-4cb4-8965-21fd5b643340
-PW_cr = PW_Cruise(W_S;
-	 α = W1_W0 * W2_W0,
-	 β = 1.,
-	 V = TAS(h_cruise, V_cruise),
-	 η_prop = η_prop,
-	 ρ = ρ_cr,
-	 CD_0 = CD_0,
-	 AR = AR,
-	 e = e
-	 )
-
-# ╔═╡ 4cab2aca-0379-4f36-aec7-3bac193143d4
-# ╠═╡ disabled = true
-#=╠═╡
-begin
-	# Cruise at 7500 m
-	α_cr = W_cl1 / W0[end]; # Same as top of climb 1
-	V_cr = TAS(h_cruise, V_cruise);
-
-	CL_cr = α_cr * W_S / (0.5 * ρ_cr * V_cr^2);
-
-	global PW_cr = (V_cr * α_cr)/(η_prop * β) .* ( (CD_0)./(α_cr .* CL_cr) .+ (α_cr .* CL_cr)./(π * AR * e));
-end;
-  ╠═╡ =#
-
 # ╔═╡ Cell order:
 # ╟─316a98fa-f3e4-4b46-8c19-c5dbfa6a550f
 # ╟─cf3ff4ea-03ed-4b53-982c-45d9d71a3ba2
@@ -1240,6 +1248,7 @@ end;
 # ╟─0726c8be-9699-4d05-ae2d-3a24db308ae4
 # ╠═3717e560-147c-49df-b5f0-324b06664a73
 # ╟─8af17db4-6710-4e4d-8384-e3768d43e609
+# ╠═fcc34f42-2b64-4c4f-8b91-b5f95ddadfd0
 # ╠═e73593b1-8b47-4bfb-963a-e9ffca67e73f
 # ╠═bf75995b-317b-4ade-a46a-51ed947240c3
 # ╠═13be94f1-bfc7-44a0-9985-0a3783cd8265

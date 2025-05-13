@@ -1,7 +1,7 @@
 module ConceptualDesign
 
-function WS_Stall(; V_stall::Real = 55., ρ::Real = 1.115, CL_max::Real = 2.7)
-    WS = 0.5 * ρ * V_stall^2 / CL_max;
+function WS_Stall(; V_stall::Real = 55., ρ::Real = 1.225, CL_max::Real = 2.7)
+    WS = 0.5 * ρ * V_stall^2 * CL_max;
     
     return WS
 end
