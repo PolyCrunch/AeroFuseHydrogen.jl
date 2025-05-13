@@ -35,7 +35,7 @@ function PW_Climb(W_S; α::Real, β::Real=1., V::Real=120., G::Real=0.06, ρ::Re
     return PW
 end
 
-function PW_Cruise(W_S; α::Real, β::Real=1., V::Real=120., η_prop::Real = 0.8, CD_0::Real = 0.05, AR::Real = 11.5, e::Real = 0.75)
+function PW_Cruise(W_S; α::Real, β::Real=1., V::Real=120., ρ::Real = 0.56, η_prop::Real = 0.8, CD_0::Real = 0.05, AR::Real = 11.5, e::Real = 0.75)
     # Estimate the power-to-weight ratio required for cruise
     CL = α .* W_S ./ (0.5 * ρ * V^2);
 

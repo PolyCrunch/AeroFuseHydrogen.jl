@@ -281,6 +281,9 @@ md"""
 # ╔═╡ cea3ed96-73aa-44ee-bdc5-2becba65987f
 W_S = LinRange(0, 10000, 100);
 
+# ╔═╡ cff8b71d-1870-486f-ad06-732813265742
+ρ_gnd = 1.225;
+
 # ╔═╡ d037c253-032a-4a83-a246-5920cd8e57be
 md"""
 #### Take-Off
@@ -329,21 +332,12 @@ PW_TO_BFL = PW_TO50 * (0.297 - 0.019 * N_E) / 0.144;
 # ╔═╡ 0726c8be-9699-4d05-ae2d-3a24db308ae4
 md"""#### Landing Distance"""
 
-# ╔═╡ bd40dd8a-8f7e-4f68-a052-be71620a1f9e
-#begin
-#	ALD = TODA_min / (5/3); # 5/3 is mandatory safety factor
-#	Sa = 305; # For a 3 degree glideslope
-#	KR = 0.66; # Assume thrust reversers
-#
-#	global WS_ldg = (ALD - Sa) * σ_TO_LDG * CLmax_LD / (0.51 * KR);
-#end
-
 # ╔═╡ 3717e560-147c-49df-b5f0-324b06664a73
 WS_ldg = WS_Landing(
-	ALD = TODA_min / (5/3),
-	S_a = 305.,
-	K_R = 0.66,
-	σ = 1.0,
+	ALD = TODA_min / (5/3), # 5/3 is a mandatory safety factor
+	S_a = 305., # Corresponds to a three degree glideslope
+	K_R = 0.66, # Assume thrust reversers
+	σ = 1.0, # Density ratio
 	CL_max = CLmax_LD
 )
 
@@ -365,6 +359,15 @@ $$\bigg( \frac{P}{W} \bigg)_0 = \frac{V_\infty \alpha}{\eta_{prop} \beta} \bigg[
 \bigg]$$
 """
 
+# ╔═╡ e73593b1-8b47-4bfb-963a-e9ffca67e73f
+PW_climb1 = PW_Climb(W_S;
+	 α = W1_W0 * W2_W0,
+	 β = 1.,
+	 V = TAS(h_cruise, 80.),
+	 G = 0.06, # Climb gradient
+	 ρ = ρ_air(h_cruise)
+	);
+
 # ╔═╡ bf75995b-317b-4ade-a46a-51ed947240c3
 # ╠═╡ disabled = true
 #=╠═╡
@@ -380,8 +383,46 @@ begin
 end;
   ╠═╡ =#
 
-# ╔═╡ bfa9173b-202a-47af-ba45-fcc3586916ba
-CLmax_LD
+# ╔═╡ 13be94f1-bfc7-44a0-9985-0a3783cd8265
+β_OEI = 0.6;
+
+# ╔═╡ cf7a2352-6d92-4405-a857-970e9e25990a
+PW_cl_oei_gear = PW_Climb(W_S;
+     # OEI climb with gear, 0.5%. Assume one engine available results in 60%
+     # thrust, as often max power > continuous power.
+	 α = W1_W0,
+	 β = β_OEI,
+	 V = 80., # Assume sea level
+	 G = 0.005, # Regulatory requirement
+	 ρ = ρ_gnd,
+	 η_prop = η_prop,
+	 CD_0 = CD0_TO,
+	 AR = AR,
+	 e = e_TO
+	 );
+
+# ╔═╡ 518581b3-317b-4bb2-b70e-f6c2d6fda20e
+PW_cl_oei = PW_Climb(W_S;
+	# OEI climb without gear, 3%. Assume one engine available results in 60%
+    # thrust, as often max power > continuous power.
+	α = W1_W0,
+	β = β_OEI,
+	V = 80.,
+	G = 0.03, # Regulatory requirement
+	ρ = ρ_gnd,
+	η_prop = η_prop,
+	CD_0 = CD_0,
+	AR = AR,
+	e = e
+	);
+
+# ╔═╡ 10fafc93-3c68-43e5-ac17-832a329b2d68
+begin
+	# Stall
+	V_st = 55; # At ground level
+
+	WS_stall = 0.5 * ρ_gnd * V_st^2 * CLmax_LD;
+end;
 
 # ╔═╡ 2b8ec21c-d8da-4e16-91c0-244857483463
 md"## Defining the fuel tank"
@@ -946,65 +987,6 @@ W0plot = plot(
 # ╔═╡ 8ce1c30e-b602-4411-b671-1cc5f267e646
 We
 
-# ╔═╡ aab531a1-910a-4ef3-b161-5cef662a2c38
-begin
-	# Top of initial climb: 7500 m (25,000 ft)
-	W_cl1 = W0[end] * W1_W0 * W2_W0;
-	α_cl1 = W_cl1 / W0[end];
-	β = 1;
-	V_cl1 = TAS(h_cruise, 80);
-	G_cl = 0.06;
-	ρ_cr = ρ_air(h_cruise);
-	
-	CL_cl1 = α_cl1 * W_S / (0.5 * ρ_cr * V_cl1^2);
-	global PW_climb1 = (V_cl1 * α_cl1)/(η_prop * β) .* ( G_cl .+ (CD_0)./(α_cl1 .* CL_cl1) .+ (α_cl1 .* CL_cl1)./(π * AR * e) );
-end;
-
-# ╔═╡ 013f96c8-441d-49cb-b8f5-aa3c138aaedd
-begin
-	# OEI climb with gear, 0.5%. Assume one engine available results in 60% thrust as before, as often max power > continuous power
-	W_cl_oei_gear = W0[end] * W1_W0;
-	α_cl_oei_gear = W_cl_oei_gear / W0[end];
-	β_oei = 0.6;
-	V_cl_oei_gear = 80; # 80 m/s; ground level
-	G_cl_oei_gear = 0.005;
-	ρ_gnd = 1.225;
-
-	CL_cl_oei_gear = α_cl_oei_gear * W_S / (0.5 * ρ_gnd * V_cl_oei_gear^2);
-	global PW_cl_oei_gear = (V_cl_oei_gear * α_cl_oei_gear)/(η_prop * β_oei) .* ( G_cl_oei_gear .+ (CD0_TO)./(α_cl_oei_gear .* CL_cl_oei_gear) .+ (α_cl_oei_gear .* CL_cl_oei_gear)./(π * AR * e_TO));
-end;
-
-# ╔═╡ 10fafc93-3c68-43e5-ac17-832a329b2d68
-begin
-	# Stall
-	V_st = 55; # At ground level
-
-	WS_stall = 0.5 * ρ_gnd * V_st^2 * CLmax_LD;
-end;
-
-# ╔═╡ bae57b19-402e-4169-9ae6-c2d86248e798
-begin
-	# OEI climb without gear, 3%. Assume one engine available results in 60% thrust as before, as often max power > continuous power
-	W_cl_oei = W0[end] * W1_W0;
-	α_cl_oei = W_cl_oei_gear / W0[end];
-	V_cl_oei = 80; # 80 m/s; ground level
-	G_cl_oei = 0.03;
-
-	CL_cl_oei = α_cl_oei * W_S / (0.5 * ρ_gnd * V_cl_oei^2);
-	global PW_cl_oei = (V_cl_oei * α_cl_oei)/(η_prop * β_oei) .* ( G_cl_oei .+ (CD_0)./(α_cl_oei .* CL_cl_oei) .+ (α_cl_oei .* CL_cl_oei)./(π * AR * e));
-end;
-
-# ╔═╡ 4cab2aca-0379-4f36-aec7-3bac193143d4
-begin
-	# Cruise at 7500 m
-	α_cr = W_cl1 / W0[end]; # Same as top of climb 1
-	V_cr = TAS(h_cruise, V_cruise);
-
-	CL_cr = α_cr * W_S / (0.5 * ρ_cr * V_cr^2);
-
-	global PW_cr = (V_cr * α_cr)/(η_prop * β) .* ( (CD_0)./(α_cr .* CL_cr) .+ (α_cr .* CL_cr)./(π * AR * e));
-end;
-
 # ╔═╡ bf9dd9a8-5f84-4787-bc7f-b06de47b24a9
 begin
 	# Wing Loading to match original Dash 8 Wing
@@ -1147,6 +1129,32 @@ plt_vlm
 # ╔═╡ f03893b1-7518-47d3-ae88-da688aff9591
 plt_vlm
 
+# ╔═╡ 235ae760-0b21-4cb4-8965-21fd5b643340
+PW_cr = PW_Cruise(W_S;
+	 α = W1_W0 * W2_W0,
+	 β = 1.,
+	 V = TAS(h_cruise, V_cruise),
+	 η_prop = η_prop,
+	 ρ = ρ_cr,
+	 CD_0 = CD_0,
+	 AR = AR,
+	 e = e
+	 )
+
+# ╔═╡ 4cab2aca-0379-4f36-aec7-3bac193143d4
+# ╠═╡ disabled = true
+#=╠═╡
+begin
+	# Cruise at 7500 m
+	α_cr = W_cl1 / W0[end]; # Same as top of climb 1
+	V_cr = TAS(h_cruise, V_cruise);
+
+	CL_cr = α_cr * W_S / (0.5 * ρ_cr * V_cr^2);
+
+	global PW_cr = (V_cr * α_cr)/(η_prop * β) .* ( (CD_0)./(α_cr .* CL_cr) .+ (α_cr .* CL_cr)./(π * AR * e));
+end;
+  ╠═╡ =#
+
 # ╔═╡ Cell order:
 # ╟─316a98fa-f3e4-4b46-8c19-c5dbfa6a550f
 # ╟─cf3ff4ea-03ed-4b53-982c-45d9d71a3ba2
@@ -1219,6 +1227,7 @@ plt_vlm
 # ╠═8ce1c30e-b602-4411-b671-1cc5f267e646
 # ╟─a77fce1f-0574-4666-ba3b-631716384ae0
 # ╠═cea3ed96-73aa-44ee-bdc5-2becba65987f
+# ╠═cff8b71d-1870-486f-ad06-732813265742
 # ╟─d037c253-032a-4a83-a246-5920cd8e57be
 # ╟─50275134-8baa-48fe-be7b-93d17a029c85
 # ╠═91f05db8-972e-435e-aaf7-a207047e27e8
@@ -1229,15 +1238,15 @@ plt_vlm
 # ╠═6881d47f-4fc6-4885-9e6c-ebbcbca31005
 # ╠═cc47266b-899d-4519-b159-915b3ae14a54
 # ╟─0726c8be-9699-4d05-ae2d-3a24db308ae4
-# ╠═bd40dd8a-8f7e-4f68-a052-be71620a1f9e
 # ╠═3717e560-147c-49df-b5f0-324b06664a73
 # ╟─8af17db4-6710-4e4d-8384-e3768d43e609
-# ╠═aab531a1-910a-4ef3-b161-5cef662a2c38
+# ╠═e73593b1-8b47-4bfb-963a-e9ffca67e73f
 # ╠═bf75995b-317b-4ade-a46a-51ed947240c3
-# ╠═013f96c8-441d-49cb-b8f5-aa3c138aaedd
-# ╠═bae57b19-402e-4169-9ae6-c2d86248e798
+# ╠═13be94f1-bfc7-44a0-9985-0a3783cd8265
+# ╠═cf7a2352-6d92-4405-a857-970e9e25990a
+# ╠═518581b3-317b-4bb2-b70e-f6c2d6fda20e
 # ╠═4cab2aca-0379-4f36-aec7-3bac193143d4
-# ╠═bfa9173b-202a-47af-ba45-fcc3586916ba
+# ╠═235ae760-0b21-4cb4-8965-21fd5b643340
 # ╠═10fafc93-3c68-43e5-ac17-832a329b2d68
 # ╠═bf9dd9a8-5f84-4787-bc7f-b06de47b24a9
 # ╟─94eaf8be-b197-4606-9908-bc8317b1c6d0
