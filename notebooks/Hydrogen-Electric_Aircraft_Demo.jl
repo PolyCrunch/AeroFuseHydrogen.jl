@@ -866,10 +866,10 @@ A_wetted = aspect_ratio(wing)/(S_wet/S_ref) # AR / (S_wet / S_ref)
 LD_max = K_LD * sqrt(A_wetted) # Raymer
 
 # ╔═╡ 34d83139-a0ce-4712-a884-a3c53a2df098
-W3_W0 = exp((-2000e3 * 9.81 * psfc(200., 1.e6))/(η_prop * LD_max)); # Cruise
+W3_W0 = exp((-2000e3 * 9.81 * psfc(200., 1.e6))/(η_prop * LD_max)); # Cruise 2000 km
 
 # ╔═╡ 50ebd56c-b6bc-4a0a-ad97-f9b8e94ac8bf
-W6_W0 = exp((-300e3 * 9.81 * psfc(200., 1.e6))/(η_prop * LD_max)); # Diversion 300km
+W6_W0 = exp((-300e3 * 9.81 * psfc(200., 1.e6))/(η_prop * LD_max)); # Diversion 300 km
 
 # ╔═╡ e00ea2c0-dee4-43e1-ab9d-6c8de1e0c2aa
 begin
@@ -1261,7 +1261,7 @@ plt_vlm
 # ╠═bb3a629d-b63f-42dc-a074-d5df13ca0aee
 # ╟─ff947612-2f1e-49a7-9815-8dea097edc3c
 # ╟─7115cdf4-632c-45be-a3bd-2aaf152e42c9
-# ╠═a2eca0b9-730c-4be0-9e7e-d10d9f7ca664
+# ╟─a2eca0b9-730c-4be0-9e7e-d10d9f7ca664
 # ╟─d037c253-032a-4a83-a246-5920cd8e57be
 # ╠═cff8b71d-1870-486f-ad06-732813265742
 # ╠═91f05db8-972e-435e-aaf7-a207047e27e8
@@ -1293,7 +1293,7 @@ plt_vlm
 # ╠═6a90d93d-246e-46e8-aab8-b604de989823
 # ╠═9bf58181-6a29-4587-bec5-cf5999d0ca32
 # ╠═bf75995b-317b-4ade-a46a-51ed947240c3
-# ╠═94eaf8be-b197-4606-9908-bc8317b1c6d0
+# ╟─94eaf8be-b197-4606-9908-bc8317b1c6d0
 # ╟─2b8ec21c-d8da-4e16-91c0-244857483463
 # ╟─a017efa0-cf08-4302-80f7-fae1ef55651c
 # ╟─b69a9c96-c979-4ced-bc85-fbe47ada1c9e
