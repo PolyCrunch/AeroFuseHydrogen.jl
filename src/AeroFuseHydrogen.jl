@@ -37,8 +37,9 @@ export AircraftType, RangeType, n_cabincrew, crew_weight, furnishings_weight, Bu
 ## Conceptual Design
 #==========================================================================================#
 include("Tools/ConceptualDesign.jl")
-import .ConceptualDesign: WS_Stall, WS_Landing, PW_50ftTakeoff, PW_BFLTakeoff, PW_Climb, PW_Cruise
-export WS_Stall, WS_Landing, PW_50ftTakeoff, PW_BFLTakeoff, PW_Climb, PW_Cruise
+import .ConceptualDesign: WS_Stall, WS_Landing, PW_50ftTakeoff, PW_BFLTakeoff, PW_Climb, PW_Cruise, P_Misc
+export WS_Stall, WS_Landing, PW_50ftTakeoff, PW_BFLTakeoff, PW_Climb, PW_Cruise, P_Misc
+
 
 ## Hydrogen Electric
 #==========================================================================================#
