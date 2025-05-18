@@ -43,4 +43,12 @@ function PW_Cruise(W_S; α::Real, β::Real=1., V::Real=120., ρ::Real = 0.56, η
     return PW
 end
 
+function P_Misc(N_pax::Int = 50, a::Real = 0.0122e5, b::Real = 1.6858e5)
+    # Estimate the power required for miscellaneous systems, based on regression data with coefficients a*x + b
+    # where x is the number of passengers
+
+    P_misc = a * N_pax + b;
+    return P_misc
+end
+
 end

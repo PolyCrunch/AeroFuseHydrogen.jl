@@ -892,7 +892,6 @@ begin
 	max_step = 10000;
 
 	We_base = 17819. - 2*718.; # Mass of base Dash 8 Q400 without engines
-	#P_tot = 7562000.; # Total engine power of base Dash 8 Q400
 
 	# Fixed
 	global Wf_W0 = 1.12 * (1 - Wi_W0); # Allow extra fuel mass for excess boil-off. Justify this later.
@@ -901,6 +900,7 @@ begin
 	# Initial guesses
 	global W0 = [30481.0]; # Based on Dash 8 Q400 MTOW
 
+	# !=========================== START OF LOOP ================================!
 	while abs(W0[end] - W0_prev) > tol
 		global curstep += 1;
 		if curstep >= max_step
@@ -1004,8 +1004,6 @@ begin
 		We -= furnishings_weight(2, n_basepassengers, 2, p_air(2200), W0_base, ShortHaul, Short); # Subtract the total weight of furnishings (base)
 		We += furnishings_weight(2, n_passengers, n_cc, p_air(2200), W0[end], ShortHaul, Short); # Add the new total weight of the furnishings
 		
-
-
 		global drymass = dry_mass(concept_tank)
 		W0_new = (W_crew + W_payload + We) / (1 - Wf_W0)
 		push!(W0, W0_new)
