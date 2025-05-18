@@ -985,6 +985,11 @@ begin
 			insulation_density=35.3
 		)
 
+		global n_passengers = n_basepassengers - 4 * Int(ceil(concept_tank.length/0.762));
+
+		# Add estimated power for air conditioning, hydraulic pumps, avionics, etc to total power required
+		P_tot += P_Misc(n_passengers);
+		
 		concept_fc = PEMFCStack(
 			area_effective=840.,
 			power_max = P_tot,
@@ -992,7 +997,7 @@ begin
 			width=2*(fuse.radius - fuse_t_w)
 		)
 		
-		global n_passengers = n_basepassengers - 4 * Int(ceil(concept_tank.length/0.762));
+		
 		W_crew = crew_weight(2, n_passengers);
 		n_cc = n_cabincrew(n_passengers);
 		W_payload = n_passengers * (84 + 23);
@@ -1291,7 +1296,7 @@ plt_vlm
 # ╠═6a90d93d-246e-46e8-aab8-b604de989823
 # ╠═9bf58181-6a29-4587-bec5-cf5999d0ca32
 # ╠═bf75995b-317b-4ade-a46a-51ed947240c3
-# ╟─94eaf8be-b197-4606-9908-bc8317b1c6d0
+# ╠═94eaf8be-b197-4606-9908-bc8317b1c6d0
 # ╟─2b8ec21c-d8da-4e16-91c0-244857483463
 # ╟─a017efa0-cf08-4302-80f7-fae1ef55651c
 # ╟─b69a9c96-c979-4ced-bc85-fbe47ada1c9e
