@@ -311,6 +311,12 @@ V_cl = 80.; # IAS during climb
 # ╔═╡ c685a7e8-1cfd-4703-830f-9e4c78b19d8d
 G_cl = 0.06; # Climb gradient during standard climb
 
+# ╔═╡ f668c250-e709-44e8-b8b2-4bf7a43a0f3d
+V_stall = 55.;
+
+# ╔═╡ 98c4eeab-3a8f-4c59-b820-25e3c0495aaa
+V_loiter = V_stall * 1.32;
+
 # ╔═╡ 0726c8be-9699-4d05-ae2d-3a24db308ae4
 md"""#### Landing Distance"""
 
@@ -359,7 +365,7 @@ WS_ldg = WS_Landing(;
 
 # ╔═╡ 1d60645e-6d85-4f14-8554-6a0383fe92ea
 WS_stall = WS_Stall(;
-				   V_stall = 55.,
+				   V_stall = V_stall,
 				   ρ = ρ_gnd,
 				   CL_max = CLmax_LD);
 
@@ -446,27 +452,7 @@ md"""
 """
 
 # ╔═╡ d3a3c702-49b2-495d-afb1-e7cd3ca91211
-md"### Climb"
-
-# ╔═╡ 87b0e21b-c75d-4b81-a7b8-34012ac92de7
-begin
-	resolution = 1; # Duration of each step, seconds
-	global h = 0; # Current height
-	t = 0; # Current time
-
-	while h < h_cruise
-		t += 1;
-	
-		# What is the current speed?
-		global V_TAS = TAS(h, V_cl)
-	
-		global V_vert = V_TAS * sin(G_cl * pi / 2)
-		h += V_vert * resolution
-	end
-end
-
-# ╔═╡ ff90097f-8f52-4859-ae2b-670dfecf375a
-h
+md"### Climb 1"
 
 # ╔═╡ 2b8ec21c-d8da-4e16-91c0-244857483463
 md"## Defining the fuel tank"
@@ -1012,7 +998,7 @@ begin
 
 		# !=======================================================================!
 
-		concept_tank = CryogenicFuelTank(
+		global concept_tank = CryogenicFuelTank(
 			radius=fuse.radius - fuse_t_w,
 			length=volume_to_length(Wf_W0 * W0[end] / ρ_LH2, fuse.radius - fuse_t_w, t_insulation),
 			insulation_thickness=0.05,
@@ -1022,9 +1008,11 @@ begin
 		global n_passengers = n_basepassengers - 4 * Int(ceil(concept_tank.length/0.762));
 
 		# Add estimated power for air conditioning, hydraulic pumps, avionics, etc to total power required
-		P_tot += P_Misc(n_passengers);
+		global P_misc = P_Misc(n_passengers);
+		global P_tot += P_misc;
+		global P_tot *= 1.05; # 5% extra power
 		
-		concept_fc = PEMFCStack(
+		global concept_fc = PEMFCStack(
 			area_effective=840.,
 			power_max = P_tot,
 			height=2*(fuse.radius - fuse_t_w),
@@ -1146,6 +1134,238 @@ begin
 		marker = :star
 	)
 end
+
+# ╔═╡ 87b0e21b-c75d-4b81-a7b8-34012ac92de7
+begin
+	global segment_t = []; # Cumulative sum of time, given after each segment. Assumed zero for take-off
+	global segment_burn = []; # Cumulative sum of fuel burnt, given after each segment. Follow Raymer assumption for take-off.
+	global E_used = []; # Energy use at each timestep
+	
+	global resolution = 1; # Duration of each step, seconds
+	global h = 0.; # Current height
+	global t = 0; # Current time
+	global m_burnt = 0.; # Current mass of fuel burnt
+	global dist = 0.; # Current distance travelled
+
+	# !========================= START UP / T-O ==============================!
+	m_burnt = W0[end] * (1 - W1_W0);
+	push!(segment_burn, m_burnt);
+
+	# !============================== CLIMB 1 ================================!
+	
+	while h < h_cruise
+		global t += resolution;
+	
+		# Find climb rate, altitude
+		global V_TAS = TAS(h, V_cl)
+	
+		global V_vert = V_TAS * sin(G_cl * pi / 2)
+		
+
+		# Power requirements
+		P_prop = (W0[end] - m_burnt) * 9.81 * PW_Climb(WS_req;
+				     α = (W0[end] - m_burnt) / W0[end],
+					 β = 1.,
+					 V = TAS(h, V_cl),
+					 G = G_cl, # Climb gradient
+					 ρ = ρ_air(h)
+					);
+
+		global P = P_prop + P_misc;
+		push!(E_used, P * resolution)
+
+		# Mass flow rate of Hydrogen required
+		dm = fflow_H2(concept_fc, P/P_tot); # Mass of fuel burnt in the second
+		dm = max(dm, boil_off(concept_tank)); # Use boil-off rate if higher
+
+		global m_burnt += dm * resolution;
+		
+		global h += V_vert * resolution;
+	end
+
+	push!(segment_t, t);
+	push!(segment_burn, m_burnt);
+
+	# !=========================== CRUISE 1 ==================================!
+
+	while dist < 2000e3
+		global t += resolution;
+	
+		global V_TAS = TAS(h, V_cruise)		
+
+		# Power requirements
+		P_prop = (W0[end] - m_burnt) * 9.81 * PW_Cruise(WS_req;
+			 # Cruise at 7500 m
+			 α = (W0[end] - m_burnt) / W0[end],
+			 β = 1.,
+			 V = V_TAS,
+			 η_prop = η_prop,
+			 ρ = ρ_cr,
+			 CD_0 = CD_0,
+			 AR = AR,
+			 e = e
+		 	);
+
+		global P = P_prop + P_misc;
+		push!(E_used, P * resolution);
+
+		# Mass flow rate of Hydrogen required
+		dm = fflow_H2(concept_fc, P/P_tot); # Mass of fuel burnt in the second
+		dm = max(dm, boil_off(concept_tank)); # Use boil-off rate if higher
+
+		global m_burnt += resolution * dm;
+		global dist += resolution * V_TAS;
+	
+	end
+
+	push!(segment_t, t);
+	push!(segment_burn, m_burnt);
+
+	# !========================== LAND 1 =====================================!
+
+	push!(segment_t, t);
+	m_burnt += (1 - W4_W0) * W0[end]
+	push!(segment_burn, m_burnt);
+
+	# !========================== CLIMB 2 ====================================!
+
+	global h = 0;
+
+	while h < h_cruise
+		global t += resolution;
+	
+		# Find climb rate, altitude
+		global V_TAS = TAS(h, V_cl)
+	
+		global V_vert = V_TAS * sin(G_cl * pi / 2)
+		
+
+		# Power requirements
+		P_prop = (W0[end] - m_burnt) * 9.81 * PW_Climb(WS_req;
+				     α = (W0[end] - m_burnt) / W0[end],
+					 β = 1.,
+					 V = TAS(h, V_cl),
+					 G = G_cl, # Climb gradient
+					 ρ = ρ_air(h)
+					);
+
+		global P = P_prop + P_misc;
+		push!(E_used, P * resolution)
+
+		# Mass flow rate of Hydrogen required
+		dm = fflow_H2(concept_fc, P/P_tot); # Mass of fuel burnt in the second
+		dm = max(dm, boil_off(concept_tank)); # Use boil-off rate if higher
+
+		global m_burnt += dm * resolution;
+		
+		global h += V_vert * resolution;
+	end
+
+	push!(segment_t, t);
+	push!(segment_burn, m_burnt);
+
+	# !========================== CRUISE 2 ===================================!
+
+	global dist = 0;
+
+	while dist < 300e3
+		global t += resolution;
+	
+		global V_TAS = TAS(h, V_cruise)		
+
+		# Power requirements
+		P_prop = (W0[end] - m_burnt) * 9.81 * PW_Cruise(WS_req;
+			 # Cruise at 7500 m
+			 α = (W0[end] - m_burnt) / W0[end],
+			 β = 1.,
+			 V = V_TAS,
+			 η_prop = η_prop,
+			 ρ = ρ_cr,
+			 CD_0 = CD_0,
+			 AR = AR,
+			 e = e
+		 	);
+
+		global P = P_prop + P_misc;
+		push!(E_used, P * resolution);
+
+		# Mass flow rate of Hydrogen required
+		dm = fflow_H2(concept_fc, P/P_tot); # Mass of fuel burnt in the second
+		dm = max(dm, boil_off(concept_tank)); # Use boil-off rate if higher
+
+		global m_burnt += resolution * dm;
+		global dist += resolution * V_TAS;
+	
+	end
+
+	push!(segment_t, t);
+	push!(segment_burn, m_burnt);
+
+	# !========================== LOITER =====================================!
+
+	# assume ground level
+	global h = 0;
+	global t_loiter = 0;
+
+	while t_loiter < 45 * 60 # 45 min loiter
+		global t += resolution;
+		global t_loiter += resolution;
+	
+		global V_TAS = TAS(h, V_loiter)		
+
+		# Power requirements
+		P_prop = (W0[end] - m_burnt) * 9.81 * PW_Cruise(WS_req;
+			 # Cruise at 0 m
+			 α = (W0[end] - m_burnt) / W0[end],
+			 β = 1.,
+			 V = V_TAS,
+			 η_prop = η_prop,
+			 ρ = ρ_air(h),
+			 CD_0 = CD_0,
+			 AR = AR,
+			 e = e
+		 	);
+
+		global P = P_prop + P_misc;
+		push!(E_used, P * resolution);
+
+		# Mass flow rate of Hydrogen required
+		dm = fflow_H2(concept_fc, P/P_tot); # Mass of fuel burnt in a second
+		dm = max(dm, boil_off(concept_tank)); # Use boil-off rate if higher
+
+		global m_burnt += resolution * dm;
+	
+	end
+
+	push!(segment_t, t);
+	push!(segment_burn, m_burnt);
+
+	# !========================== LAND 2 =====================================!
+
+	push!(segment_t, t);
+	m_burnt += (1 - W4_W0) * W0[end]
+	push!(segment_burn, m_burnt);
+	
+end
+
+# ╔═╡ 26d249ff-9ac0-4559-9f43-4321429217a3
+plot(1:resolution:t, E_used / resolution,
+	xlabel = "Time (seconds)",
+	ylabel = "Power consumption (W)",
+	ylims = (0, 6e6)
+	)
+
+# ╔═╡ 224e8310-30ac-4be9-9831-bcc1a41f48ff
+segment_t
+
+# ╔═╡ 20388f96-d158-46b3-b62e-80915e77f20b
+segment_burn
+
+# ╔═╡ 5f236ffe-1479-4a90-9eba-0132a06ab39e
+Wf_W0 * W0[end]
+
+# ╔═╡ 9d1c4841-09fc-4d3a-9229-79bf9addba01
+print("New Wf_W0: ", segment_burn[end] / W0[end])
 
 # ╔═╡ 9f776e2f-1fa9-48f5-b554-6bf5a5d91441
 md"## Plot definition"
@@ -1307,6 +1527,8 @@ plt_vlm
 # ╠═6881d47f-4fc6-4885-9e6c-ebbcbca31005
 # ╠═7ba1e469-9442-462d-8164-0552000e1cb7
 # ╠═c685a7e8-1cfd-4703-830f-9e4c78b19d8d
+# ╠═f668c250-e709-44e8-b8b2-4bf7a43a0f3d
+# ╠═98c4eeab-3a8f-4c59-b820-25e3c0495aaa
 # ╟─0726c8be-9699-4d05-ae2d-3a24db308ae4
 # ╠═fcc34f42-2b64-4c4f-8b91-b5f95ddadfd0
 # ╟─8af17db4-6710-4e4d-8384-e3768d43e609
@@ -1336,7 +1558,11 @@ plt_vlm
 # ╟─848a3f87-f942-4691-832a-fe1883129e3d
 # ╟─d3a3c702-49b2-495d-afb1-e7cd3ca91211
 # ╠═87b0e21b-c75d-4b81-a7b8-34012ac92de7
-# ╠═ff90097f-8f52-4859-ae2b-670dfecf375a
+# ╠═26d249ff-9ac0-4559-9f43-4321429217a3
+# ╠═224e8310-30ac-4be9-9831-bcc1a41f48ff
+# ╠═20388f96-d158-46b3-b62e-80915e77f20b
+# ╠═5f236ffe-1479-4a90-9eba-0132a06ab39e
+# ╠═9d1c4841-09fc-4d3a-9229-79bf9addba01
 # ╟─2b8ec21c-d8da-4e16-91c0-244857483463
 # ╟─a017efa0-cf08-4302-80f7-fae1ef55651c
 # ╟─b69a9c96-c979-4ced-bc85-fbe47ada1c9e
