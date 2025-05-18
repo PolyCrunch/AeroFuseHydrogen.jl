@@ -305,6 +305,12 @@ TODA_min = 1500; # metres. Needs justifying
 # ╔═╡ 6881d47f-4fc6-4885-9e6c-ebbcbca31005
 N_E = 2;
 
+# ╔═╡ 7ba1e469-9442-462d-8164-0552000e1cb7
+V_cl = 80.; # IAS during climb
+
+# ╔═╡ c685a7e8-1cfd-4703-830f-9e4c78b19d8d
+G_cl = 0.06; # Climb gradient during standard climb
+
 # ╔═╡ 0726c8be-9699-4d05-ae2d-3a24db308ae4
 md"""#### Landing Distance"""
 
@@ -433,6 +439,34 @@ PW_climb2 = PW_Climb(W_S;
 	G = 0.06,
 	ρ = ρ_cr);
   ╠═╡ =#
+
+# ╔═╡ 848a3f87-f942-4691-832a-fe1883129e3d
+md"""
+## Simulation / Fuel Estimations
+"""
+
+# ╔═╡ d3a3c702-49b2-495d-afb1-e7cd3ca91211
+md"### Climb"
+
+# ╔═╡ 87b0e21b-c75d-4b81-a7b8-34012ac92de7
+begin
+	resolution = 1; # Duration of each step, seconds
+	global h = 0; # Current height
+	t = 0; # Current time
+
+	while h < h_cruise
+		t += 1;
+	
+		# What is the current speed?
+		global V_TAS = TAS(h, V_cl)
+	
+		global V_vert = V_TAS * sin(G_cl * pi / 2)
+		h += V_vert * resolution
+	end
+end
+
+# ╔═╡ ff90097f-8f52-4859-ae2b-670dfecf375a
+h
 
 # ╔═╡ 2b8ec21c-d8da-4e16-91c0-244857483463
 md"## Defining the fuel tank"
@@ -921,8 +955,8 @@ begin
 		local PW_climb1 = PW_Climb(WS_req;
 			 α = W1_W0 * W2_W0,
 			 β = 1.,
-			 V = TAS(h_cruise, 80.),
-			 G = 0.06, # Climb gradient
+			 V = TAS(h_cruise, V_cl),
+			 G = G_cl, # Climb gradient
 			 ρ = ρ_cr
 			);
 
@@ -933,7 +967,7 @@ begin
 		     # thrust, as often max power > continuous power.
 			 α = W1_W0,
 			 β = β_OEI,
-			 V = 80., # Assume sea level
+			 V = V_cl, # Assume sea level
 			 G = 0.005, # Regulatory requirement
 			 ρ = ρ_gnd,
 			 η_prop = η_prop,
@@ -949,7 +983,7 @@ begin
 			# thrust, as often max power > continuous power.
 			α = W1_W0,
 			β = β_OEI,
-			V = 80.,
+			V = V_cl,
 			G = 0.03, # Regulatory requirement
 			ρ = ρ_gnd,
 			η_prop = η_prop,
@@ -1271,6 +1305,8 @@ plt_vlm
 # ╠═4b738106-128e-4399-8edb-2c1b6e2a5512
 # ╠═005399ec-fc82-445f-92a5-7172c2b4722d
 # ╠═6881d47f-4fc6-4885-9e6c-ebbcbca31005
+# ╠═7ba1e469-9442-462d-8164-0552000e1cb7
+# ╠═c685a7e8-1cfd-4703-830f-9e4c78b19d8d
 # ╟─0726c8be-9699-4d05-ae2d-3a24db308ae4
 # ╠═fcc34f42-2b64-4c4f-8b91-b5f95ddadfd0
 # ╟─8af17db4-6710-4e4d-8384-e3768d43e609
@@ -1296,7 +1332,11 @@ plt_vlm
 # ╠═6a90d93d-246e-46e8-aab8-b604de989823
 # ╠═9bf58181-6a29-4587-bec5-cf5999d0ca32
 # ╠═bf75995b-317b-4ade-a46a-51ed947240c3
-# ╠═94eaf8be-b197-4606-9908-bc8317b1c6d0
+# ╟─94eaf8be-b197-4606-9908-bc8317b1c6d0
+# ╟─848a3f87-f942-4691-832a-fe1883129e3d
+# ╟─d3a3c702-49b2-495d-afb1-e7cd3ca91211
+# ╠═87b0e21b-c75d-4b81-a7b8-34012ac92de7
+# ╠═ff90097f-8f52-4859-ae2b-670dfecf375a
 # ╟─2b8ec21c-d8da-4e16-91c0-244857483463
 # ╟─a017efa0-cf08-4302-80f7-fae1ef55651c
 # ╟─b69a9c96-c979-4ced-bc85-fbe47ada1c9e
