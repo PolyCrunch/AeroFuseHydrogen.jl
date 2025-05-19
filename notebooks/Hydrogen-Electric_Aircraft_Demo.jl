@@ -451,9 +451,6 @@ md"""
 ## Simulation / Fuel Estimations
 """
 
-# ╔═╡ d3a3c702-49b2-495d-afb1-e7cd3ca91211
-md"### Climb 1"
-
 # ╔═╡ 2b8ec21c-d8da-4e16-91c0-244857483463
 md"## Defining the fuel tank"
 
@@ -1055,30 +1052,6 @@ Wf = Wf_W0 * W0[end]
 # ╔═╡ 72ba560b-198f-457a-ba1e-3ddb3628864a
 Vf = Wf / ρ_LH2
 
-# ╔═╡ 82b332ac-5628-4b82-8735-f361dcdfc9b6
-tank = CryogenicFuelTank(
-	radius = fuse.radius - fuse_t_w,
-	length = volume_to_length(Vf, fuse.radius - fuse_t_w, t_insulation),
-	insulation_thickness = t_insulation,
-	insulation_density = insulation_material.Density,
-	position = [0.55fuse.length, 0, 0]
-)
-
-# ╔═╡ 63475bbf-6993-4f6c-86b8-f3b608b63a8e
-tank_length = tank.length # Tank exterior length
-
-# ╔═╡ b9fddbc4-a2d7-48cf-ace4-f092a3c38b11
-tank_dry_mass = dry_mass(tank) # Calculate the dry mass of the tank (kg)
-
-# ╔═╡ a0c931b1-e9a5-4bf3-af6d-a9e6d0009998
-full_tank_mass = wet_mass(tank, 1) # Calculate the mass of a fuel tank. This function can also accept a vector of fractions
-
-# ╔═╡ e36dc0e2-015e-4132-a105-d145e17cceb8
-tank_capacity = internal_volume(tank) # Calculate the internal volume of the fuel tank
-
-# ╔═╡ 5fb06c72-03e3-4e10-b14c-2aa55413d675
-mdot = boil_off(tank, K_insulation, T_s_0, T∞, T_LH2, ϵ)
-
 # ╔═╡ 852baaab-ce24-48cc-8393-1a8ee7554874
 W0plot = plot(
 		1:curstep+1,
@@ -1361,6 +1334,33 @@ segment_t
 # ╔═╡ 20388f96-d158-46b3-b62e-80915e77f20b
 segment_burn
 
+# ╔═╡ e5269547-4785-4239-97ee-88c2fa3a0f9f
+Vf_post_sim = segment_burn[end] / ρ_LH2 * 1.06
+
+# ╔═╡ 82b332ac-5628-4b82-8735-f361dcdfc9b6
+tank = CryogenicFuelTank(
+	radius = fuse.radius - fuse_t_w,
+	length = volume_to_length(Vf_post_sim, fuse.radius - fuse_t_w, t_insulation),
+	insulation_thickness = t_insulation,
+	insulation_density = insulation_material.Density,
+	position = [0.5fuse.length, 0, 0]
+)
+
+# ╔═╡ 63475bbf-6993-4f6c-86b8-f3b608b63a8e
+tank_length = tank.length # Tank exterior length
+
+# ╔═╡ b9fddbc4-a2d7-48cf-ace4-f092a3c38b11
+tank_dry_mass = dry_mass(tank) # Calculate the dry mass of the tank (kg)
+
+# ╔═╡ a0c931b1-e9a5-4bf3-af6d-a9e6d0009998
+full_tank_mass = wet_mass(tank, 1) # Calculate the mass of a fuel tank. This function can also accept a vector of fractions
+
+# ╔═╡ e36dc0e2-015e-4132-a105-d145e17cceb8
+tank_capacity = internal_volume(tank) # Calculate the internal volume of the fuel tank
+
+# ╔═╡ 5fb06c72-03e3-4e10-b14c-2aa55413d675
+mdot = boil_off(tank, K_insulation, T_s_0, T∞, T_LH2, ϵ)
+
 # ╔═╡ 5f236ffe-1479-4a90-9eba-0132a06ab39e
 Wf_W0 * W0[end]
 
@@ -1408,6 +1408,7 @@ begin
 	    xaxis = "x", yaxis = "y", zaxis = "z",
 	    zlim = (-0.5, 0.5) .* span(wing_mesh),
 	    camera = (φ, ψ),
+		grid = false
 	)
 
 	# Surfaces
@@ -1556,7 +1557,6 @@ plt_vlm
 # ╠═bf75995b-317b-4ade-a46a-51ed947240c3
 # ╟─94eaf8be-b197-4606-9908-bc8317b1c6d0
 # ╟─848a3f87-f942-4691-832a-fe1883129e3d
-# ╟─d3a3c702-49b2-495d-afb1-e7cd3ca91211
 # ╠═87b0e21b-c75d-4b81-a7b8-34012ac92de7
 # ╠═26d249ff-9ac0-4559-9f43-4321429217a3
 # ╠═224e8310-30ac-4be9-9831-bcc1a41f48ff
@@ -1576,6 +1576,7 @@ plt_vlm
 # ╟─f4158708-4c5b-44d2-80bd-22334c19b319
 # ╟─c829759c-914e-4d1d-a037-9c59bf0f97c9
 # ╟─25b42e5d-2053-4687-bc8a-a5a145c42e53
+# ╠═e5269547-4785-4239-97ee-88c2fa3a0f9f
 # ╠═7fa4e010-4ae8-4b77-9bc2-f12437adb7b3
 # ╠═82b332ac-5628-4b82-8735-f361dcdfc9b6
 # ╠═63475bbf-6993-4f6c-86b8-f3b608b63a8e
