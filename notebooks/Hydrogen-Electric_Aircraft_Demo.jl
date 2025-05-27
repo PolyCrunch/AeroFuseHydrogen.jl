@@ -235,7 +235,7 @@ W4_W0 = 1 - (1 - 0.995) * Hjet_HH2; # Land
 W5_W0 = 1 - (1 - 0.985) * Hjet_HH2; # Climb [Raymer]
 
 # ╔═╡ 75af705e-6508-438d-8094-ffec993d0060
-W7_W0 = exp((-5400 * 9.81 * psfc(200., 1.e6))/(η_prop)); # 45 min loiter — this seems unrealistic
+#W7_W0 = exp((-5400 * 9.81 * psfc(200., 1.e6))/(η_prop)); # 45 min loiter — this seems unrealistic
 
 # ╔═╡ 17a2f25a-964a-4a73-996a-a18484f82add
 W8_W0 = 1 - (1 - 0.995) * Hjet_HH2; # Land
@@ -386,7 +386,7 @@ PW_TO_BFL = PW_BFLTakeoff(W_S;
 PW_climb1 = PW_Climb(W_S;
 			 α = W1_W0 * W2_W0,
 			 β = 1.,
-			 V = TAS(h_cruise, 80.),
+			 V = TAS(h_cruise, V_cl),
 			 G = 0.06, # Climb gradient
 			 ρ = ρ_cr
 			);
@@ -397,7 +397,7 @@ PW_cl_oei_gear = PW_Climb(W_S;
 		     # thrust, as often max power > continuous power.
 			 α = W1_W0,
 			 β = β_OEI,
-			 V = 80., # Assume sea level
+			 V = V_cl, # Assume sea level
 			 G = 0.005, # Regulatory requirement
 			 ρ = ρ_gnd,
 			 η_prop = η_prop,
@@ -412,7 +412,7 @@ PW_cl_oei = PW_Climb(W_S;
 			# thrust, as often max power > continuous power.
 			α = W1_W0,
 			β = β_OEI,
-			V = 80.,
+			V = V_cl,
 			G = 0.03, # Regulatory requirement
 			ρ = ρ_gnd,
 			η_prop = η_prop,
@@ -886,7 +886,10 @@ LD_max = K_LD * sqrt(A_wetted) # Raymer
 W3_W0 = exp((-2000e3 * 9.81 * psfc(200., 1.e6))/(η_prop * LD_max)); # Cruise 2000 km
 
 # ╔═╡ 50ebd56c-b6bc-4a0a-ad97-f9b8e94ac8bf
-W6_W0 = exp((-300e3 * 9.81 * psfc(200., 1.e6))/(η_prop * LD_max)); # Diversion 300 km
+W6_W0 = exp((-400e3 * 9.81 * psfc(200., 1.e6))/(η_prop * LD_max)); # Diversion 400 km
+
+# ╔═╡ e3a6b351-3d6d-4707-9bd2-b36a2a6cab41
+W7_W0 = exp(((-2700*V_cruise) * 9.81 * psfc(200., 1.e6))/(η_prop * LD_max)); # 45 min at cruise speed
 
 # ╔═╡ e00ea2c0-dee4-43e1-ab9d-6c8de1e0c2aa
 begin
@@ -1071,7 +1074,7 @@ begin
 	plot(
 		W_S,
 		[PW_TO50 PW_TO_BFL PW_climb1 PW_cl_oei_gear PW_cl_oei PW_cr],
-		label = ["Take-off: 50ft obstacle" "Take-off: BFL" "5.0% Top of Climb 1" "0.5% Climb, Gear Down, OEI" "3.0% Climb, OEI" "Cruise"],
+		label = ["Take-off: 50ft obstacle" "Take-off: BFL" "6.0% Top of Climb 1" "0.5% Climb, Gear Down, OEI" "3.0% Climb, OEI" "Cruise"],
 		xlabel = "Wing Loading (W₀/S) (N/m²)",
 		ylabel = "Power Loading (P/W)₀ (W/N)",
 		xlims = (0, 10000),
@@ -1241,7 +1244,7 @@ begin
 
 	global dist = 0;
 
-	while dist < 300e3
+	while dist < 400e3
 		global t += resolution;
 	
 		global V_TAS = TAS(h, V_cruise)		
@@ -1276,15 +1279,16 @@ begin
 
 	# !========================== LOITER =====================================!
 
-	# assume ground level
-	global h = 0;
+	# 45 minute flight at cruise speed
+	# assume cruise level
+	h = h_cruise/2;
 	global t_loiter = 0;
 
 	while t_loiter < 45 * 60 # 45 min loiter
 		global t += resolution;
 		global t_loiter += resolution;
 	
-		global V_TAS = TAS(h, V_loiter)		
+		global V_TAS = TAS(h, V_cruise)		
 
 		# Power requirements
 		P_prop = (W0[end] - m_burnt) * 9.81 * PW_Cruise(WS_req;
@@ -1293,7 +1297,7 @@ begin
 			 β = 1.,
 			 V = V_TAS,
 			 η_prop = η_prop,
-			 ρ = ρ_air(h),
+			 ρ = ρ_cr,
 			 CD_0 = CD_0,
 			 AR = AR,
 			 e = e
@@ -1325,7 +1329,7 @@ end
 plot(1:resolution:t, E_used / resolution,
 	xlabel = "Time (seconds)",
 	ylabel = "Power consumption (W)",
-	ylims = (0, 6e6)
+	ylims = (0, 10e6)
 	)
 
 # ╔═╡ 224e8310-30ac-4be9-9831-bcc1a41f48ff
@@ -1512,6 +1516,7 @@ plt_vlm
 # ╠═8f7b0cf4-6d09-4d20-a130-90c7368dc39b
 # ╠═50ebd56c-b6bc-4a0a-ad97-f9b8e94ac8bf
 # ╠═75af705e-6508-438d-8094-ffec993d0060
+# ╠═e3a6b351-3d6d-4707-9bd2-b36a2a6cab41
 # ╠═17a2f25a-964a-4a73-996a-a18484f82add
 # ╠═e00ea2c0-dee4-43e1-ab9d-6c8de1e0c2aa
 # ╟─3920cf3a-1144-4fe7-9a40-9b12a1a4ed9e
