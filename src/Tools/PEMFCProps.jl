@@ -17,7 +17,7 @@ Compute the cell potential difference of a H2/Air proton exchange membrane fuel 
 
 # Arguments
 - `i::Number`: Current density (A/cm²)
-- `T::Number=293.15`: Temperature (K)
+- `T::Number=333.0`: Temperature (K)
 - `α::Number=1.0`: Charge transfer coefficient
 - `i_loss::Number=0.002`: Current loss (A/cm²)
 - `i_0::Number=3e-6`: Reference exchange current density (A/cm²)
@@ -26,7 +26,7 @@ Compute the cell potential difference of a H2/Air proton exchange membrane fuel 
 
 Default values and method are obtained from F Barbir, CHAPTER 3 — Fuel Cell Electrochemistry, PEM Fuel Cells, Academic Press, 2005.
 """
-function pemfc_polarization(i::Number, T::Number=293.15, α::Number=1.0, i_loss::Number=0.002, i_0::Number=3e-6, i_L::Number=1.6, R_i::Number=0.15)
+function pemfc_polarization(i::Number, T::Number=333.0, α::Number=1.0, i_loss::Number=0.002, i_0::Number=3e-6, i_L::Number=1.6, R_i::Number=0.15)
     n = 2       # Number of electrons involved
     F = 96485.0 # Faraday constant (C/mol)
     R = 8.314   # Ideal gas constant (J/mol/K)
