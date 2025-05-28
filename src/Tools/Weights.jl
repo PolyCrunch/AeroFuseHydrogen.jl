@@ -61,24 +61,6 @@ end
         K_lav = lavatory_weight_factor(type) # Lavatory weight factor
         K_buf = food_weight_factor(range) # Food weight factor
 
-        if type == Business
-            K_lav = 3.90; # Lavatory weight factor business
-        elseif type == ShortHaul
-            K_lav = 0.31; # Lavatory weight factor short-haul
-        elseif type == LongHaul
-            K_lav = 1.11; # Lavatory weight factor long-haul
-        else
-            error("Unknown aircraft type")
-        end
-
-        if range == Short
-            K_buf = 1.02; # Food weight factor short-haul
-        elseif range == VeryLong
-            K_buf = 5.68; # Food weight factor very long-haul
-        else
-            error("Unknown range type")
-        end
-
         P_cabin *= 0.000145038; # Convert cabin pressure from Pa to psi
         W_0 *= 2.20462; # Convert weight from kg to lb
 
@@ -86,6 +68,7 @@ end
         W_furnishings = 55 * N_flightdeck + 32 * N_pax +
         15 * N_cabincrew + K_lav * N_pax^1.33 +
         0.771 * (W_0 / 1000); # Weight of furnishings [kg], Roskam Part V
+        # NEED TO ADD KBUF AND CABIN WINDOWS PART
         
         W_furnishings /= 2.20462; # Convert weight from lb to kg
         return W_furnishings; # Convert weight from lb to kg
