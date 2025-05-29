@@ -1270,15 +1270,38 @@ PEMFC_mass = mass(PEMFC) # Fuel cell mass (kg)
 
 # ╔═╡ 448e3477-6be6-41fb-8794-cd95c9ea56db
 begin
-	eta_fullpower = zeros(size(Areas));
-	eta_thirdpower = zeros(size(Areas));
+	eta_climbpower = zeros(size(Areas));
+	eta_cruisepower = zeros(size(Areas));
 
-	mdot_fullpower = zeros(size(Areas));
-	mdot_thirdpower = zeros(size(Areas));
+	mdot_climbpower = zeros(size(Areas));
+	mdot_cruisepower = zeros(size(Areas));
 
 	length_fullpower = zeros(size(Areas));
 
 	mass_fullpower = zeros(size(Areas));
+
+	local PW_begclimb1 = PW_Climb(WS_req;
+			 α = W1_W0,
+			 β = 1.,
+			 V = TAS(0, V_cl),
+			 G = G_cl, # Climb gradient
+			 ρ = ρ_cr
+			);
+
+	local PW_cr = PW_Cruise(WS_req;
+			 # Cruise at 7500 m
+			 α = W1_W0 * W2_W0, # Most constraining weight expected to be same as top of climb 1
+			 β = 1.,
+			 V = TAS(h_cruise, V_cruise),
+			 η_prop = η_prop,
+			 ρ = ρ_cr,
+			 CD_0 = CD_0,
+			 AR = AR,
+			 e = e
+		 	);
+	
+	global climb_throttle = ((PW_begclimb1 * W0[end] * 9.8) + P_misc) / P_max;
+	global cruise_throttle = ((PW_cr * W0[end] * 9.8) + P_misc) / P_max;
 	
 	for i in 1:length(Areas)
 		PEMFC_AreaStudy = PEMFCStack(
@@ -1290,49 +1313,62 @@ begin
 			position = [0., 0., 0.]
 		)
 
-		eta_fullpower[i] = η_FC(PEMFC_AreaStudy, 1.);
-		eta_thirdpower[i] = η_FC(PEMFC_AreaStudy, 0.33);
+		eta_climbpower[i] = η_FC(PEMFC_AreaStudy, climb_throttle);
+		eta_cruisepower[i] = η_FC(PEMFC_AreaStudy, cruise_throttle);
 
-		mdot_fullpower[i] = fflow_H2(PEMFC_AreaStudy, 1.);
-		mdot_thirdpower[i] = fflow_H2(PEMFC_AreaStudy, 0.33);
+		mdot_climbpower[i] = fflow_H2(PEMFC_AreaStudy, climb_throttle);
+		mdot_cruisepower[i] = fflow_H2(PEMFC_AreaStudy, cruise_throttle);
 
 		length_fullpower[i] = length(PEMFC_AreaStudy);
 		mass_fullpower[i] = mass(PEMFC_AreaStudy);
 	end
 end
 
+# ╔═╡ 52f0d3d0-8fd0-44dc-8991-0f0244572a03
+climb_throttle
+
+# ╔═╡ 6a9c0657-f496-4efb-8113-b4a2b89604fe
+cruise_throttle
+
 # ╔═╡ 92e4aa80-c9fd-4aa0-940a-7ca4765141f5
 begin
 	plot(
-			Areas, eta_fullpower,
-			label = "Full power",
-			lw = 3.,
-			ylabel = "η",
-			xlabel = "Fuel Cell Area (m²)",
-			title = "Fuel cell efficiency versus effective area"
-		);
-		plot!(
-			Areas, eta_thirdpower,
-			label = "1/3 power",
-			lw = 3.,
-		);
+		Areas, eta_cruisepower,
+		label = "Cruise power",
+		lw = 3.,
+		ylabel = "η",
+		xlabel = "Fuel Cell Area (m²)",
+		#title = "Fuel cell efficiency versus effective area",
+		ylims = (0., 1.0),
+		xlims = (800, 2000),
+		size = (600, 400),
+		grid = true
+	);
+	plot!(
+		Areas, eta_climbpower,
+		label = "Start of climb power",
+		lw = 3.,
+	);
 end
 
 # ╔═╡ 373a8b16-b3a2-4cfb-ae50-bc9962a6cbe5
 begin
 	plot(
-			Areas, mdot_fullpower,
-			label = "Full power",
-			lw = 3.,
-			ylabel = "H2 mass flow rate (kg/s)",
-			xlabel = "Fuel Cell Area (m²)",
-			title = "Hydrogen mass flow rate versus PEMFC effective area"
-		);
-		plot!(
-			Areas, mdot_thirdpower,
-			label = "1/3 power",
-			lw = 3.,
-		);
+		mass_fullpower, mdot_cruisepower,
+		label = "Cruise power",
+		lw = 3.,
+		ylabel = "H2 mass flow rate (kg/s)",
+		xlabel = "Fuel cell mass (kg)",
+		#title = "Hydrogen fuel flow rate versus PEMFC mass",
+		xlims = (2000, 5000),
+		ylims = (0.0, 0.15),
+		size = (600, 400),
+	);
+	plot!(
+		mass_fullpower, mdot_climbpower,
+		label = "Start of climb power",
+		lw = 3.,
+	);
 end
 
 # ╔═╡ 5bfe15dd-29db-4a48-af6f-f8a04bb495e7
@@ -1614,10 +1650,12 @@ plt_vlm
 # ╠═1d624369-c08a-4c65-8ac4-46e8605cf905
 # ╠═5270c8d4-4703-423b-89a5-805679a374ae
 # ╟─429db1e1-071f-41de-a02f-7d0297353928
-# ╟─e2848f51-2145-4d37-a2c3-d73a67cd525d
-# ╟─448e3477-6be6-41fb-8794-cd95c9ea56db
-# ╟─92e4aa80-c9fd-4aa0-940a-7ca4765141f5
-# ╟─373a8b16-b3a2-4cfb-ae50-bc9962a6cbe5
+# ╠═e2848f51-2145-4d37-a2c3-d73a67cd525d
+# ╠═448e3477-6be6-41fb-8794-cd95c9ea56db
+# ╠═52f0d3d0-8fd0-44dc-8991-0f0244572a03
+# ╠═6a9c0657-f496-4efb-8113-b4a2b89604fe
+# ╠═92e4aa80-c9fd-4aa0-940a-7ca4765141f5
+# ╠═373a8b16-b3a2-4cfb-ae50-bc9962a6cbe5
 # ╟─5bfe15dd-29db-4a48-af6f-f8a04bb495e7
 # ╟─ef8669ca-1897-4397-ae00-3da40b64b487
 # ╟─f02237a0-b9d2-4486-8608-cf99a5ea42bd
