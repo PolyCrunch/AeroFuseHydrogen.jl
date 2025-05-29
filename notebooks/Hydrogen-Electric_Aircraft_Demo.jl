@@ -54,6 +54,9 @@ md"""# AeroFuse: Hydrogen-Electric Aircraft Design Demo
 
 **Author**: [Tom Gordon](https://github.com/PolyCrunch), Imperial College London.
 
+Based on the work of [Arjit Seth and Rhea P. Liem](https://github.com/GodotMisogi/AeroFuse.jl)
+
+---
 """
 
 # ╔═╡ cf3ff4ea-03ed-4b53-982c-45d9d71a3ba2
@@ -78,29 +81,14 @@ gr(
 # ╔═╡ b81ca63b-46e9-4808-8225-c36132e70084
 md"""
 ## Aircraft information
-The aircraft in this demo will be a fictional Hydrogen-electric powered aircraft, based on a De Havilland Canada *Dash 8 Q-400*.
+The aircraft in this demo will be a De Havilland Canada *Dash 8 Q-400*, retrofitted to use hydrogen-electric propulsion.
 
-For propulsion it will use an electric motor (with propeller) at the front of the aircraft, powered by PEM electric fuel cells which are fuelled by cryogenic liquid Hydrogen.
+It will use two electric motors (with propellers) under the wing, powered by PEM electric fuel cells which are fuelled by cryogenic liquid hydrogen.
 
 ![Side view of a De Havilland Canada Dash 8 Q-400](https://static.wikia.nocookie.net/airline-club/images/4/4a/Bombardier-q400.png/revision/latest?cb=20220108202032)
 
 ![Three-perspective of a De Havilland Canada Dash 8 Q-400](https://www.aviastar.org/pictures/canada/bombardier_dash-8-400.gif)
 """
-
-# ╔═╡ 88b272f9-ad2c-4aab-b784-6907dc87ea2d
-begin
-	global CLmax = 1.9;
-	global CLmax_TO = 2.5;
-	global CLmax_LD = 2.7;
-
-	global CD_0 = 0.0478; # Need confirming. Taken from some random person's thesis
-	global CD0_TO = 0.0828; # Added 0.04 from Levis
-	global CD0_LD = 0.1328; # Added 0.11 from Levis
-
-	global e = 0.75;
-	global e_TO = e - 0.05 - 0.05;
-	global e_LD = e - 0.05 - 0.10;
-end
 
 # ╔═╡ 6242fa28-1d3f-45d7-949a-646d2c7a9f52
 md"## Defining the fuselage"
@@ -148,16 +136,16 @@ end;
 # ╔═╡ 3413ada0-592f-4a37-b5d0-6ff88baad66c
 # Wing
 wing = Wing(
-    foils       = [foil_w_r, foil_w_m, foil_w_t], # Airfoils (root to tip) ROOT AND TIP ACCURATE
-    chords      = [3.31, 3.00, 1.20],             # Chord lengths ROOT AND TIP ACCURATE
-    spans       = [9.5, 18.9] / 2,                # Span lengths TIP ACCURATE
-    dihedrals   = fill(1, 2),                     # Dihedral angles (deg) GUESS
-    sweeps      = fill(4.4, 2),                   # Sweep angles (deg) MAYBE ACCURATE (taken from a Uni exam)
+    foils       = [foil_w_r, foil_w_m, foil_w_t], # Airfoils (root to tip)
+    chords      = [3.31, 3.00, 1.20],             # Chord lengths (root to tip)
+    spans       = [9.5, 18.9] / 2,                # Span lengths
+    dihedrals   = fill(1, 2),                     # Dihedral angles (deg)
+    sweeps      = fill(4.4, 2),                   # Sweep angles (deg)
     w_sweep     = 0.,                             # Leading-edge sweep
     symmetry    = true,                           # Symmetry
 
 	# Orientation
-    angle       = 3,       # Incidence angle (deg) NOT SURE
+    angle       = 3,       # Incidence angle (deg)
     axis        = [0, 1, 0], # Axis of rotation, x-axis
     position    = [0.44fuse.length, 0., 1.35]
 );
@@ -167,8 +155,8 @@ begin
 	b_w = span(wing)								# Span length, m
 	S_ref = projected_area(wing)					# Area, m^2
 	c_w = mean_aerodynamic_chord(wing)				# Mean aerodynamic chord, m
-	mac_w = mean_aerodynamic_center(wing, 0.25)		# Mean aerodynamic center (25%), m
-	mac40_wing = mean_aerodynamic_center(wing, 0.40)# Mean aerodynamic center (40%), m
+	mac_w = mean_aerodynamic_center(wing, 0.25)		# Mean aerodynamic centre (25%), m
+	mac40_wing = mean_aerodynamic_center(wing, 0.40)# Mean aerodynamic centre (40%), m
 end;
 
 # ╔═╡ bae8f6a4-a130-4c02-8dd4-1b7fc78fb104
@@ -200,10 +188,10 @@ $$C = \frac{\text{Fuel mass flow rate}}{\text{Thrust}} = \frac{\dot{m}}{P} \cdot
 md"Finding an appropriate $\dot{m}/P$"
 
 # ╔═╡ 8790bead-dd8b-4ac4-843d-d264243fa7e6
-C_power = psfc(200., 1.) # nb effective area 200 is approx 90% higher than the minimum. kg/W-s
+C_power = psfc(200., 1.); # nb effective area 200 is approx 90% higher than the minimum. kg/W-s
 
 # ╔═╡ a3036e50-f599-4614-a14b-2ec1ef4a7b4e
-C_power * 1000 * 1000 # mg/W-s. N.B. 0.07-0.09 for piston-prop. Right order of magnitude, and hydrogen is energy rich!
+C_power * 1000 * 1000 # mg/W-s. N.B. 0.07-0.09 for piston-prop [Raymer]. Right order of magnitude, and hydrogen is energy rich!
 
 # ╔═╡ b8db061e-3dfb-4883-85f9-455ce2bd4912
 md"""
@@ -211,10 +199,10 @@ md"""
 """
 
 # ╔═╡ a9cf68ca-cf0c-481c-b88c-3f4cf222ee5b
-h_cruise = 7500; # Similar to Dash 8 Q400
+h_cruise = 7500; # [m], Similar to Dash 8 Q400
 
 # ╔═╡ 95910c74-faa4-404f-b0a2-a642cc0f8093
-a_cruise = sqrt(1.4 * 287 * T_air(h_cruise))
+a_cruise = sqrt(1.4 * 287 * T_air(h_cruise));
 
 # ╔═╡ 2ff4b8a7-5985-4033-855e-8d169fe2d6fb
 M_cruise = 0.35;
@@ -226,16 +214,16 @@ V_cruise = a_cruise * M_cruise
 η_prop = 0.8;
 
 # ╔═╡ eda958b2-a71c-41f3-9643-3b3eb130224d
-Hjet_HH2 = 1/2.8;
+Hjet_HH2 = 1/2.8; # Rato of kerosene HHV to hydrogen
 
 # ╔═╡ bb004a3a-40c3-4f13-975e-f0d6aa20612d
-W1_W0 = 1 - (1 - 0.970) * Hjet_HH2 # Warmup and take-off [corrected from Raymer]. This could be lower as no warm up!
+W1_W0 = 1 - (1 - 0.970) * Hjet_HH2; # Warmup and take-off [corrected from Raymer]. This could be lower as no warm up!
 
 # ╔═╡ 60f4656e-b8fb-465a-bd3e-8647fbb785c8
-W2_W0 = 1 - (1 - 0.985) * Hjet_HH2 # Climb [Raymer]
+W2_W0 = 1 - (1 - 0.985) * Hjet_HH2; # Climb [Raymer]
 
 # ╔═╡ e86479c5-cbf6-42e1-8b7d-52684360f0b2
-W4_W0 = 1 - (1 - 0.995) * Hjet_HH2 # Land
+W4_W0 = 1 - (1 - 0.995) * Hjet_HH2; # Land
 
 # ╔═╡ 8f7b0cf4-6d09-4d20-a130-90c7368dc39b
 W5_W0 = 1 - (1 - 0.985) * Hjet_HH2; # Climb [Raymer]
@@ -246,29 +234,11 @@ W5_W0 = 1 - (1 - 0.985) * Hjet_HH2; # Climb [Raymer]
 # ╔═╡ 17a2f25a-964a-4a73-996a-a18484f82add
 W8_W0 = 1 - (1 - 0.995) * Hjet_HH2; # Land
 
-# ╔═╡ 3920cf3a-1144-4fe7-9a40-9b12a1a4ed9e
-md"""### Passenger Weight
-As fuel will be stored in the cabin, number of passengers will depend on size of tank."""
-
-
 # ╔═╡ 22a540fa-0659-4eb9-9d73-fb9516e5f715
-n_basepassengers = 80;
+n_basepassengers = 80; # Passengers in original Dash 8
 
-# ╔═╡ bb3a629d-b63f-42dc-a074-d5df13ca0aee
-W0_base = 30481.;
-
-# ╔═╡ ff947612-2f1e-49a7-9815-8dea097edc3c
-md"""### Crew Weight
-2 pilots, 1 flight attendant per 50 passengers (from FAR 25).
-
-85kg * 2 + 75kg * 2. Assuming 15kg payload each
-"""
-
-# ╔═╡ 7115cdf4-632c-45be-a3bd-2aaf152e42c9
-md"""### Empty Weight Fraction
-Raymer, twin turboprop: We/W0 = 0.96 * W_0^{-0.05}
-
-Correction factor for Hydrogen: 1.16x"""
+# ╔═╡ 57fd1ec3-14be-4b64-8de7-c0f448df630d
+W0_base = 30481.0; # MTOW of base Dash 8
 
 # ╔═╡ a2eca0b9-730c-4be0-9e7e-d10d9f7ca664
 md"""
@@ -278,38 +248,48 @@ md"""
 # ╔═╡ d037c253-032a-4a83-a246-5920cd8e57be
 md"""
 #### Take-Off
-1500 m seems like a good target.
+1500 m.
 
 London City is 1508m — Inverness and Isle of Man are 1800-1900 m
 
 Actual take-off distance: what is required AEO
-
 Take-off distance required: 1.15x actual; or balanced field length
 
 Actual landing distance: what the aircraft would ideally require
-
 Landing distance required: 5/3 x actual landing distance
-
-
-Lots of maths, but for propeller 50ft obstacle clearance,
-
-$$TODA_{m} \geq 11.7 TOP_{SI}$$
 """
+
+# ╔═╡ 88b272f9-ad2c-4aab-b784-6907dc87ea2d
+begin
+	# Assumed aerodynamic parameters
+	global CLmax = 1.9;
+	global CLmax_TO = 2.5;
+	global CLmax_LD = 2.7;
+
+	# https://www.researchgate.net/publication/305810138_Conceptual_design_of_a_twin-engine_turboprop_passenger_aircraft
+	global CD_0 = 0.0478;
+	global CD0_TO = 0.0828; # Added 0.04 from Levis
+	global CD0_LD = 0.1328; # Added 0.11 from Levis
+
+	global e = 0.75;
+	global e_TO = e - 0.05 - 0.05;
+	global e_LD = e - 0.05 - 0.10;
+end;
 
 # ╔═╡ cff8b71d-1870-486f-ad06-732813265742
 ρ_gnd = 1.225;
 
 # ╔═╡ 91f05db8-972e-435e-aaf7-a207047e27e8
-CL_TO = CLmax_TO * 0.88; # RANDOM GUESS FOR NOW
+CL_TO = CLmax_TO * 0.88; # Educated guess
 
 # ╔═╡ 4b738106-128e-4399-8edb-2c1b6e2a5512
-σ_TO_LDG = 1.; # SEA LEVEL FOR NOW
+σ_TO_LDG = 1.; # Assume sea level
 
 # ╔═╡ 005399ec-fc82-445f-92a5-7172c2b4722d
-TODA_min = 1500; # metres. Needs justifying
+L_rwy = 1500; # [m]
 
 # ╔═╡ 6881d47f-4fc6-4885-9e6c-ebbcbca31005
-N_E = 2;
+N_E = 2; # Number of engines
 
 # ╔═╡ 7ba1e469-9442-462d-8164-0552000e1cb7
 V_cl = 80.; # IAS during climb
@@ -318,19 +298,13 @@ V_cl = 80.; # IAS during climb
 G_cl = 0.06; # Climb gradient during standard climb
 
 # ╔═╡ f668c250-e709-44e8-b8b2-4bf7a43a0f3d
-V_stall = 55.;
-
-# ╔═╡ 98c4eeab-3a8f-4c59-b820-25e3c0495aaa
-V_loiter = V_stall * 1.32;
-
-# ╔═╡ 0726c8be-9699-4d05-ae2d-3a24db308ae4
-md"""#### Landing Distance"""
+V_stall = 55.; # Similar to actual Dash 8
 
 # ╔═╡ fcc34f42-2b64-4c4f-8b91-b5f95ddadfd0
 ρ_cr = ρ_air(h_cruise);
 
 # ╔═╡ 8af17db4-6710-4e4d-8384-e3768d43e609
-md"""#### Flight Phases
+md"""#### Specific Excess Power Equations
 $$\bigg( \frac{P}{W} \bigg)_0 = \frac{V_\infty \alpha}{\eta_{prop} \beta} \bigg[ \frac{1}{V_\infty} \frac{dh}{dt} + \frac{1}{g} \frac{dV_\infty}{dt} + \frac{\frac{1}{2}\rho V_\infty^2 C_{D_0}}{\alpha W_0/S_{ref}} + \frac{\alpha n^2 W_0/S_{ref}}{\frac{1}{2}\rho V_\infty^2 \pi AR e} \bigg]$$
 
 
@@ -348,10 +322,10 @@ $$\bigg( \frac{P}{W} \bigg)_0 = \frac{V_\infty \alpha}{\eta_{prop} \beta} \bigg[
 """
 
 # ╔═╡ 13be94f1-bfc7-44a0-9985-0a3783cd8265
-β_OEI = 0.6;
+β_OEI = 0.6; # Motor max power is generally above max continuous
 
 # ╔═╡ e58f446a-88fe-430a-9598-d5bf2dc931ee
-md"### $W_0$"
+md"### $W_0$ Determination"
 
 # ╔═╡ a77fce1f-0574-4666-ba3b-631716384ae0
 md"""
@@ -363,7 +337,7 @@ W_S = LinRange(0, 10000, 100);
 
 # ╔═╡ b50bf2eb-3bbb-4ce8-b0af-063d69bbeb26
 WS_ldg = WS_Landing(;
-				    ALD = TODA_min / (5. / 3.),
+				    ALD = L_rwy / (5. / 3.),
 					S_a = 305.,
 					K_R = 0.66,
 					σ = σ_TO_LDG
@@ -377,14 +351,14 @@ WS_stall = WS_Stall(;
 
 # ╔═╡ aae8d9a3-aa33-4467-adbd-6a639221fbf5
 PW_TO50 = PW_50ftTakeoff(W_S;
-						TODA_min = TODA_min,
+						TODA_min = L_rwy / 1.15,
 						σ = σ_TO_LDG,
 						CL_TO = CL_TO);
 
 # ╔═╡ 4c948bb0-7399-4e0f-a9aa-c239aec74566
 PW_TO_BFL = PW_BFLTakeoff(W_S;
 						 N_E = N_E,
-						 TODA_min = TODA_min,
+						 TODA_min = L_rwy,
 						 σ = σ_TO_LDG,
 						 CL_TO = CL_TO);
 
@@ -649,36 +623,8 @@ polarization_coeffs = [LinearRegression.slope(E_fit); LinearRegression.bias(E_fi
 # ╔═╡ 4d86e477-7a9e-4eed-8b8f-e007411b2898
 md"""### Defining the Fuel Cell Stack"""
 
-# ╔═╡ e2457cb1-8718-4175-b7a2-e5ad6e864a43
-P_max = 4.e6 # Maximum power needed by the aircraft (W)
-
-# ╔═╡ 4e23f46e-9253-4b3b-92fa-1efe7049899a
-A_min = - 4 * polarization_coeffs[1] * P_max / polarization_coeffs[2]^2 / 10000;
-
-# ╔═╡ 45f95a01-b50d-4f11-bc5c-412968c16dee
-print("Minimum fuel cell area required for a real 'i': " * string(round(A_min, digits=1)) * " m^2");
-
-# ╔═╡ cbeacb6e-f1ae-4152-aef5-426908cb5f6e
-order_A = floor(Int, log10(A_min));
-
 # ╔═╡ 479f80e3-8ab6-4f3d-bd47-a18f4671dfa9
 md"Choose a fuel cell area for your aircraft, and observe the effect on fuel cell length and efficiency $η$ at max power:"
-
-# ╔═╡ 040809ae-69cf-4445-8a6c-82c404b7dabd
-@bind A_eff Slider(A_min*1.1:10^(order_A-0.5):5*A_min, default=A_min*1.2)
-
-# ╔═╡ eea50a16-6798-4b53-8c36-ec647b592b23
-PEMFC = PEMFCStack(
-	area_effective=A_eff,
-	power_max = P_max,
-	height = 2.,
-	width = 2.,
-	layer_thickness=0.0043,
-	position = [0., 0., 0.]
-)
-
-# ╔═╡ ec53c66a-9f14-4520-8d28-2f53a54bb447
-print("Fuel cell area: " * string(round(A_eff, digits=0)) * " m^2")
 
 # ╔═╡ e81ab1c3-228c-4a32-9275-43d5f9b134db
 md"""Calculate the cell current density $j$ (A/cm²) for the cell under max power.
@@ -690,118 +636,8 @@ Note:
   -  $c = P_{max}/A$
 """
 
-# ╔═╡ df7431fe-dcde-4456-a548-1ffafccb84b8
-j_PEMFC = j_cell(PEMFC, 1, polarization_coeffs) # Cell current density (A/cm^2)
-
-# ╔═╡ e9ffaaed-b8b3-4825-8bb2-30a848a17abc
-U_PEMFC = U_cell(j_PEMFC, polarization_coeffs); # Cell potential difference (V)
-
-# ╔═╡ c6b9ea47-0dc5-42b9-a0b1-ff4158102d49
-η_PEMFC = η_FC(U_PEMFC) # Fuel cell stack efficiency (w.r.t HHV)
-
-# ╔═╡ 6895ed8b-acf4-4941-ada7-38ab54d77870
-mdot_H2 = fflow_H2(PEMFC, 1., polarization_coeffs) # Hydrogen mass flow rate in (kg/s)
-
-# ╔═╡ 1d624369-c08a-4c65-8ac4-46e8605cf905
-PEMFC_length = length(PEMFC) # Fuel cell length (m)
-
-# ╔═╡ 5270c8d4-4703-423b-89a5-805679a374ae
-PEMFC_mass = mass(PEMFC) # Fuel cell mass (kg)
-
 # ╔═╡ 429db1e1-071f-41de-a02f-7d0297353928
 md"""Generate eta, m_dot versus Area plots (temporary)"""
-
-# ╔═╡ e2848f51-2145-4d37-a2c3-d73a67cd525d
-Areas = LinRange(523, 2000, 20);
-
-# ╔═╡ 448e3477-6be6-41fb-8794-cd95c9ea56db
-begin
-	eta_fullpower = zeros(size(Areas));
-	eta_thirdpower = zeros(size(Areas));
-
-	mdot_fullpower = zeros(size(Areas));
-	mdot_thirdpower = zeros(size(Areas));
-
-	length_fullpower = zeros(size(Areas));
-
-	mass_fullpower = zeros(size(Areas));
-	
-	for i in 1:length(Areas)
-		PEMFC_AreaStudy = PEMFCStack(
-			area_effective=Areas[i],
-			power_max = P_max,
-			height = 2.,
-			width = 2.,
-			layer_thickness=0.0043,
-			position = [0., 0., 0.]
-		)
-
-		eta_fullpower[i] = η_FC(PEMFC_AreaStudy, 1.);
-		eta_thirdpower[i] = η_FC(PEMFC_AreaStudy, 0.33);
-
-		mdot_fullpower[i] = fflow_H2(PEMFC_AreaStudy, 1.);
-		mdot_thirdpower[i] = fflow_H2(PEMFC_AreaStudy, 0.33);
-
-		length_fullpower[i] = length(PEMFC_AreaStudy);
-		mass_fullpower[i] = mass(PEMFC_AreaStudy);
-	end
-end
-
-# ╔═╡ 92e4aa80-c9fd-4aa0-940a-7ca4765141f5
-begin
-	plot(
-			Areas, eta_fullpower,
-			label = "Full power",
-			lw = 3.,
-			ylabel = "η",
-			xlabel = "Fuel Cell Area (m²)",
-			title = "Fuel cell efficiency versus effective area"
-		);
-		plot!(
-			Areas, eta_thirdpower,
-			label = "1/3 power",
-			lw = 3.,
-		);
-end
-
-# ╔═╡ 373a8b16-b3a2-4cfb-ae50-bc9962a6cbe5
-begin
-	plot(
-			Areas, mdot_fullpower,
-			label = "Full power",
-			lw = 3.,
-			ylabel = "H2 mass flow rate (kg/s)",
-			xlabel = "Fuel Cell Area (m²)",
-			title = "Hydrogen mass flow rate versus PEMFC effective area"
-		);
-		plot!(
-			Areas, mdot_thirdpower,
-			label = "1/3 power",
-			lw = 3.,
-		);
-end
-
-# ╔═╡ 5bfe15dd-29db-4a48-af6f-f8a04bb495e7
-begin
-	plot(
-			Areas, length_fullpower,
-			lw = 3.,
-			ylabel = "PEMFC Length (m)",
-			xlabel = "Fuel Cell Area (m²)",
-			title = "Fuel cell length versus effective area"
-		);
-end
-
-# ╔═╡ ef8669ca-1897-4397-ae00-3da40b64b487
-begin
-	plot(
-			Areas, mass_fullpower,
-			lw = 3.,
-			ylabel = "PEMFC mass (kg)",
-			xlabel = "Fuel Cell Area (m²)",
-			title = "Fuel cell mass versus effective area"
-		);
-end
 
 # ╔═╡ f02237a0-b9d2-4486-8608-cf99a5ea42bd
 md"## Stabilizers"
@@ -881,7 +717,7 @@ vtail_mesh = WingMesh(vtail, [8], 6);
 htail_mesh = WingMesh(htail, [10], 8);
 
 # ╔═╡ 8a73957f-b08e-41e7-8fa4-410558da04e5
-S_wet = (wetted_area(wing_mesh) + wetted_area(fuse, 0:0.1:1) + wetted_area(htail_mesh) + wetted_area(vtail_mesh)); # Approximate wetted area calculated from fuselage and flight surfaces. Doesn't account for intersection of surfaces and fuselage, nor does it account for engine nacelles
+S_wet = (wetted_area(wing_mesh) + wetted_area(fuse, 0:0.1:1) + wetted_area(htail_mesh) + wetted_area(vtail_mesh)) # Approximate wetted area calculated from fuselage and flight surfaces. Doesn't account for intersection of surfaces and fuselage, nor does it account for engine nacelles
 
 # ╔═╡ 24bc5967-b0ea-4081-b3de-d4c362670787
 A_wetted = aspect_ratio(wing)/(S_wet/S_ref) # AR / (S_wet / S_ref)
@@ -911,6 +747,9 @@ begin
 	Wi_W0 *= W8_W0;
 end
 
+# ╔═╡ 25f5ce08-02dc-4d9d-ae61-ae83f4c1dd13
+Wf_W0 = 1.06 * (1 - Wi_W0) # 1.06 factor from Raymer
+
 # ╔═╡ 16996cd1-b98a-4ab7-9674-e45b8548eda7
 begin
 	tol = 0.1;
@@ -920,12 +759,10 @@ begin
 
 	We_base = 17819. - 2*718.; # Mass of base Dash 8 Q400 without engines
 
-	# Fixed
-	global Wf_W0 = 1.12 * (1 - Wi_W0); # Allow extra fuel mass for excess boil-off. Justify this later.
 	P_cabin = 38251.; # Cabin pressure, in Pa
 	
 	# Initial guesses
-	global W0 = [30481.0]; # Based on Dash 8 Q400 MTOW
+	global W0 = [W0_base]; # Based on Dash 8 Q400 MTOW
 
 	# !=========================== START OF LOOP ================================!
 	while abs(W0[end] - W0_prev) > tol
@@ -944,6 +781,23 @@ begin
 		
 		global WS_req = W0_prev * 9.81 / S_ref;
 		global PW_max = 0.;
+
+		local PW_TO50 = PW_50ftTakeoff(WS_req;
+			 TODA_min = L_rwy / 1.15,
+			 σ = σ_TO_LDG,
+			 CL_TO = CL_TO
+		);
+
+		PW_max = max(PW_max, PW_TO50)
+
+		local PW_TO_BFL = PW_BFLTakeoff(WS_req;
+			 N_E = N_E,
+			 TODA_min = L_rwy,
+			 σ = σ_TO_LDG,
+			 CL_TO = CL_TO
+	    );
+
+		PW_max = max(PW_max, PW_TO_BFL)	
 
 		local PW_climb1 = PW_Climb(WS_req;
 			 α = W1_W0 * W2_W0,
@@ -1017,7 +871,6 @@ begin
 		# Add estimated power for air conditioning, hydraulic pumps, avionics, etc to total power required
 		global P_misc = P_Misc(n_passengers);
 		global P_tot += P_misc;
-		global P_tot *= 1.05; # 5% extra power
 		
 		global concept_fc = PEMFCStack(
 			area_effective=840.,
@@ -1034,7 +887,7 @@ begin
 		global We = We_base;
 		We += dry_mass(concept_tank); # Tank mass
 		We += mass(concept_fc); # FC mass
-		We += motor_mass(P_tot, Future); # Motor mass
+		We += motor_mass(P_tot, Current); # Motor mass
 		We -= furnishings_weight(2, n_basepassengers, 2, p_air(h_cruise), W0_base, ShortHaul, Short); # Subtract the total weight of furnishings (base)
 		We += furnishings_weight(2, n_passengers, n_cc, p_air(h_cruise), W0[end], ShortHaul, Short); # Add the new total weight of the furnishings
 		
@@ -1052,15 +905,6 @@ W0[end]
 
 # ╔═╡ 6c8ed38b-1b05-41ca-92f9-760501184e58
 n_passengers
-
-# ╔═╡ 077500bd-581a-46b0-a943-f05a036cf01a
-curstep
-
-# ╔═╡ a658e85d-1402-4b3f-a8b2-c4205572d2d3
-Wf = Wf_W0 * W0[end]
-
-# ╔═╡ 72ba560b-198f-457a-ba1e-3ddb3628864a
-Vf = Wf / ρ_LH2
 
 # ╔═╡ 852baaab-ce24-48cc-8393-1a8ee7554874
 W0plot = plot(
@@ -1337,7 +1181,7 @@ plot(1:resolution:t, E_used / resolution,
 	xlabel = "Time (seconds)",
 	ylabel = "Power consumption (W)",
 	ylims = (0, 10e6)
-	)
+)
 
 # ╔═╡ 224e8310-30ac-4be9-9831-bcc1a41f48ff
 segment_t
@@ -1372,11 +1216,152 @@ tank_capacity = internal_volume(tank) # Calculate the internal volume of the fue
 # ╔═╡ 5fb06c72-03e3-4e10-b14c-2aa55413d675
 mdot = boil_off(tank, K_insulation, T_s_0, T∞, T_LH2, ϵ)
 
-# ╔═╡ 5f236ffe-1479-4a90-9eba-0132a06ab39e
-Wf_W0 * W0[end]
-
 # ╔═╡ 9d1c4841-09fc-4d3a-9229-79bf9addba01
 print("New Wf_W0: ", segment_burn[end] / W0[end])
+
+# ╔═╡ e2457cb1-8718-4175-b7a2-e5ad6e864a43
+P_max = P_tot # Maximum power needed by the aircraft (W)
+
+# ╔═╡ 4e23f46e-9253-4b3b-92fa-1efe7049899a
+A_min = - 4 * polarization_coeffs[1] * P_max / polarization_coeffs[2]^2 / 10000;
+
+# ╔═╡ 45f95a01-b50d-4f11-bc5c-412968c16dee
+print("Minimum fuel cell area required for a real 'i': " * string(round(A_min, digits=1)) * " m^2");
+
+# ╔═╡ cbeacb6e-f1ae-4152-aef5-426908cb5f6e
+order_A = floor(Int, log10(A_min));
+
+# ╔═╡ 040809ae-69cf-4445-8a6c-82c404b7dabd
+@bind A_eff Slider(A_min*1.1:10^(order_A-0.5):5*A_min, default=A_min*1.2)
+
+# ╔═╡ ec53c66a-9f14-4520-8d28-2f53a54bb447
+print("Fuel cell area: " * string(round(A_eff, digits=0)) * " m^2")
+
+# ╔═╡ e2848f51-2145-4d37-a2c3-d73a67cd525d
+Areas = LinRange(A_min*1.1, 2000, 20);
+
+# ╔═╡ eea50a16-6798-4b53-8c36-ec647b592b23
+PEMFC = PEMFCStack(
+	area_effective=A_eff,
+	power_max = P_max,
+	height = 2.,
+	width = 2.,
+	layer_thickness=0.0043,
+	position = [0., 0., 0.]
+)
+
+# ╔═╡ df7431fe-dcde-4456-a548-1ffafccb84b8
+j_PEMFC = j_cell(PEMFC, 1, polarization_coeffs) # Cell current density at full power (A/cm^2)
+
+# ╔═╡ e9ffaaed-b8b3-4825-8bb2-30a848a17abc
+U_PEMFC = U_cell(j_PEMFC, polarization_coeffs); # Cell potential difference (V)
+
+# ╔═╡ c6b9ea47-0dc5-42b9-a0b1-ff4158102d49
+η_PEMFC = η_FC(U_PEMFC) # Fuel cell stack efficiency at full power (w.r.t HHV)
+
+# ╔═╡ 6895ed8b-acf4-4941-ada7-38ab54d77870
+mdot_H2 = fflow_H2(PEMFC, 1., polarization_coeffs) # Hydrogen mass flow rate in at full power (kg/s)
+
+# ╔═╡ 1d624369-c08a-4c65-8ac4-46e8605cf905
+PEMFC_length = length(PEMFC) # Fuel cell length (m)
+
+# ╔═╡ 5270c8d4-4703-423b-89a5-805679a374ae
+PEMFC_mass = mass(PEMFC) # Fuel cell mass (kg)
+
+# ╔═╡ 448e3477-6be6-41fb-8794-cd95c9ea56db
+begin
+	eta_fullpower = zeros(size(Areas));
+	eta_thirdpower = zeros(size(Areas));
+
+	mdot_fullpower = zeros(size(Areas));
+	mdot_thirdpower = zeros(size(Areas));
+
+	length_fullpower = zeros(size(Areas));
+
+	mass_fullpower = zeros(size(Areas));
+	
+	for i in 1:length(Areas)
+		PEMFC_AreaStudy = PEMFCStack(
+			area_effective=Areas[i],
+			power_max = P_max,
+			height = 2.,
+			width = 2.,
+			layer_thickness=0.0043,
+			position = [0., 0., 0.]
+		)
+
+		eta_fullpower[i] = η_FC(PEMFC_AreaStudy, 1.);
+		eta_thirdpower[i] = η_FC(PEMFC_AreaStudy, 0.33);
+
+		mdot_fullpower[i] = fflow_H2(PEMFC_AreaStudy, 1.);
+		mdot_thirdpower[i] = fflow_H2(PEMFC_AreaStudy, 0.33);
+
+		length_fullpower[i] = length(PEMFC_AreaStudy);
+		mass_fullpower[i] = mass(PEMFC_AreaStudy);
+	end
+end
+
+# ╔═╡ 92e4aa80-c9fd-4aa0-940a-7ca4765141f5
+begin
+	plot(
+			Areas, eta_fullpower,
+			label = "Full power",
+			lw = 3.,
+			ylabel = "η",
+			xlabel = "Fuel Cell Area (m²)",
+			title = "Fuel cell efficiency versus effective area"
+		);
+		plot!(
+			Areas, eta_thirdpower,
+			label = "1/3 power",
+			lw = 3.,
+		);
+end
+
+# ╔═╡ 373a8b16-b3a2-4cfb-ae50-bc9962a6cbe5
+begin
+	plot(
+			Areas, mdot_fullpower,
+			label = "Full power",
+			lw = 3.,
+			ylabel = "H2 mass flow rate (kg/s)",
+			xlabel = "Fuel Cell Area (m²)",
+			title = "Hydrogen mass flow rate versus PEMFC effective area"
+		);
+		plot!(
+			Areas, mdot_thirdpower,
+			label = "1/3 power",
+			lw = 3.,
+		);
+end
+
+# ╔═╡ 5bfe15dd-29db-4a48-af6f-f8a04bb495e7
+begin
+	plot(
+			Areas, length_fullpower,
+			lw = 3.,
+			ylabel = "PEMFC Length (m)",
+			xlabel = "Fuel Cell Area (m²)",
+			title = "Fuel cell length versus effective area"
+		);
+end
+
+# ╔═╡ ef8669ca-1897-4397-ae00-3da40b64b487
+begin
+	plot(
+			Areas, mass_fullpower,
+			lw = 3.,
+			ylabel = "PEMFC mass (kg)",
+			xlabel = "Fuel Cell Area (m²)",
+			title = "Fuel cell mass versus effective area"
+		);
+end
+
+# ╔═╡ a658e85d-1402-4b3f-a8b2-c4205572d2d3
+Wf = Wf_W0 * W0[end]
+
+# ╔═╡ 72ba560b-198f-457a-ba1e-3ddb3628864a
+Vf = Wf / ρ_LH2
 
 # ╔═╡ 9f776e2f-1fa9-48f5-b554-6bf5a5d91441
 md"## Plot definition"
@@ -1487,7 +1472,6 @@ plt_vlm
 # ╠═b4a9024c-2c1e-4291-95c1-b9560ff94b6d
 # ╟─b1e81925-32b5-45c0-888c-4b38a34e27b6
 # ╟─b81ca63b-46e9-4808-8225-c36132e70084
-# ╠═88b272f9-ad2c-4aab-b784-6907dc87ea2d
 # ╟─6242fa28-1d3f-45d7-949a-646d2c7a9f52
 # ╠═0badf910-ef0d-4f6a-99b0-9a1a5d8a7213
 # ╠═62dd8881-9b07-465d-a83e-d93eafc7225a
@@ -1528,13 +1512,11 @@ plt_vlm
 # ╠═e3a6b351-3d6d-4707-9bd2-b36a2a6cab41
 # ╠═17a2f25a-964a-4a73-996a-a18484f82add
 # ╠═e00ea2c0-dee4-43e1-ab9d-6c8de1e0c2aa
-# ╟─3920cf3a-1144-4fe7-9a40-9b12a1a4ed9e
 # ╠═22a540fa-0659-4eb9-9d73-fb9516e5f715
-# ╠═bb3a629d-b63f-42dc-a074-d5df13ca0aee
-# ╟─ff947612-2f1e-49a7-9815-8dea097edc3c
-# ╟─7115cdf4-632c-45be-a3bd-2aaf152e42c9
+# ╠═57fd1ec3-14be-4b64-8de7-c0f448df630d
 # ╟─a2eca0b9-730c-4be0-9e7e-d10d9f7ca664
 # ╟─d037c253-032a-4a83-a246-5920cd8e57be
+# ╠═88b272f9-ad2c-4aab-b784-6907dc87ea2d
 # ╠═cff8b71d-1870-486f-ad06-732813265742
 # ╠═91f05db8-972e-435e-aaf7-a207047e27e8
 # ╠═4b738106-128e-4399-8edb-2c1b6e2a5512
@@ -1543,17 +1525,15 @@ plt_vlm
 # ╠═7ba1e469-9442-462d-8164-0552000e1cb7
 # ╠═c685a7e8-1cfd-4703-830f-9e4c78b19d8d
 # ╠═f668c250-e709-44e8-b8b2-4bf7a43a0f3d
-# ╠═98c4eeab-3a8f-4c59-b820-25e3c0495aaa
-# ╟─0726c8be-9699-4d05-ae2d-3a24db308ae4
 # ╠═fcc34f42-2b64-4c4f-8b91-b5f95ddadfd0
 # ╟─8af17db4-6710-4e4d-8384-e3768d43e609
 # ╠═13be94f1-bfc7-44a0-9985-0a3783cd8265
 # ╟─e58f446a-88fe-430a-9598-d5bf2dc931ee
+# ╠═25f5ce08-02dc-4d9d-ae61-ae83f4c1dd13
 # ╠═16996cd1-b98a-4ab7-9674-e45b8548eda7
 # ╠═60912178-17b6-42d8-971d-17184aa1d8d9
 # ╠═913db9f9-850b-4fe9-b4c5-1c872fc7ebf9
 # ╠═6c8ed38b-1b05-41ca-92f9-760501184e58
-# ╠═077500bd-581a-46b0-a943-f05a036cf01a
 # ╠═a658e85d-1402-4b3f-a8b2-c4205572d2d3
 # ╠═72ba560b-198f-457a-ba1e-3ddb3628864a
 # ╟─852baaab-ce24-48cc-8393-1a8ee7554874
@@ -1575,8 +1555,7 @@ plt_vlm
 # ╠═26d249ff-9ac0-4559-9f43-4321429217a3
 # ╠═224e8310-30ac-4be9-9831-bcc1a41f48ff
 # ╠═20388f96-d158-46b3-b62e-80915e77f20b
-# ╠═5f236ffe-1479-4a90-9eba-0132a06ab39e
-# ╠═9d1c4841-09fc-4d3a-9229-79bf9addba01
+# ╟─9d1c4841-09fc-4d3a-9229-79bf9addba01
 # ╟─2b8ec21c-d8da-4e16-91c0-244857483463
 # ╟─a017efa0-cf08-4302-80f7-fae1ef55651c
 # ╟─b69a9c96-c979-4ced-bc85-fbe47ada1c9e
@@ -1608,7 +1587,7 @@ plt_vlm
 # ╠═1e80cb97-f238-43f7-b082-6ab2deacd701
 # ╟─911a3b54-10f4-4ddb-bb89-f380c79b4476
 # ╠═22043683-a69f-4394-b872-4be6eb4b5dc9
-# ╠═f0f28c3a-aa3c-4111-b676-5fd22fb3238c
+# ╟─f0f28c3a-aa3c-4111-b676-5fd22fb3238c
 # ╟─218c8ebb-414e-40f8-ad7a-ad5b6a0a44f3
 # ╠═d0433ace-dcfa-4adf-8df1-f7e0784afb5a
 # ╠═7c48582c-3493-4c80-aab3-019aef3da65c
@@ -1620,13 +1599,13 @@ plt_vlm
 # ╠═a2e58e67-f7f1-444b-991f-442f304f86bf
 # ╟─4d86e477-7a9e-4eed-8b8f-e007411b2898
 # ╠═e2457cb1-8718-4175-b7a2-e5ad6e864a43
-# ╠═eea50a16-6798-4b53-8c36-ec647b592b23
 # ╟─4e23f46e-9253-4b3b-92fa-1efe7049899a
 # ╟─45f95a01-b50d-4f11-bc5c-412968c16dee
-# ╠═cbeacb6e-f1ae-4152-aef5-426908cb5f6e
-# ╠═479f80e3-8ab6-4f3d-bd47-a18f4671dfa9
-# ╠═040809ae-69cf-4445-8a6c-82c404b7dabd
-# ╠═ec53c66a-9f14-4520-8d28-2f53a54bb447
+# ╟─cbeacb6e-f1ae-4152-aef5-426908cb5f6e
+# ╟─479f80e3-8ab6-4f3d-bd47-a18f4671dfa9
+# ╟─040809ae-69cf-4445-8a6c-82c404b7dabd
+# ╟─ec53c66a-9f14-4520-8d28-2f53a54bb447
+# ╠═eea50a16-6798-4b53-8c36-ec647b592b23
 # ╟─e81ab1c3-228c-4a32-9275-43d5f9b134db
 # ╠═df7431fe-dcde-4456-a548-1ffafccb84b8
 # ╠═e9ffaaed-b8b3-4825-8bb2-30a848a17abc
@@ -1635,7 +1614,7 @@ plt_vlm
 # ╠═1d624369-c08a-4c65-8ac4-46e8605cf905
 # ╠═5270c8d4-4703-423b-89a5-805679a374ae
 # ╟─429db1e1-071f-41de-a02f-7d0297353928
-# ╠═e2848f51-2145-4d37-a2c3-d73a67cd525d
+# ╟─e2848f51-2145-4d37-a2c3-d73a67cd525d
 # ╟─448e3477-6be6-41fb-8794-cd95c9ea56db
 # ╟─92e4aa80-c9fd-4aa0-940a-7ca4765141f5
 # ╟─373a8b16-b3a2-4cfb-ae50-bc9962a6cbe5
