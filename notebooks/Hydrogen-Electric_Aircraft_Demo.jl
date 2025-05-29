@@ -1028,15 +1028,15 @@ begin
 		
 		
 		W_crew = crew_weight(2, n_passengers);
-		n_cc = n_cabincrew(n_passengers);
+		global n_cc = n_cabincrew(n_passengers);
 		W_payload = n_passengers * (84 + 23);
 
 		global We = We_base;
 		We += dry_mass(concept_tank); # Tank mass
 		We += mass(concept_fc); # FC mass
 		We += motor_mass(P_tot, Future); # Motor mass
-		We -= furnishings_weight(2, n_basepassengers, 2, p_air(2200), W0_base, ShortHaul, Short); # Subtract the total weight of furnishings (base)
-		We += furnishings_weight(2, n_passengers, n_cc, p_air(2200), W0[end], ShortHaul, Short); # Add the new total weight of the furnishings
+		We -= furnishings_weight(2, n_basepassengers, 2, p_air(h_cruise), W0_base, ShortHaul, Short); # Subtract the total weight of furnishings (base)
+		We += furnishings_weight(2, n_passengers, n_cc, p_air(h_cruise), W0[end], ShortHaul, Short); # Add the new total weight of the furnishings
 		
 		global drymass = dry_mass(concept_tank)
 		W0_new = (W_crew + W_payload + We) / (1 - Wf_W0)
