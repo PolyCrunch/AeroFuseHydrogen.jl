@@ -40,6 +40,9 @@ using DataFrames;
 # ╔═╡ 559bcd99-f43f-4228-9632-2aa5cd93a1fb
 using LinearRegression;
 
+# ╔═╡ b4a9024c-2c1e-4291-95c1-b9560ff94b6d
+using LaTeXStrings;
+
 # ╔═╡ 1aeef97f-112b-4d1c-b4b0-b176483a783b
 begin
 	using PlutoUI
@@ -171,6 +174,9 @@ end;
 # ╔═╡ bae8f6a4-a130-4c02-8dd4-1b7fc78fb104
 AR = aspect_ratio(wing);
 
+# ╔═╡ e44e5781-c689-463e-b0d3-1d4a434c287a
+S_ref
+
 # ╔═╡ c84c5839-b215-4f5d-b89a-24da4a7241c2
 md"""
 ## Power Requirements
@@ -220,16 +226,16 @@ V_cruise = a_cruise * M_cruise
 η_prop = 0.8;
 
 # ╔═╡ eda958b2-a71c-41f3-9643-3b3eb130224d
-Hjet_HH2 = 1/2.;
+Hjet_HH2 = 1/2.8;
 
 # ╔═╡ bb004a3a-40c3-4f13-975e-f0d6aa20612d
-W1_W0 = 1 - (1 - 0.970) * Hjet_HH2; # Warmup and take-off [corrected from Raymer]. This could be lower as no warm up!
+W1_W0 = 1 - (1 - 0.970) * Hjet_HH2 # Warmup and take-off [corrected from Raymer]. This could be lower as no warm up!
 
 # ╔═╡ 60f4656e-b8fb-465a-bd3e-8647fbb785c8
-W2_W0 = 1 - (1 - 0.985) * Hjet_HH2; # Climb [Raymer]
+W2_W0 = 1 - (1 - 0.985) * Hjet_HH2 # Climb [Raymer]
 
 # ╔═╡ e86479c5-cbf6-42e1-8b7d-52684360f0b2
-W4_W0 = 1 - (1 - 0.995) * Hjet_HH2; # Land
+W4_W0 = 1 - (1 - 0.995) * Hjet_HH2 # Land
 
 # ╔═╡ 8f7b0cf4-6d09-4d20-a130-90c7368dc39b
 W5_W0 = 1 - (1 - 0.985) * Hjet_HH2; # Climb [Raymer]
@@ -622,17 +628,18 @@ begin
 		label="Model Curve",
 		ylims = (0, 1.2),
 		xlims = (0, 2000),
-		xlabel = "Current density, i (mA/cm²)",
-		ylabel = "Cell PD, E (V)"
+		xlabel = "Current density, i [mA/cm²]",
+		ylabel = "Cell PD, E [V]"
 	)
 
 	plot!(
 		i_extrem.*1000,
 		LinearRegression.slope(E_fit) .* i_extrem .+ LinearRegression.bias(E_fit),
 		lw=2,
-		label="Linear Fit",
+		label="E = -0.213 i + 0.873",
 		linestyle=:dash,
-		linecolor = :gray50
+		linecolor = :gray50,
+		size = (600,300)
 	)
 end
 
@@ -1477,6 +1484,7 @@ plt_vlm
 # ╠═87dfa675-cb8c-41e6-b03d-c5a983d99aa8
 # ╠═3fc8039e-acb3-44eb-a7c3-176afe4ad6e0
 # ╠═559bcd99-f43f-4228-9632-2aa5cd93a1fb
+# ╠═b4a9024c-2c1e-4291-95c1-b9560ff94b6d
 # ╟─b1e81925-32b5-45c0-888c-4b38a34e27b6
 # ╟─b81ca63b-46e9-4808-8225-c36132e70084
 # ╠═88b272f9-ad2c-4aab-b784-6907dc87ea2d
@@ -1492,6 +1500,7 @@ plt_vlm
 # ╠═3413ada0-592f-4a37-b5d0-6ff88baad66c
 # ╠═d69b550d-1634-4f45-a660-3be009ddd19d
 # ╠═bae8f6a4-a130-4c02-8dd4-1b7fc78fb104
+# ╠═e44e5781-c689-463e-b0d3-1d4a434c287a
 # ╟─c84c5839-b215-4f5d-b89a-24da4a7241c2
 # ╟─45193a1b-732f-4d38-b417-a23c65c76ce4
 # ╠═a4d378e7-40e5-467c-a126-6432076b32c1
@@ -1599,7 +1608,7 @@ plt_vlm
 # ╠═1e80cb97-f238-43f7-b082-6ab2deacd701
 # ╟─911a3b54-10f4-4ddb-bb89-f380c79b4476
 # ╠═22043683-a69f-4394-b872-4be6eb4b5dc9
-# ╟─f0f28c3a-aa3c-4111-b676-5fd22fb3238c
+# ╠═f0f28c3a-aa3c-4111-b676-5fd22fb3238c
 # ╟─218c8ebb-414e-40f8-ad7a-ad5b6a0a44f3
 # ╠═d0433ace-dcfa-4adf-8df1-f7e0784afb5a
 # ╠═7c48582c-3493-4c80-aab3-019aef3da65c

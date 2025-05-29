@@ -66,9 +66,7 @@ end
 
         # Calculate the weight of the furnishings
         W_furnishings = 55 * N_flightdeck + 32 * N_pax +
-        15 * N_cabincrew + K_lav * N_pax^1.33 +
-        0.771 * (W_0 / 1000); # Weight of furnishings [kg], Roskam Part V
-        # NEED TO ADD KBUF AND CABIN WINDOWS PART
+        15 * N_cabincrew + K_lav * N_pax^1.33 + K_buf * N_pax^1.12 + 109*(N_pax * (1 + P_cabin) / 100)^0.505 + 0.771 * (W_0 / 1000); # Weight of furnishings [kg], Roskam Part V
         
         W_furnishings /= 2.20462; # Convert weight from lb to kg
         return W_furnishings; # Convert weight from lb to kg
