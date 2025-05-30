@@ -327,11 +327,175 @@ $$\bigg( \frac{P}{W} \bigg)_0 = \frac{V_\infty \alpha}{\eta_{prop} \beta} \bigg[
 # ╔═╡ e58f446a-88fe-430a-9598-d5bf2dc931ee
 md"### $W_0$ Determination"
 
-# ╔═╡ d7aebf1e-df3e-42ab-82ed-2080d552722b
-t_w_weightloop = 0.001;
-
 # ╔═╡ d5181a37-7a4a-4c34-a9db-de83af11112c
-A_FC_factor = 1.0; # Area of FC compared to minimum area of FC
+A_FC_factor = 1.; # Area of FC compared to minimum area of FC
+
+# ╔═╡ 54c2ae3c-01c9-4ee2-a7fe-9b9f310c34d5
+A_FC_var = [1.0, 1.2, 1.55, 1.7, 1.85, 2.0];
+
+# ╔═╡ 37ebd144-a9c3-459a-9a92-1904a98c564a
+W0_AFC = [27637, 28241, 28604, 29157, 29763, 30433];
+
+# ╔═╡ 46d5504f-4f9d-4f3b-bbfd-077de7309f4d
+climb_burn_AFC = [67.31, 63.63, 60.55, 60.48, 60.73, 61.23];
+
+# ╔═╡ 54721b25-05d8-4359-93d4-ee33bd0c43c7
+cruise_burn_AFC = [1031.55, 917.45, 847.21, 831.84, 821.79, 815.63];
+
+# ╔═╡ e6c05972-7d17-46b4-b050-3dcd6eb23062
+overall_burn_AFC = [1987.87, 1845.88, 1754.00, 1742.89, 1740.24, 1744.33];
+
+# ╔═╡ 25b245e6-7ac5-4550-a0a3-3d5b0d505cb4
+begin
+	# Plot for A_FC and W0
+	plot(
+		A_FC_var,
+		W0_AFC,
+		label = "MTOW",
+		xlabel = "Fuel Cell Area Factor",
+		ylabel = "MTOW, W₀ (kg)",
+		legend = false,
+		lw = 3,
+		#xlim = (1, 2),
+		ylim = (27000, 31000),
+		marker = :x,
+		markersize = 4,
+		markerstrokewidth = 1,
+		size = (500, 400),
+		minorgrid = true
+	)
+end
+
+# ╔═╡ c2128ea8-8852-4563-aa2e-22a9420c8bbd
+begin
+	# Plot for A_FC and W0
+	plot(
+		A_FC_var,
+		overall_burn_AFC,
+		label = "MTOW",
+		xlabel = "Fuel Cell Area Factor",
+		ylabel = "Fuel used (kg)",
+		legend = false,
+		lw = 3,
+		#xlim = (1, 2),
+		#ylim = (1700, 2000),
+		marker = :x,
+		markersize = 4,
+		markerstrokewidth = 1,
+		size = (500, 400),
+		minorgrid = true
+	)
+end
+
+# ╔═╡ dd1a0a7d-1884-4dc3-8428-51cf18310300
+# Plot for A_FC and overall fuel burn
+
+# ╔═╡ d7aebf1e-df3e-42ab-82ed-2080d552722b
+t_w_weightloop = 0.03;
+
+# ╔═╡ f4471ec8-25f5-429e-b74c-ceec181c7287
+t_w_var = [0.01, 0.02, 0.03, 0.06, 0.1, 0.14, 0.17];
+
+# ╔═╡ e70edca6-1482-4257-a582-c936226872e9
+n_pass_t_w = [56, 56, 56, 52, 52, 52, 48];
+
+# ╔═╡ 1d7258fd-d031-493c-8e3c-482ac54cdb1d
+grnd_burn_tw = [76.25, 37.39, 25.54, 13.27, 8.56, 6.56, 5.55];
+
+# ╔═╡ 4a6c742d-9a91-417b-b307-ffa9203fc475
+cruise_burn_tw = [1033.03, 1032.30, 1031.55, 1061.71, 1057.23, 1052.56, 1103.45]; # Why is this lower? Because more fuel mass has been burnt — lighter plane — simulation accounts for this
+
+# ╔═╡ 18206899-9c9e-4a93-ab2f-8262dda88905
+overall_burn_tw = [2008.36, 1993.35, 1987.87, 2007.37, 2002.41, 1998.31, 2045.62];
+
+# ╔═╡ f78e0409-512d-4dbd-90ac-92398d3ad80f
+W0_tw = [27599, 27618, 27637, 26966, 27049, 27140, 26341];
+
+# ╔═╡ d816a764-574f-4323-bf12-248dc55a341b
+begin
+	# Plot for passenger count and ground burn against t_w
+	npass = plot(
+		t_w_var * 100,
+		n_pass_t_w,
+		label = "Number of passengers",
+		ylabel = "Number of passengers",
+		xlabel = "Insulation thickness (cm)",
+		ylims = (0, 60),
+		xlims = (0, 18),
+		color = :blue,
+		ytickfontcolor = :blue,
+		yguidefontcolor = :blue,
+		lw = 3,
+		legend = :bottomleft,
+		marker = :x,
+		markersize = 4,
+		markerstrokewidth = 1,
+		minorgrid = true
+	)
+
+	grnd = twinx(npass)
+	plot!(
+		grnd,
+		t_w_var * 100,
+		W0_tw,
+		label = "W₀",
+		ylabel = "MTOW (kg)",
+		ylims = (26000, 28000),
+		color = :red,
+		ytickfontcolor = :red,
+		yguidefontcolor = :red,
+		lw = 3,
+		legend = :bottomright,
+		size = (500, 400),
+		marker = :x,
+		markersize = 4,
+		markerstrokewidth = 1,
+		minorgrid = true
+	)
+end
+
+# ╔═╡ 5d8c23bf-05db-4072-a7a5-f9d9cb035422
+begin
+	cruiseplt_tw = plot(
+		t_w_var * 100,
+		grnd_burn_tw,
+		label = "Fuel boil-off on ground",
+		ylabel = "Fuel used (kg)",
+		xlabel = "Insulation thickness (cm)",
+		lw = 3,
+		color = :blue,
+		ytickfontcolor = :blue,
+		yguidefontcolor = :blue,
+		xlims = (0, 18),
+		ylims = (0, 80),
+		legend = :bottomleft,
+		marker = :x,
+		markersize = 4,
+		markerstrokewidth = 1,
+		minorgrid = true
+	)
+
+	grndplot = twinx(cruiseplt_tw)
+	plot!(
+		grndplot,
+		t_w_var * 100,
+		overall_burn_tw,
+		label = "Simulated overall fuel use",
+		ylabel = "Fuel used (kg)",
+		lw = 3,
+		color = :red,
+		ytickfontcolor = :red,
+		yguidefontcolor = :red,
+		ylims = (1900, 2100),
+		legend = :topright,
+		size = (500, 400),
+		minigrid = true,
+		marker = :x,
+		markersize = 4,
+		markerstrokewidth = 1,
+		minorgrid = true
+	)
+end
 
 # ╔═╡ a77fce1f-0574-4666-ba3b-631716384ae0
 md"""
@@ -474,6 +638,50 @@ md"Use the slider to choose an insulation material of your choice:"
 
 # ╔═╡ 6fffa62e-48c1-48aa-a048-4e78048fb309
 insulation_material = tank_data[insulation_index, :]
+
+# ╔═╡ bffea698-1450-4cac-96fc-717ba609a5c1
+# ╠═╡ disabled = true
+#=╠═╡
+boiloffplt = plot(
+	100 * t_w,
+	360 * M,
+	title = "Mass boil-off rate versus insulation thickness",
+	xlabel = "Insulation thickness (cm)",
+	ylabel = "Mass boil-off (kg /hr)",
+	legend = false,
+	xlims = (0., 20.),
+	size = (1000, 400)
+)
+  ╠═╡ =#
+
+# ╔═╡ 7081ef25-8769-4a62-be19-c87168ac9135
+# ╠═╡ disabled = true
+#=╠═╡
+volboioloffplt = plot(
+	100 * t_w,
+	360 * M / ρ_LH2,
+	title = "Volume boil-off rate versus insulation thickness",
+	xlabel = "Insulation thickness (cm)",
+	ylabel = "Volume boil-off (m³ /hr)",
+	legend = false
+)
+  ╠═╡ =#
+
+# ╔═╡ 66c1cc45-913d-44f8-bf55-dc4a47d5dca6
+# ╠═╡ disabled = true
+#=╠═╡
+begin
+	Tsplt = plot(
+		100 * t_w,
+		T_s,
+		title = "Tank surface temperature versus insulation thickness",
+		xlabel = "Insulation thickness (cm)",
+		ylabel = "Tank surface temperature (K)",
+		label = "Theoretical value"
+	);
+	plot!([0; 20], [T∞; T∞], linestyle = :dash, linecolor = :gray, linewidth = 1, label = "T∞")
+end
+  ╠═╡ =#
 
 # ╔═╡ 25b42e5d-2053-4687-bc8a-a5a145c42e53
 md"""
@@ -672,7 +880,7 @@ A_wetted = aspect_ratio(wing)/(S_wet/S_ref) # AR / (S_wet / S_ref)
 LD_max = K_LD * sqrt(A_wetted) # Raymer
 
 # ╔═╡ 34d83139-a0ce-4712-a884-a3c53a2df098
-W3_W0 = exp((-2000e3 * 9.81 * psfc(200., 1.e6))/(η_prop * LD_max)); # Cruise 2000 km
+W3_W0 = exp((-1500e3 * 9.81 * psfc(200., 1.e6))/(η_prop * LD_max)); # Cruise 1500 km
 
 # ╔═╡ 50ebd56c-b6bc-4a0a-ad97-f9b8e94ac8bf
 W6_W0 = exp((-400e3 * 9.81 * psfc(200., 1.e6))/(η_prop * LD_max)); # Diversion 400 km
@@ -815,7 +1023,7 @@ begin
 
 		global concept_tank = CryogenicFuelTank(
 			radius=fuse.radius - fuse_t_w,
-			length=volume_to_length(Wf_W0 * W0[end] / ρ_LH2, fuse.radius - fuse_t_w, t_insulation),
+			length=volume_to_length(Wf_W0 * W0[end] / ρ_LH2, fuse.radius - fuse_t_w, t_w_weightloop),
 			insulation_thickness=t_w_weightloop,
 			insulation_density=35.3
 		)
@@ -1034,7 +1242,7 @@ begin
 
 		# Mass flow rate of Hydrogen required
 		dm = fflow_H2(concept_fc, P/P_tot); # Mass of fuel burnt in the second
-		dm = max(dm, boil_off(concept_tank)); # Use boil-off rate if higher
+		dm = max(dm, boil_off(concept_tank, 9.6e-3)); # Use boil-off rate if higher
 
 		global m_burnt += dm * resolution;
 		
@@ -1046,7 +1254,7 @@ begin
 
 	# !=========================== CRUISE 1 ==================================!
 
-	while dist < 2000e3
+	while dist < 1500e3
 		global t += resolution;
 	
 		global V_TAS = TAS(h, V_cruise)		
@@ -1069,7 +1277,7 @@ begin
 
 		# Mass flow rate of Hydrogen required
 		dm = fflow_H2(concept_fc, P/P_tot); # Mass of fuel burnt in the second
-		dm = max(dm, boil_off(concept_tank)); # Use boil-off rate if higher
+		dm = max(dm, boil_off(concept_tank, 9.6e-3)); # Use boil-off rate if higher
 
 		global m_burnt += resolution * dm;
 		global dist += resolution * V_TAS;
@@ -1089,7 +1297,7 @@ begin
 
 		# Mass flow rate of hydrogen required
 		dm = fflow_H2(concept_fc, P/P_tot); # Mass of fuel burnt during \Delta t
-		dm = max(dm, boil_off(concept_tank));
+		dm = max(dm, boil_off(concept_tank, 9.6e-3));
 
 		global m_burnt += resolution * dm;
 		global t += resolution;
@@ -1131,7 +1339,7 @@ begin
 
 		# Mass flow rate of Hydrogen required
 		dm = fflow_H2(concept_fc, P/P_tot); # Mass of fuel burnt in the second
-		dm = max(dm, boil_off(concept_tank)); # Use boil-off rate if higher
+		dm = max(dm, boil_off(concept_tank, 9.6e-3)); # Use boil-off rate if higher
 
 		global m_burnt += dm * resolution;
 		
@@ -1168,7 +1376,7 @@ begin
 
 		# Mass flow rate of Hydrogen required
 		dm = fflow_H2(concept_fc, P/P_tot); # Mass of fuel burnt in the second
-		dm = max(dm, boil_off(concept_tank)); # Use boil-off rate if higher
+		dm = max(dm, boil_off(concept_tank, 9.6e-3)); # Use boil-off rate if higher
 
 		global m_burnt += resolution * dm;
 		global dist += resolution * V_TAS;
@@ -1188,7 +1396,7 @@ begin
 
 		# Mass flow rate of hydrogen required
 		dm = fflow_H2(concept_fc, P/P_tot); # Mass of fuel burnt during \Delta t
-		dm = max(dm, boil_off(concept_tank));
+		dm = max(dm, boil_off(concept_tank, 9.6e-3));
 
 		global m_burnt += resolution * dm;
 		global t += resolution;
@@ -1229,7 +1437,7 @@ begin
 
 		# Mass flow rate of Hydrogen required
 		dm = fflow_H2(concept_fc, P/P_tot); # Mass of fuel burnt in a second
-		dm = max(dm, boil_off(concept_tank)); # Use boil-off rate if higher
+		dm = max(dm, boil_off(concept_tank, 9.6e-3)); # Use boil-off rate if higher
 
 		global m_burnt += resolution * dm;
 	
@@ -1248,7 +1456,7 @@ begin
 
 		# Mass flow rate of hydrogen required
 		dm = fflow_H2(concept_fc, P/P_tot); # Mass of fuel burnt during \Delta t
-		dm = max(dm, boil_off(concept_tank));
+		dm = max(dm, boil_off(concept_tank, 9.6e-3));
 
 		global m_burnt += resolution * dm;
 		global t += resolution;
@@ -1266,7 +1474,16 @@ begin
 end
 
 # ╔═╡ dd05da5f-b206-41a8-88c7-ebfde1a871ef
-segment_burn[end]
+segment_burn[1] # Ground
+
+# ╔═╡ e38a34a3-cf2a-47fd-9806-0b702eabf363
+segment_burn[3] - segment_burn[2] # Climb
+
+# ╔═╡ 44026c47-ed26-4eb4-ba56-c84417f5d6a1
+segment_burn[4] - segment_burn[3] # Cruise
+
+# ╔═╡ 32290dce-ddde-4cb0-92a4-6794984840b2
+segment_burn[end] # Overall
 
 # ╔═╡ 26d249ff-9ac0-4559-9f43-4321429217a3
 plot(1:resolution:t, E_used / resolution,
@@ -1557,50 +1774,6 @@ begin
 	plot(boiloffplot, volboioloffplot, Tsplot, layout = @layout [a; b; c])
 end
 
-# ╔═╡ bffea698-1450-4cac-96fc-717ba609a5c1
-# ╠═╡ disabled = true
-#=╠═╡
-boiloffplt = plot(
-	100 * t_w,
-	360 * M,
-	title = "Mass boil-off rate versus insulation thickness",
-	xlabel = "Insulation thickness (cm)",
-	ylabel = "Mass boil-off (kg /hr)",
-	legend = false,
-	xlims = (0., 20.),
-	size = (1000, 400)
-)
-  ╠═╡ =#
-
-# ╔═╡ 7081ef25-8769-4a62-be19-c87168ac9135
-# ╠═╡ disabled = true
-#=╠═╡
-volboioloffplt = plot(
-	100 * t_w,
-	360 * M / ρ_LH2,
-	title = "Volume boil-off rate versus insulation thickness",
-	xlabel = "Insulation thickness (cm)",
-	ylabel = "Volume boil-off (m³ /hr)",
-	legend = false
-)
-  ╠═╡ =#
-
-# ╔═╡ 66c1cc45-913d-44f8-bf55-dc4a47d5dca6
-# ╠═╡ disabled = true
-#=╠═╡
-begin
-	Tsplt = plot(
-		100 * t_w,
-		T_s,
-		title = "Tank surface temperature versus insulation thickness",
-		xlabel = "Insulation thickness (cm)",
-		ylabel = "Tank surface temperature (K)",
-		label = "Theoretical value"
-	);
-	plot!([0; 20], [T∞; T∞], linestyle = :dash, linecolor = :gray, linewidth = 1, label = "T∞")
-end
-  ╠═╡ =#
-
 # ╔═╡ 82b332ac-5628-4b82-8735-f361dcdfc9b6
 tank = CryogenicFuelTank(
 	radius = fuse.radius - fuse_t_w,
@@ -1793,11 +1966,30 @@ plt_vlm
 # ╟─e58f446a-88fe-430a-9598-d5bf2dc931ee
 # ╠═25f5ce08-02dc-4d9d-ae61-ae83f4c1dd13
 # ╠═16996cd1-b98a-4ab7-9674-e45b8548eda7
-# ╠═d7aebf1e-df3e-42ab-82ed-2080d552722b
-# ╠═d5181a37-7a4a-4c34-a9db-de83af11112c
 # ╠═60912178-17b6-42d8-971d-17184aa1d8d9
 # ╠═913db9f9-850b-4fe9-b4c5-1c872fc7ebf9
 # ╠═dd05da5f-b206-41a8-88c7-ebfde1a871ef
+# ╠═e38a34a3-cf2a-47fd-9806-0b702eabf363
+# ╠═44026c47-ed26-4eb4-ba56-c84417f5d6a1
+# ╠═32290dce-ddde-4cb0-92a4-6794984840b2
+# ╠═d5181a37-7a4a-4c34-a9db-de83af11112c
+# ╠═54c2ae3c-01c9-4ee2-a7fe-9b9f310c34d5
+# ╠═37ebd144-a9c3-459a-9a92-1904a98c564a
+# ╠═46d5504f-4f9d-4f3b-bbfd-077de7309f4d
+# ╠═54721b25-05d8-4359-93d4-ee33bd0c43c7
+# ╠═e6c05972-7d17-46b4-b050-3dcd6eb23062
+# ╟─25b245e6-7ac5-4550-a0a3-3d5b0d505cb4
+# ╟─c2128ea8-8852-4563-aa2e-22a9420c8bbd
+# ╠═dd1a0a7d-1884-4dc3-8428-51cf18310300
+# ╠═d7aebf1e-df3e-42ab-82ed-2080d552722b
+# ╠═f4471ec8-25f5-429e-b74c-ceec181c7287
+# ╠═e70edca6-1482-4257-a582-c936226872e9
+# ╠═1d7258fd-d031-493c-8e3c-482ac54cdb1d
+# ╠═4a6c742d-9a91-417b-b307-ffa9203fc475
+# ╠═18206899-9c9e-4a93-ab2f-8262dda88905
+# ╠═f78e0409-512d-4dbd-90ac-92398d3ad80f
+# ╟─d816a764-574f-4323-bf12-248dc55a341b
+# ╟─5d8c23bf-05db-4072-a7a5-f9d9cb035422
 # ╠═8c38ccc1-fbc6-4531-89fb-a10b11805433
 # ╠═6c8ed38b-1b05-41ca-92f9-760501184e58
 # ╠═72ba560b-198f-457a-ba1e-3ddb3628864a
