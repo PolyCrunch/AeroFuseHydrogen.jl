@@ -26,7 +26,7 @@ end
 
 Calculate the boil-off rate for a "CryogenicFuelTank" object.
 """
-function boil_off(fuel_tank::CryogenicFuelTank, K_insulation=1.7e-5, T_s_initial_guess=100, T∞=293, T_LH2=20, ϵ=0.1, h_fg=446592)
+function boil_off(fuel_tank::CryogenicFuelTank, K_insulation=9.6e-3, T_s_initial_guess=100, T∞=293, T_LH2=20, ϵ=0.1, h_fg=446592)
     D = 2 * fuel_tank.radius # Diameter of the tank
 
     A = pi * D * (fuel_tank.length - 2 * fuel_tank.radius) + 4 * pi * fuel_tank.radius^2 # (External) surface area of the tank

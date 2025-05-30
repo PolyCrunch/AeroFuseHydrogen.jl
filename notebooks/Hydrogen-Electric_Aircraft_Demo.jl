@@ -327,6 +327,12 @@ $$\bigg( \frac{P}{W} \bigg)_0 = \frac{V_\infty \alpha}{\eta_{prop} \beta} \bigg[
 # ╔═╡ e58f446a-88fe-430a-9598-d5bf2dc931ee
 md"### $W_0$ Determination"
 
+# ╔═╡ d7aebf1e-df3e-42ab-82ed-2080d552722b
+t_w_weightloop = 0.001;
+
+# ╔═╡ d5181a37-7a4a-4c34-a9db-de83af11112c
+A_FC_factor = 1.0; # Area of FC compared to minimum area of FC
+
 # ╔═╡ a77fce1f-0574-4666-ba3b-631716384ae0
 md"""
 ### Constraint Diagrams
@@ -468,66 +474,6 @@ md"Use the slider to choose an insulation material of your choice:"
 
 # ╔═╡ 6fffa62e-48c1-48aa-a048-4e78048fb309
 insulation_material = tank_data[insulation_index, :]
-
-# ╔═╡ f4158708-4c5b-44d2-80bd-22334c19b319
-begin
-	t_w = [0.001 0.002 0.003 0.004 0.005 0.006 0.008 0.01 0.015 0.02 0.03 0.04 0.05 0.1 0.15 0.2]'
-	K_insulation = insulation_material.Thermal_conductivity
-	T_s_0 = 100
-	T∞ = 293
-	T_LH2 = 20
-	ϵ = 0.1
-	M = zeros(Float64, size(t_w))
-	T_s = zeros(Float64, size(t_w))
-
-	local i = 1
-	for v in t_w
-		temp_tank = CryogenicFuelTank(
-			radius = fuse.radius - fuse_t_w,
-			length = 5,
-			insulation_thickness = v,
-			insulation_density = insulation_material.Density,
-			position = [0.5fuse.length, 0, 0]
-		)	
-		M[i] = boil_off(temp_tank, K_insulation, T_s_0, T∞, T_LH2, ϵ)
-		T_s[i] = tank_surface_temperature(temp_tank, T_s_0, T∞, T_LH2, ϵ)
-		i += 1
-	end
-end
-
-# ╔═╡ c829759c-914e-4d1d-a037-9c59bf0f97c9
-begin
-	boiloffplot = plot(
-		100 * t_w,
-		360 * M,
-		title = "Mass boil-off rate versus insulation thickness",
-		xlabel = "Insulation thickness (cm)",
-		ylabel = "Mass boil-off (kg /hr)",
-		legend = false
-	);
-
-	volboioloffplot = plot(
-		100 * t_w,
-		360 * M / ρ_LH2,
-		title = "Volume boil-off rate versus insulation thickness",
-		xlabel = "Insulation thickness (cm)",
-		ylabel = "Volume boil-off (m³ /hr)",
-		legend = false
-	);
-
-	Tsplot = plot(
-		100 * t_w,
-		T_s,
-		title = "Tank surface temperature versus insulation thickness",
-		xlabel = "Insulation thickness (cm)",
-		ylabel = "Tank surface temperature (K)",
-		label = "Theoretical value"
-	)
-	
-	plot!([0; 20], [T∞; T∞], linestyle = :dash, linecolor = :gray, linewidth = 1, label = "T∞")
-
-	plot(boiloffplot, volboioloffplot, Tsplot, layout = @layout [a; b; c])
-end
 
 # ╔═╡ 25b42e5d-2053-4687-bc8a-a5a145c42e53
 md"""
@@ -757,12 +703,20 @@ begin
 	global curstep = 0;
 	max_step = 10000;
 
-	We_base = 17819. - 2*718.; # Mass of base Dash 8 Q400 without engines
+	global We_base = 17819. - 2*718.; # Mass of base Dash 8 Q400 without engines
 
 	P_cabin = 38251.; # Cabin pressure, in Pa
 	
 	# Initial guesses
 	global W0 = [W0_base]; # Based on Dash 8 Q400 MTOW
+	global Wmot_hist = [];
+	global Wfc_hist = [];
+	global Wf_hist = [];
+	global Wft_hist = [];
+	global Wcrew_hist = [];
+	global Wpayload_hist = [];
+	global Wfurnishinglost_hist = []
+
 
 	# !=========================== START OF LOOP ================================!
 	while abs(W0[end] - W0_prev) > tol
@@ -862,36 +816,53 @@ begin
 		global concept_tank = CryogenicFuelTank(
 			radius=fuse.radius - fuse_t_w,
 			length=volume_to_length(Wf_W0 * W0[end] / ρ_LH2, fuse.radius - fuse_t_w, t_insulation),
-			insulation_thickness=0.05,
+			insulation_thickness=t_w_weightloop,
 			insulation_density=35.3
 		)
+
+		global Wf = Wf_W0 * W0[end];
+		push!(Wf_hist, Wf_W0 * W0[end]); # Store each fuel mass
 
 		global n_passengers = n_basepassengers - 4 * Int(ceil(concept_tank.length/0.762));
 
 		# Add estimated power for air conditioning, hydraulic pumps, avionics, etc to total power required
 		global P_misc = P_Misc(n_passengers);
 		global P_tot += P_misc;
+
+		local minA = - 4 * polarization_coeffs[1] * P_tot / polarization_coeffs[2]^2 / 10000;
 		
 		global concept_fc = PEMFCStack(
-			area_effective=840.,
+			area_effective=A_FC_factor * minA,
 			power_max = P_tot,
 			height=2*(fuse.radius - fuse_t_w),
 			width=2*(fuse.radius - fuse_t_w)
 		)
 		
 		
-		W_crew = crew_weight(2, n_passengers);
+		W_crew = crew_weight(2, n_passengers);		
 		global n_cc = n_cabincrew(n_passengers);
 		W_payload = n_passengers * (84 + 23);
 
+		push!(Wcrew_hist, W_crew); # Store each crew and payload mass
+		push!(Wpayload_hist, W_payload);
+
 		global We = We_base;
-		We += dry_mass(concept_tank); # Tank mass
-		We += mass(concept_fc); # FC mass
-		We += motor_mass(P_tot, Current); # Motor mass
-		We -= furnishings_weight(2, n_basepassengers, 2, p_air(h_cruise), W0_base, ShortHaul, Short); # Subtract the total weight of furnishings (base)
-		We += furnishings_weight(2, n_passengers, n_cc, p_air(h_cruise), W0[end], ShortHaul, Short); # Add the new total weight of the furnishings
-		
+
 		global drymass = dry_mass(concept_tank)
+		We += drymass; # Tank mass
+		push!(Wft_hist, drymass); # Store each tank mass
+		
+		We += mass(concept_fc); # FC mass
+		push!(Wfc_hist, mass(concept_fc)); # Store each FC mass
+		
+		We += motor_mass(P_tot, Current); # Motor mass
+		push!(Wmot_hist, motor_mass(P_tot, Current)); # Store each motor mass
+
+		local furnishingslost = -furnishings_weight(2, n_basepassengers, 2, p_air(h_cruise), W0_base, ShortHaul, Short) + furnishings_weight(2, n_passengers, n_cc, p_air(h_cruise), W0[end], ShortHaul, Short);
+		
+		We += furnishingslost;
+		push!(Wfurnishinglost_hist, furnishingslost)
+		
 		W0_new = (W_crew + W_payload + We) / (1 - Wf_W0)
 		push!(W0, W0_new)
 	end
@@ -903,18 +874,71 @@ P_tot
 # ╔═╡ 913db9f9-850b-4fe9-b4c5-1c872fc7ebf9
 W0[end]
 
+# ╔═╡ 8c38ccc1-fbc6-4531-89fb-a10b11805433
+Wf
+
 # ╔═╡ 6c8ed38b-1b05-41ca-92f9-760501184e58
 n_passengers
 
+# ╔═╡ 72ba560b-198f-457a-ba1e-3ddb3628864a
+Vf = Wf / ρ_LH2
+
 # ╔═╡ 852baaab-ce24-48cc-8393-1a8ee7554874
-W0plot = plot(
+begin
+	W0plot = plot(
 		1:curstep+1,
 		W0,
-		title = "Design MTOW Convergence",
+		label = "W₀",
 		xlabel = "Step",
-		ylabel = "Design MTOW (kg)",
-		legend = false
+		ylabel = "Weight (kg)",
+		marker = :x,
+		lw=2
 	)
+	
+	plot!(
+		1:curstep+1,
+		fill(We_base, curstep+1),
+		label = "Dash 8 base weight",
+		xlims = (1, 7),
+		ylims = (-2500, 30000) ,
+		minorgrid = true,
+		marker = :x,
+		lw=2
+	)
+
+	plot!(
+		2:curstep+1,
+		Wcrew_hist + Wpayload_hist,
+		label = "Crew + payload",
+		marker = :x,
+		lw=2
+	)
+	[We_base, We_base]
+	plot!(
+		2:curstep+1,
+		Wmot_hist + Wfc_hist,
+		label = "Motor + fuel cell",
+		marker = :x,
+		lw=2
+	)
+
+	plot!(
+		2:curstep+1,
+		Wf_hist + Wft_hist,
+		label = "Fuel + fuel tank",
+		marker = :x,
+		lw=2
+	)
+
+	plot!(
+		2:curstep+1,
+		Wfurnishinglost_hist,
+		label = "Furnishings lost",
+		marker = :x,
+		lw=2,
+		size = (800, 500)
+	)
+end
 
 # ╔═╡ 8ce1c30e-b602-4411-b671-1cc5f267e646
 We
@@ -957,8 +981,9 @@ begin
 	plot!(
 		[WS_req],
 		[PW_max],
-		label = "HFC Dash 8 Q400 Design Point",
-		marker = :star
+		label = "Fuel Cell Dash 8 Q400 Design Point",
+		marker = :star,
+		size = (800, 600)
 	)
 end
 
@@ -975,6 +1000,12 @@ begin
 	global dist = 0.; # Current distance travelled
 
 	# !========================= START UP / T-O ==============================!
+	# Assume 60 mins of boil-off on ground at 30 degrees C
+	dm = boil_off(concept_tank, 9.6e-3, 150, 303, 20);
+	m_burnt += dm * 60 * 60;
+	push!(segment_burn, m_burnt);
+
+	# Standard start up / T-O
 	m_burnt = W0[end] * (1 - W1_W0);
 	push!(segment_burn, m_burnt);
 
@@ -1043,6 +1074,25 @@ begin
 		global m_burnt += resolution * dm;
 		global dist += resolution * V_TAS;
 	
+	end
+
+	push!(segment_t, t);
+	push!(segment_burn, m_burnt);
+
+	# !========================== DESCENT 1 ==================================!
+
+	local descenttime = 15 * 60
+	while t < (segment_t[end] + descenttime)
+		# Assume no propulsive power requirement, just systems
+		global P = P_misc;
+		push!(E_used, P * resolution);
+
+		# Mass flow rate of hydrogen required
+		dm = fflow_H2(concept_fc, P/P_tot); # Mass of fuel burnt during \Delta t
+		dm = max(dm, boil_off(concept_tank));
+
+		global m_burnt += resolution * dm;
+		global t += resolution;
 	end
 
 	push!(segment_t, t);
@@ -1128,6 +1178,26 @@ begin
 	push!(segment_t, t);
 	push!(segment_burn, m_burnt);
 
+	# !========================== DESCENT 2 ==================================!
+
+	local descenttime = 7.5 * 30
+	while t < (segment_t[end] + descenttime)
+		# Assume no propulsive power requirement, just systems
+		global P = P_misc;
+		push!(E_used, P * resolution);
+
+		# Mass flow rate of hydrogen required
+		dm = fflow_H2(concept_fc, P/P_tot); # Mass of fuel burnt during \Delta t
+		dm = max(dm, boil_off(concept_tank));
+
+		global m_burnt += resolution * dm;
+		global t += resolution;
+	end
+
+	push!(segment_t, t);
+	push!(segment_burn, m_burnt);
+	
+
 	# !========================== LOITER =====================================!
 
 	# 45 minute flight at cruise speed
@@ -1168,6 +1238,25 @@ begin
 	push!(segment_t, t);
 	push!(segment_burn, m_burnt);
 
+	# !========================== DESCENT 2 ==================================!
+
+	local descenttime = 7.5 * 60
+	while t < (segment_t[end] + descenttime)
+		# Assume no propulsive power requirement, just systems
+		global P = P_misc;
+		push!(E_used, P * resolution);
+
+		# Mass flow rate of hydrogen required
+		dm = fflow_H2(concept_fc, P/P_tot); # Mass of fuel burnt during \Delta t
+		dm = max(dm, boil_off(concept_tank));
+
+		global m_burnt += resolution * dm;
+		global t += resolution;
+	end
+
+	push!(segment_t, t);
+	push!(segment_burn, m_burnt);
+
 	# !========================== LAND 2 =====================================!
 
 	push!(segment_t, t);
@@ -1175,6 +1264,9 @@ begin
 	push!(segment_burn, m_burnt);
 	
 end
+
+# ╔═╡ dd05da5f-b206-41a8-88c7-ebfde1a871ef
+segment_burn[end]
 
 # ╔═╡ 26d249ff-9ac0-4559-9f43-4321429217a3
 plot(1:resolution:t, E_used / resolution,
@@ -1191,30 +1283,6 @@ segment_burn
 
 # ╔═╡ e5269547-4785-4239-97ee-88c2fa3a0f9f
 Vf_post_sim = segment_burn[end] / ρ_LH2 * 1.06
-
-# ╔═╡ 82b332ac-5628-4b82-8735-f361dcdfc9b6
-tank = CryogenicFuelTank(
-	radius = fuse.radius - fuse_t_w,
-	length = volume_to_length(Vf_post_sim, fuse.radius - fuse_t_w, t_insulation),
-	insulation_thickness = t_insulation,
-	insulation_density = insulation_material.Density,
-	position = [0.5fuse.length, 0, 0]
-)
-
-# ╔═╡ 63475bbf-6993-4f6c-86b8-f3b608b63a8e
-tank_length = tank.length # Tank exterior length
-
-# ╔═╡ b9fddbc4-a2d7-48cf-ace4-f092a3c38b11
-tank_dry_mass = dry_mass(tank) # Calculate the dry mass of the tank (kg)
-
-# ╔═╡ a0c931b1-e9a5-4bf3-af6d-a9e6d0009998
-full_tank_mass = wet_mass(tank, 1) # Calculate the mass of a fuel tank. This function can also accept a vector of fractions
-
-# ╔═╡ e36dc0e2-015e-4132-a105-d145e17cceb8
-tank_capacity = internal_volume(tank) # Calculate the internal volume of the fuel tank
-
-# ╔═╡ 5fb06c72-03e3-4e10-b14c-2aa55413d675
-mdot = boil_off(tank, K_insulation, T_s_0, T∞, T_LH2, ϵ)
 
 # ╔═╡ 9d1c4841-09fc-4d3a-9229-79bf9addba01
 print("New Wf_W0: ", segment_burn[end] / W0[end])
@@ -1336,7 +1404,7 @@ begin
 		Areas, eta_cruisepower,
 		label = "Cruise power",
 		lw = 3.,
-		ylabel = "η",
+		ylabel = "Fuel Cell Efficiency",
 		xlabel = "Fuel Cell Area (m²)",
 		#title = "Fuel cell efficiency versus effective area",
 		ylims = (0., 1.0),
@@ -1349,6 +1417,12 @@ begin
 		label = "Start of climb power",
 		lw = 3.,
 	);
+	plot!(
+		[Areas[1], Areas[1]], [0., 1.],
+		color = :black,
+		linestyle = :dash,
+		label = "Minimum viable area"
+	)
 end
 
 # ╔═╡ 373a8b16-b3a2-4cfb-ae50-bc9962a6cbe5
@@ -1357,7 +1431,7 @@ begin
 		mass_fullpower, mdot_cruisepower,
 		label = "Cruise power",
 		lw = 3.,
-		ylabel = "H2 mass flow rate (kg/s)",
+		ylabel = "H₂ mass flow rate (kg/s)",
 		xlabel = "Fuel cell mass (kg)",
 		#title = "Hydrogen fuel flow rate versus PEMFC mass",
 		xlims = (2000, 5000),
@@ -1369,35 +1443,187 @@ begin
 		label = "Start of climb power",
 		lw = 3.,
 	);
+	plot!(
+		[mass_fullpower[1], mass_fullpower[1]], [0., 0.15],
+		color = :black,
+		linestyle = :dash,
+		label = "Minimum viable area"
+	)
 end
 
 # ╔═╡ 5bfe15dd-29db-4a48-af6f-f8a04bb495e7
 begin
 	plot(
-			Areas, length_fullpower,
-			lw = 3.,
-			ylabel = "PEMFC Length (m)",
-			xlabel = "Fuel Cell Area (m²)",
-			title = "Fuel cell length versus effective area"
-		);
+		Areas, length_fullpower*2*2,
+		lw = 3.,
+		ylabel = "Fuel Cell Volume (m³)",
+		xlabel = "Fuel Cell Area (m²)",
+		#title = "Fuel cell volume versus effective area",
+		xlims = (600, 2000),
+		ylims = (3, 10),
+		label = "FC volume",
+		size = (600, 300)
+	);
+	plot!(
+		[Areas[1], Areas[1]], [0, 10],
+		color = :black,
+		linestyle = :dash,
+		label = "Minimum viable area"
+	)
 end
 
 # ╔═╡ ef8669ca-1897-4397-ae00-3da40b64b487
 begin
 	plot(
-			Areas, mass_fullpower,
-			lw = 3.,
-			ylabel = "PEMFC mass (kg)",
-			xlabel = "Fuel Cell Area (m²)",
-			title = "Fuel cell mass versus effective area"
-		);
+		Areas, mass_fullpower,
+		lw = 3.,
+		ylabel = "Fuel Cell Mass (kg)",
+		xlabel = "Fuel Cell Area (m²)",
+		#title = "Fuel cell mass versus effective area",
+		xlims = (600, 2000),
+		ylims = (1000, 5000),
+		label = "FC mass",
+		size = (600, 300)
+	);
+
+	plot!(
+		[Areas[1], Areas[1]], [0, 5000],
+		color = :black,
+		linestyle = :dash,
+		label = "Minimum viable area"
+	)
 end
 
-# ╔═╡ a658e85d-1402-4b3f-a8b2-c4205572d2d3
-Wf = Wf_W0 * W0[end]
+# ╔═╡ f4158708-4c5b-44d2-80bd-22334c19b319
+begin
+	t_w = [0.001 0.002 0.003 0.004 0.005 0.006 0.008 0.01 0.015 0.02 0.03 0.04 0.05 0.1 0.15 0.2]'
+	K_insulation = insulation_material.Thermal_conductivity
+	T_s_0 = 100
+	T∞ = 293
+	T_LH2 = 20
+	ϵ = 0.1
+	M = zeros(Float64, size(t_w))
+	T_s = zeros(Float64, size(t_w))
 
-# ╔═╡ 72ba560b-198f-457a-ba1e-3ddb3628864a
-Vf = Wf / ρ_LH2
+	local i = 1
+	for v in t_w
+		temp_tank = CryogenicFuelTank(
+			radius = fuse.radius - fuse_t_w,
+			length = volume_to_length(Wf_W0 * W0[end] / ρ_LH2, fuse.radius - fuse_t_w, v),
+			insulation_thickness = v,
+			insulation_density = insulation_material.Density,
+			position = [0.5fuse.length, 0, 0]
+		)	
+		M[i] = boil_off(temp_tank, K_insulation, T_s_0, T∞, T_LH2, ϵ)
+		T_s[i] = tank_surface_temperature(temp_tank, T_s_0, T∞, T_LH2, ϵ)
+		i += 1
+	end
+end
+
+# ╔═╡ c829759c-914e-4d1d-a037-9c59bf0f97c9
+begin
+	boiloffplot = plot(
+		100 * t_w,
+		360 * M,
+		xlabel = "Insulation thickness (cm)",
+		ylabel = "Mass boil-off (kg /hr)",
+		legend = false,
+		lw = 3,
+		ylims = (0, 70)
+	);
+
+	volboioloffplot = plot(
+		100 * t_w,
+		360 * M / ρ_LH2,
+		xlabel = "Insulation thickness (cm)",
+		ylabel = "Volume boil-off (m³ /hr)",
+		legend = false,
+		lw = 3,
+		ylims = (0., 1.)
+	);
+
+	Tsplot = plot(
+		100 * t_w,
+		T_s,
+		xlabel = "Insulation thickness (cm)",
+		ylabel = "Tank surface temperature (K)",
+		label = "Theoretical value",
+		lw = 3,
+		ylims = (220., 300.)
+	)
+	
+	plot!([0; 20], [T∞; T∞], linestyle = :dash, linecolor = :gray, linewidth = 2, label = "T∞")
+
+	plot(boiloffplot, volboioloffplot, Tsplot, layout = @layout [a; b; c])
+end
+
+# ╔═╡ bffea698-1450-4cac-96fc-717ba609a5c1
+# ╠═╡ disabled = true
+#=╠═╡
+boiloffplt = plot(
+	100 * t_w,
+	360 * M,
+	title = "Mass boil-off rate versus insulation thickness",
+	xlabel = "Insulation thickness (cm)",
+	ylabel = "Mass boil-off (kg /hr)",
+	legend = false,
+	xlims = (0., 20.),
+	size = (1000, 400)
+)
+  ╠═╡ =#
+
+# ╔═╡ 7081ef25-8769-4a62-be19-c87168ac9135
+# ╠═╡ disabled = true
+#=╠═╡
+volboioloffplt = plot(
+	100 * t_w,
+	360 * M / ρ_LH2,
+	title = "Volume boil-off rate versus insulation thickness",
+	xlabel = "Insulation thickness (cm)",
+	ylabel = "Volume boil-off (m³ /hr)",
+	legend = false
+)
+  ╠═╡ =#
+
+# ╔═╡ 66c1cc45-913d-44f8-bf55-dc4a47d5dca6
+# ╠═╡ disabled = true
+#=╠═╡
+begin
+	Tsplt = plot(
+		100 * t_w,
+		T_s,
+		title = "Tank surface temperature versus insulation thickness",
+		xlabel = "Insulation thickness (cm)",
+		ylabel = "Tank surface temperature (K)",
+		label = "Theoretical value"
+	);
+	plot!([0; 20], [T∞; T∞], linestyle = :dash, linecolor = :gray, linewidth = 1, label = "T∞")
+end
+  ╠═╡ =#
+
+# ╔═╡ 82b332ac-5628-4b82-8735-f361dcdfc9b6
+tank = CryogenicFuelTank(
+	radius = fuse.radius - fuse_t_w,
+	length = volume_to_length(Wf_W0 * W0[end] / ρ_LH2, fuse.radius - fuse_t_w, t_insulation),
+	insulation_thickness = t_insulation,
+	insulation_density = insulation_material.Density,
+	position = [0.5fuse.length, 0, 0]
+)
+
+# ╔═╡ 63475bbf-6993-4f6c-86b8-f3b608b63a8e
+tank_length = tank.length # Tank exterior length
+
+# ╔═╡ b9fddbc4-a2d7-48cf-ace4-f092a3c38b11
+tank_dry_mass = dry_mass(tank) # Calculate the dry mass of the tank (kg)
+
+# ╔═╡ a0c931b1-e9a5-4bf3-af6d-a9e6d0009998
+full_tank_mass = wet_mass(tank, 1) # Calculate the mass of a fuel tank. This function can also accept a vector of fractions
+
+# ╔═╡ e36dc0e2-015e-4132-a105-d145e17cceb8
+tank_capacity = internal_volume(tank) # Calculate the internal volume of the fuel tank
+
+# ╔═╡ 5fb06c72-03e3-4e10-b14c-2aa55413d675
+mdot = boil_off(tank, K_insulation, T_s_0, T∞, T_LH2, ϵ)
 
 # ╔═╡ 9f776e2f-1fa9-48f5-b554-6bf5a5d91441
 md"## Plot definition"
@@ -1567,10 +1793,13 @@ plt_vlm
 # ╟─e58f446a-88fe-430a-9598-d5bf2dc931ee
 # ╠═25f5ce08-02dc-4d9d-ae61-ae83f4c1dd13
 # ╠═16996cd1-b98a-4ab7-9674-e45b8548eda7
+# ╠═d7aebf1e-df3e-42ab-82ed-2080d552722b
+# ╠═d5181a37-7a4a-4c34-a9db-de83af11112c
 # ╠═60912178-17b6-42d8-971d-17184aa1d8d9
 # ╠═913db9f9-850b-4fe9-b4c5-1c872fc7ebf9
+# ╠═dd05da5f-b206-41a8-88c7-ebfde1a871ef
+# ╠═8c38ccc1-fbc6-4531-89fb-a10b11805433
 # ╠═6c8ed38b-1b05-41ca-92f9-760501184e58
-# ╠═a658e85d-1402-4b3f-a8b2-c4205572d2d3
 # ╠═72ba560b-198f-457a-ba1e-3ddb3628864a
 # ╟─852baaab-ce24-48cc-8393-1a8ee7554874
 # ╠═8ce1c30e-b602-4411-b671-1cc5f267e646
@@ -1585,7 +1814,7 @@ plt_vlm
 # ╠═6a90d93d-246e-46e8-aab8-b604de989823
 # ╠═9bf58181-6a29-4587-bec5-cf5999d0ca32
 # ╠═bf75995b-317b-4ade-a46a-51ed947240c3
-# ╟─94eaf8be-b197-4606-9908-bc8317b1c6d0
+# ╠═94eaf8be-b197-4606-9908-bc8317b1c6d0
 # ╟─848a3f87-f942-4691-832a-fe1883129e3d
 # ╠═87b0e21b-c75d-4b81-a7b8-34012ac92de7
 # ╠═26d249ff-9ac0-4559-9f43-4321429217a3
@@ -1604,6 +1833,9 @@ plt_vlm
 # ╟─6fffa62e-48c1-48aa-a048-4e78048fb309
 # ╟─f4158708-4c5b-44d2-80bd-22334c19b319
 # ╟─c829759c-914e-4d1d-a037-9c59bf0f97c9
+# ╟─bffea698-1450-4cac-96fc-717ba609a5c1
+# ╟─7081ef25-8769-4a62-be19-c87168ac9135
+# ╟─66c1cc45-913d-44f8-bf55-dc4a47d5dca6
 # ╟─25b42e5d-2053-4687-bc8a-a5a145c42e53
 # ╠═e5269547-4785-4239-97ee-88c2fa3a0f9f
 # ╠═7fa4e010-4ae8-4b77-9bc2-f12437adb7b3
@@ -1654,8 +1886,8 @@ plt_vlm
 # ╠═448e3477-6be6-41fb-8794-cd95c9ea56db
 # ╠═52f0d3d0-8fd0-44dc-8991-0f0244572a03
 # ╠═6a9c0657-f496-4efb-8113-b4a2b89604fe
-# ╠═92e4aa80-c9fd-4aa0-940a-7ca4765141f5
-# ╠═373a8b16-b3a2-4cfb-ae50-bc9962a6cbe5
+# ╟─92e4aa80-c9fd-4aa0-940a-7ca4765141f5
+# ╟─373a8b16-b3a2-4cfb-ae50-bc9962a6cbe5
 # ╟─5bfe15dd-29db-4a48-af6f-f8a04bb495e7
 # ╟─ef8669ca-1897-4397-ae00-3da40b64b487
 # ╟─f02237a0-b9d2-4486-8608-cf99a5ea42bd
