@@ -162,9 +162,6 @@ end;
 # ╔═╡ bae8f6a4-a130-4c02-8dd4-1b7fc78fb104
 AR = aspect_ratio(wing)
 
-# ╔═╡ e44e5781-c689-463e-b0d3-1d4a434c287a
-S_ref
-
 # ╔═╡ c84c5839-b215-4f5d-b89a-24da4a7241c2
 md"""
 ## Power Requirements
@@ -202,19 +199,22 @@ md"""
 h_cruise = 7500; # [m], Similar to Dash 8 Q400
 
 # ╔═╡ 95910c74-faa4-404f-b0a2-a642cc0f8093
-a_cruise = sqrt(1.4 * 287 * T_air(h_cruise));
+a_cruise = sqrt(1.4 * 287 * T_air(h_cruise))
+
+# ╔═╡ 0c36f8be-8af4-4f8a-8c42-1d27dedad648
+var = 1.0331835316;
 
 # ╔═╡ 2ff4b8a7-5985-4033-855e-8d169fe2d6fb
-M_cruise = 0.35;
+M_cruise = 0.5 * var; # Vary with the 'var' variable if necessary
 
 # ╔═╡ be1dfd57-dddb-4d83-8a4d-cdaa13323f2c
-V_cruise = a_cruise * M_cruise
+V_cruise_IAS = 108;
 
 # ╔═╡ c6697863-76bd-4ead-8cd7-7b4818d5af6f
 η_prop = 0.8;
 
 # ╔═╡ eda958b2-a71c-41f3-9643-3b3eb130224d
-Hjet_HH2 = 1/2.8; # Rato of kerosene HHV to hydrogen
+Hjet_HH2 = 1/2.8; # Ratio of kerosene HHV to hydrogen
 
 # ╔═╡ bb004a3a-40c3-4f13-975e-f0d6aa20612d
 W1_W0 = 1 - (1 - 0.970) * Hjet_HH2; # Warmup and take-off [corrected from Raymer]. This could be lower as no warm up!
@@ -227,9 +227,6 @@ W4_W0 = 1 - (1 - 0.995) * Hjet_HH2; # Land
 
 # ╔═╡ 8f7b0cf4-6d09-4d20-a130-90c7368dc39b
 W5_W0 = 1 - (1 - 0.985) * Hjet_HH2; # Climb [Raymer]
-
-# ╔═╡ 75af705e-6508-438d-8094-ffec993d0060
-#W7_W0 = exp((-5400 * 9.81 * psfc(200., 1.e6))/(η_prop)); # 45 min loiter — this seems unrealistic
 
 # ╔═╡ 17a2f25a-964a-4a73-996a-a18484f82add
 W8_W0 = 1 - (1 - 0.995) * Hjet_HH2; # Land
@@ -322,16 +319,13 @@ $$\bigg( \frac{P}{W} \bigg)_0 = \frac{V_\infty \alpha}{\eta_{prop} \beta} \bigg[
 """
 
 # ╔═╡ 13be94f1-bfc7-44a0-9985-0a3783cd8265
-β_OEI = 0.6; # Motor max power is generally above max continuous
+β_OEI = 0.5 * 1.2; # Motor max power is generally above max continuous, so 1.2 factor
 
 # ╔═╡ e58f446a-88fe-430a-9598-d5bf2dc931ee
-md"### $W_0$ Determination"
+md"## $W_0$ Determination"
 
 # ╔═╡ 7145e6cf-5f28-4741-8614-6dbeb734b6fe
-# Plots against A_FC_factor
-
-# ╔═╡ 37c062da-07ea-41a3-8494-47c272c78a73
-TAS(7500, V_cruise)
+md"### Varying Fuel Cell Area"
 
 # ╔═╡ d5181a37-7a4a-4c34-a9db-de83af11112c
 A_FC_factor = 1.26; # Area of FC compared to minimum area of FC
@@ -374,56 +368,6 @@ begin
 		minorgrid = true
 	)
 end
-
-# ╔═╡ b0170abf-e8a0-4d9c-901b-05741f1200f8
-# ╠═╡ disabled = true
-#=╠═╡
-begin
-	# Plot for passenger count and ground burn against t_w
-	npass = plot(
-		t_w_var * 100,
-		n_pass_t_w,
-		label = "Number of passengers",
-		ylabel = "Number of passengers",
-		xlabel = "Insulation thickness (cm)",
-		ylims = (0, 64),
-		xlims = (0, 18),
-		color = :blue,
-		ytickfontcolor = :blue,
-		yguidefontcolor = :blue,
-		lw = 3,
-		legend = :bottomleft,
-		marker = :x,
-		markersize = 4,
-		markerstrokewidth = 1,
-		xticks = 0:2:18,
-		yticks = 0:8:64,
-		minorgrid = true,
-	)
-
-	grnd = twinx(npass)
-	
-	plot!(
-		grnd,
-		t_w_var * 100,
-		W0_tw,
-		label = "W₀",
-		ylabel = "MTOW (kg)",
-		ylims = (26000, 28000),
-		color = :red,
-		ytickfontcolor = :red,
-		yguidefontcolor = :red,
-		lw = 3,
-		legend = :bottomright,
-		size = (500, 400),
-		xlims = (0, 18),
-		marker = :x,
-		markersize = 4,
-		markerstrokewidth = 1,
-	)
-	xaxis!(minorticks = 4)
-end
-  ╠═╡ =#
 
 # ╔═╡ c2128ea8-8852-4563-aa2e-22a9420c8bbd
 begin
@@ -475,7 +419,7 @@ begin
 end
 
 # ╔═╡ dd1a0a7d-1884-4dc3-8428-51cf18310300
-# Plots against t_w
+md"### Varying Tank Insulation Thickness"
 
 # ╔═╡ d7aebf1e-df3e-42ab-82ed-2080d552722b
 t_w_weightloop = 0.03;
@@ -592,9 +536,12 @@ begin
 	xaxis!(minorticks = 4)
 end
 
+# ╔═╡ 366ee31c-9b65-4ad2-b6d9-3208d4750eca
+md"### Convergence of W₀ Loop"
+
 # ╔═╡ a77fce1f-0574-4666-ba3b-631716384ae0
 md"""
-### Constraint Diagrams
+## Constraint Diagram
 """
 
 # ╔═╡ cea3ed96-73aa-44ee-bdc5-2becba65987f
@@ -671,7 +618,7 @@ PW_cr = PW_Cruise(W_S;
 			 # Cruise at 7500 m
 			 α = W1_W0 * W2_W0, # Most constraining weight expected to be same as top of climb 1
 			 β = 1.,
-			 V = TAS(h_cruise, V_cruise),
+			 V = V_cruise,
 			 η_prop = η_prop,
 			 ρ = ρ_cr,
 			 CD_0 = CD_0,
@@ -981,7 +928,7 @@ W3_W0 = exp((-1500e3 * 9.81 * psfc(200., 1.e6))/(η_prop * LD_max)); # Cruise 15
 W6_W0 = exp((-400e3 * 9.81 * psfc(200., 1.e6))/(η_prop * LD_max)); # Diversion 400 km
 
 # ╔═╡ e3a6b351-3d6d-4707-9bd2-b36a2a6cab41
-W7_W0 = exp(((-2700*V_cruise) * 9.81 * psfc(200., 1.e6))/(η_prop * LD_max)); # 45 min at cruise speed
+W7_W0 = exp(((-2700*V_cruise_IAS) * 9.81 * psfc(200., 1.e6))/(η_prop * LD_max)); # 45 min at cruise speed
 
 # ╔═╡ e00ea2c0-dee4-43e1-ab9d-6c8de1e0c2aa
 begin
@@ -1102,7 +1049,7 @@ begin
 			 # Cruise at 7500 m
 			 α = W1_W0 * W2_W0, # Most constraining weight expected to be same as top of climb 1
 			 β = 1.,
-			 V = TAS(h_cruise, V_cruise),
+			 V = V_cruise,
 			 η_prop = η_prop,
 			 ρ = ρ_cr,
 			 CD_0 = CD_0,
@@ -1231,9 +1178,6 @@ begin
 	)
 end
 
-# ╔═╡ 8ce1c30e-b602-4411-b671-1cc5f267e646
-We
-
 # ╔═╡ 94eaf8be-b197-4606-9908-bc8317b1c6d0
 begin
 	# Curves
@@ -1279,9 +1223,6 @@ begin
 	)
 end
 
-# ╔═╡ da5c6163-2a6a-4d54-960f-bb656432b62d
-PW_max
-
 # ╔═╡ 87b0e21b-c75d-4b81-a7b8-34012ac92de7
 begin
 	global segment_t = []; # Cumulative sum of time, given after each segment. Assumed zero for take-off
@@ -1296,7 +1237,7 @@ begin
 
 	# !========================= START UP / T-O ==============================!
 	# Assume 60 mins of boil-off on ground at 30 degrees C
-	dm = boil_off(concept_tank, 9.6e-3, 150, 303, 20);
+	local dm = boil_off(concept_tank, 9.6e-3, 150, 303, 20);
 	m_burnt += dm * 60 * 60;
 	push!(segment_burn, m_burnt);
 
@@ -1344,7 +1285,7 @@ begin
 	while dist < 1500e3
 		global t += resolution;
 	
-		global V_TAS = TAS(h, V_cruise)		
+		global V_TAS = V_cruise		
 
 		# Power requirements
 		P_prop = (W0[end] - m_burnt) * 9.81 * PW_Cruise(WS_req;
@@ -1443,7 +1384,7 @@ begin
 	while dist < 400e3
 		global t += resolution;
 	
-		global V_TAS = TAS(h, V_cruise)		
+		global V_TAS = V_cruise
 
 		# Power requirements
 		P_prop = (W0[end] - m_burnt) * 9.81 * PW_Cruise(WS_req;
@@ -1504,7 +1445,7 @@ begin
 		global t += resolution;
 		global t_loiter += resolution;
 	
-		global V_TAS = TAS(h, V_cruise)		
+		global V_TAS = TAS(h, V_cruise_IAS);	
 
 		# Power requirements
 		P_prop = (W0[end] - m_burnt) * 9.81 * PW_Cruise(WS_req;
@@ -1572,9 +1513,6 @@ segment_t
 
 # ╔═╡ 20388f96-d158-46b3-b62e-80915e77f20b
 segment_burn
-
-# ╔═╡ e5269547-4785-4239-97ee-88c2fa3a0f9f
-Vf_post_sim = segment_burn[end] / ρ_LH2 * 1.06
 
 # ╔═╡ 9d1c4841-09fc-4d3a-9229-79bf9addba01
 print("New Wf_W0: ", segment_burn[end] / W0[end])
@@ -1654,7 +1592,7 @@ begin
 			 # Cruise at 7500 m
 			 α = W1_W0 * W2_W0, # Most constraining weight expected to be same as top of climb 1
 			 β = 1.,
-			 V = TAS(h_cruise, V_cruise),
+			 V = V_cruise,
 			 η_prop = η_prop,
 			 ρ = ρ_cr,
 			 CD_0 = CD_0,
@@ -2021,6 +1959,15 @@ plt_vlm
 # ╔═╡ f03893b1-7518-47d3-ae88-da688aff9591
 plt_vlm
 
+# ╔═╡ 9e0cdf62-fab8-4f24-ae55-30f416944ddf
+# ╠═╡ disabled = true
+#=╠═╡
+V_cruise = TAS(7500, V_cruise_IAS);
+  ╠═╡ =#
+
+# ╔═╡ be0503a0-c734-4fb4-96a6-9eec3db7a691
+V_cruise = a_cruise * M_cruise
+
 # ╔═╡ Cell order:
 # ╟─316a98fa-f3e4-4b46-8c19-c5dbfa6a550f
 # ╟─cf3ff4ea-03ed-4b53-982c-45d9d71a3ba2
@@ -2049,7 +1996,6 @@ plt_vlm
 # ╠═3413ada0-592f-4a37-b5d0-6ff88baad66c
 # ╠═d69b550d-1634-4f45-a660-3be009ddd19d
 # ╠═bae8f6a4-a130-4c02-8dd4-1b7fc78fb104
-# ╠═e44e5781-c689-463e-b0d3-1d4a434c287a
 # ╟─c84c5839-b215-4f5d-b89a-24da4a7241c2
 # ╟─45193a1b-732f-4d38-b417-a23c65c76ce4
 # ╠═a4d378e7-40e5-467c-a126-6432076b32c1
@@ -2063,8 +2009,11 @@ plt_vlm
 # ╟─b8db061e-3dfb-4883-85f9-455ce2bd4912
 # ╠═a9cf68ca-cf0c-481c-b88c-3f4cf222ee5b
 # ╠═95910c74-faa4-404f-b0a2-a642cc0f8093
+# ╟─0c36f8be-8af4-4f8a-8c42-1d27dedad648
 # ╠═2ff4b8a7-5985-4033-855e-8d169fe2d6fb
 # ╠═be1dfd57-dddb-4d83-8a4d-cdaa13323f2c
+# ╟─9e0cdf62-fab8-4f24-ae55-30f416944ddf
+# ╠═be0503a0-c734-4fb4-96a6-9eec3db7a691
 # ╠═c6697863-76bd-4ead-8cd7-7b4818d5af6f
 # ╠═eda958b2-a71c-41f3-9643-3b3eb130224d
 # ╠═bb004a3a-40c3-4f13-975e-f0d6aa20612d
@@ -2073,7 +2022,6 @@ plt_vlm
 # ╠═e86479c5-cbf6-42e1-8b7d-52684360f0b2
 # ╠═8f7b0cf4-6d09-4d20-a130-90c7368dc39b
 # ╠═50ebd56c-b6bc-4a0a-ad97-f9b8e94ac8bf
-# ╠═75af705e-6508-438d-8094-ffec993d0060
 # ╠═e3a6b351-3d6d-4707-9bd2-b36a2a6cab41
 # ╠═17a2f25a-964a-4a73-996a-a18484f82add
 # ╠═e00ea2c0-dee4-43e1-ab9d-6c8de1e0c2aa
@@ -2096,8 +2044,7 @@ plt_vlm
 # ╟─e58f446a-88fe-430a-9598-d5bf2dc931ee
 # ╠═25f5ce08-02dc-4d9d-ae61-ae83f4c1dd13
 # ╠═16996cd1-b98a-4ab7-9674-e45b8548eda7
-# ╠═7145e6cf-5f28-4741-8614-6dbeb734b6fe
-# ╠═37c062da-07ea-41a3-8494-47c272c78a73
+# ╟─7145e6cf-5f28-4741-8614-6dbeb734b6fe
 # ╠═d5181a37-7a4a-4c34-a9db-de83af11112c
 # ╠═54c2ae3c-01c9-4ee2-a7fe-9b9f310c34d5
 # ╠═37ebd144-a9c3-459a-9a92-1904a98c564a
@@ -2106,9 +2053,8 @@ plt_vlm
 # ╠═e6c05972-7d17-46b4-b050-3dcd6eb23062
 # ╠═5eb8e3da-6af6-4896-ae1f-bc87f6ffb35e
 # ╟─25b245e6-7ac5-4550-a0a3-3d5b0d505cb4
-# ╠═b0170abf-e8a0-4d9c-901b-05741f1200f8
-# ╠═c2128ea8-8852-4563-aa2e-22a9420c8bbd
-# ╠═dd1a0a7d-1884-4dc3-8428-51cf18310300
+# ╟─c2128ea8-8852-4563-aa2e-22a9420c8bbd
+# ╟─dd1a0a7d-1884-4dc3-8428-51cf18310300
 # ╠═d7aebf1e-df3e-42ab-82ed-2080d552722b
 # ╠═f4471ec8-25f5-429e-b74c-ceec181c7287
 # ╠═e70edca6-1482-4257-a582-c936226872e9
@@ -2116,11 +2062,11 @@ plt_vlm
 # ╠═4a6c742d-9a91-417b-b307-ffa9203fc475
 # ╠═18206899-9c9e-4a93-ab2f-8262dda88905
 # ╠═f78e0409-512d-4dbd-90ac-92398d3ad80f
+# ╠═72ba560b-198f-457a-ba1e-3ddb3628864a
 # ╟─d816a764-574f-4323-bf12-248dc55a341b
 # ╟─5d8c23bf-05db-4072-a7a5-f9d9cb035422
-# ╠═72ba560b-198f-457a-ba1e-3ddb3628864a
+# ╟─366ee31c-9b65-4ad2-b6d9-3208d4750eca
 # ╟─852baaab-ce24-48cc-8393-1a8ee7554874
-# ╠═8ce1c30e-b602-4411-b671-1cc5f267e646
 # ╟─a77fce1f-0574-4666-ba3b-631716384ae0
 # ╠═cea3ed96-73aa-44ee-bdc5-2becba65987f
 # ╠═b50bf2eb-3bbb-4ce8-b0af-063d69bbeb26
@@ -2132,11 +2078,10 @@ plt_vlm
 # ╠═6a90d93d-246e-46e8-aab8-b604de989823
 # ╠═9bf58181-6a29-4587-bec5-cf5999d0ca32
 # ╠═bf75995b-317b-4ade-a46a-51ed947240c3
-# ╠═94eaf8be-b197-4606-9908-bc8317b1c6d0
-# ╠═da5c6163-2a6a-4d54-960f-bb656432b62d
+# ╟─94eaf8be-b197-4606-9908-bc8317b1c6d0
 # ╟─848a3f87-f942-4691-832a-fe1883129e3d
 # ╠═87b0e21b-c75d-4b81-a7b8-34012ac92de7
-# ╠═26d249ff-9ac0-4559-9f43-4321429217a3
+# ╟─26d249ff-9ac0-4559-9f43-4321429217a3
 # ╠═224e8310-30ac-4be9-9831-bcc1a41f48ff
 # ╠═20388f96-d158-46b3-b62e-80915e77f20b
 # ╟─9d1c4841-09fc-4d3a-9229-79bf9addba01
@@ -2150,13 +2095,12 @@ plt_vlm
 # ╟─631cfc20-058a-4574-8d81-b10c49fd2036
 # ╟─89530c07-b538-4875-b67b-c916963d9ab8
 # ╟─6fffa62e-48c1-48aa-a048-4e78048fb309
-# ╠═f4158708-4c5b-44d2-80bd-22334c19b319
-# ╠═c829759c-914e-4d1d-a037-9c59bf0f97c9
+# ╟─f4158708-4c5b-44d2-80bd-22334c19b319
+# ╟─c829759c-914e-4d1d-a037-9c59bf0f97c9
 # ╟─bffea698-1450-4cac-96fc-717ba609a5c1
 # ╟─7081ef25-8769-4a62-be19-c87168ac9135
 # ╟─66c1cc45-913d-44f8-bf55-dc4a47d5dca6
 # ╟─25b42e5d-2053-4687-bc8a-a5a145c42e53
-# ╠═e5269547-4785-4239-97ee-88c2fa3a0f9f
 # ╠═7fa4e010-4ae8-4b77-9bc2-f12437adb7b3
 # ╠═82b332ac-5628-4b82-8735-f361dcdfc9b6
 # ╠═63475bbf-6993-4f6c-86b8-f3b608b63a8e
@@ -2164,8 +2108,8 @@ plt_vlm
 # ╠═a0c931b1-e9a5-4bf3-af6d-a9e6d0009998
 # ╠═e36dc0e2-015e-4132-a105-d145e17cceb8
 # ╠═5fb06c72-03e3-4e10-b14c-2aa55413d675
-# ╠═50e128f3-72d9-42b1-b987-540bf6e7e6d0
-# ╠═f001804d-1bad-4800-8ab0-09717d605dfd
+# ╟─50e128f3-72d9-42b1-b987-540bf6e7e6d0
+# ╟─f001804d-1bad-4800-8ab0-09717d605dfd
 # ╟─5446afd1-4326-41ab-94ec-199587c1411b
 # ╠═f21b48c0-8e0c-4b67-9145-52a1480003ed
 # ╠═c82d7f29-08f4-4268-881f-e422864ab789
@@ -2177,8 +2121,8 @@ plt_vlm
 # ╟─f0f28c3a-aa3c-4111-b676-5fd22fb3238c
 # ╟─218c8ebb-414e-40f8-ad7a-ad5b6a0a44f3
 # ╠═d0433ace-dcfa-4adf-8df1-f7e0784afb5a
-# ╠═7c48582c-3493-4c80-aab3-019aef3da65c
-# ╠═192ea8d5-df83-4944-9998-7b3006b32d68
+# ╟─7c48582c-3493-4c80-aab3-019aef3da65c
+# ╟─192ea8d5-df83-4944-9998-7b3006b32d68
 # ╟─541a4049-d17d-4ec8-8fd7-fe934ca53230
 # ╠═5d7f3f13-eded-4e01-bb4e-925d24f2d883
 # ╠═ae560365-dddf-4aff-aff9-0dcd4227e1c4
@@ -2186,7 +2130,7 @@ plt_vlm
 # ╠═a2e58e67-f7f1-444b-991f-442f304f86bf
 # ╟─4d86e477-7a9e-4eed-8b8f-e007411b2898
 # ╠═e2457cb1-8718-4175-b7a2-e5ad6e864a43
-# ╠═4e23f46e-9253-4b3b-92fa-1efe7049899a
+# ╟─4e23f46e-9253-4b3b-92fa-1efe7049899a
 # ╟─45f95a01-b50d-4f11-bc5c-412968c16dee
 # ╟─cbeacb6e-f1ae-4152-aef5-426908cb5f6e
 # ╟─479f80e3-8ab6-4f3d-bd47-a18f4671dfa9
