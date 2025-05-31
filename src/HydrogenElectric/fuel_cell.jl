@@ -87,7 +87,7 @@ j_cell(cell::PEMFuelCell, polarization_coefficients::Vector)
 Compute the current density of a proton exchange membrane fuel cell.
 
 # Arguments
-- `cell :: PEMFCStack`: Proton exchange membrane fuel cell stack
+- `cell :: PEMFCStack`: Proton exchange membrane fuel cell stack 
 - `throttle :: Number = 1.0`: Throttle value (0-1)
 - `polarization_coefficients :: Vector = [-0.213; 0.873]`: Polarization coefficients [α β] such that U_cell = α * j_cell + β
 - `i_L :: Number = 1.6`: Limiting current density (A/cm²)

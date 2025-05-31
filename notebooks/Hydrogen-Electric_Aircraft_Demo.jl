@@ -160,7 +160,7 @@ begin
 end;
 
 # ╔═╡ bae8f6a4-a130-4c02-8dd4-1b7fc78fb104
-AR = aspect_ratio(wing);
+AR = aspect_ratio(wing)
 
 # ╔═╡ e44e5781-c689-463e-b0d3-1d4a434c287a
 S_ref
@@ -327,8 +327,14 @@ $$\bigg( \frac{P}{W} \bigg)_0 = \frac{V_\infty \alpha}{\eta_{prop} \beta} \bigg[
 # ╔═╡ e58f446a-88fe-430a-9598-d5bf2dc931ee
 md"### $W_0$ Determination"
 
+# ╔═╡ 7145e6cf-5f28-4741-8614-6dbeb734b6fe
+# Plots against A_FC_factor
+
+# ╔═╡ 37c062da-07ea-41a3-8494-47c272c78a73
+TAS(7500, V_cruise)
+
 # ╔═╡ d5181a37-7a4a-4c34-a9db-de83af11112c
-A_FC_factor = 1.; # Area of FC compared to minimum area of FC
+A_FC_factor = 1.26; # Area of FC compared to minimum area of FC
 
 # ╔═╡ 54c2ae3c-01c9-4ee2-a7fe-9b9f310c34d5
 A_FC_var = [1.0, 1.2, 1.55, 1.7, 1.85, 2.0];
@@ -344,6 +350,9 @@ cruise_burn_AFC = [1031.55, 917.45, 847.21, 831.84, 821.79, 815.63];
 
 # ╔═╡ e6c05972-7d17-46b4-b050-3dcd6eb23062
 overall_burn_AFC = [1987.87, 1845.88, 1754.00, 1742.89, 1740.24, 1744.33];
+
+# ╔═╡ 5eb8e3da-6af6-4896-ae1f-bc87f6ffb35e
+n_pass_AFC = [56, 56, 52, 52, 52, 52];
 
 # ╔═╡ 25b245e6-7ac5-4550-a0a3-3d5b0d505cb4
 begin
@@ -366,29 +375,107 @@ begin
 	)
 end
 
+# ╔═╡ b0170abf-e8a0-4d9c-901b-05741f1200f8
+# ╠═╡ disabled = true
+#=╠═╡
+begin
+	# Plot for passenger count and ground burn against t_w
+	npass = plot(
+		t_w_var * 100,
+		n_pass_t_w,
+		label = "Number of passengers",
+		ylabel = "Number of passengers",
+		xlabel = "Insulation thickness (cm)",
+		ylims = (0, 64),
+		xlims = (0, 18),
+		color = :blue,
+		ytickfontcolor = :blue,
+		yguidefontcolor = :blue,
+		lw = 3,
+		legend = :bottomleft,
+		marker = :x,
+		markersize = 4,
+		markerstrokewidth = 1,
+		xticks = 0:2:18,
+		yticks = 0:8:64,
+		minorgrid = true,
+	)
+
+	grnd = twinx(npass)
+	
+	plot!(
+		grnd,
+		t_w_var * 100,
+		W0_tw,
+		label = "W₀",
+		ylabel = "MTOW (kg)",
+		ylims = (26000, 28000),
+		color = :red,
+		ytickfontcolor = :red,
+		yguidefontcolor = :red,
+		lw = 3,
+		legend = :bottomright,
+		size = (500, 400),
+		xlims = (0, 18),
+		marker = :x,
+		markersize = 4,
+		markerstrokewidth = 1,
+	)
+	xaxis!(minorticks = 4)
+end
+  ╠═╡ =#
+
 # ╔═╡ c2128ea8-8852-4563-aa2e-22a9420c8bbd
 begin
 	# Plot for A_FC and W0
-	plot(
+	npass_AFC = plot(
 		A_FC_var,
-		overall_burn_AFC,
-		label = "MTOW",
+		n_pass_AFC,
+		label = "Number of passengers",
 		xlabel = "Fuel Cell Area Factor",
-		ylabel = "Fuel used (kg)",
-		legend = false,
+		ylabel = "Number of passengers",
 		lw = 3,
-		#xlim = (1, 2),
-		#ylim = (1700, 2000),
+		xlim = (1.00, 2.00),
+		ylim = (0, 64),
+		color = :blue,
+		ytickfontcolor = :blue,
+		yguidefontcolor = :blue,
+		legend = :topleft,
 		marker = :x,
 		markersize = 4,
 		markerstrokewidth = 1,
 		size = (500, 400),
-		minorgrid = true
+		grid = true,
+		minorgrid = true,
+	);
+
+	burn_AFC = twinx(npass_AFC);
+
+	plot!(
+		burn_AFC,
+		A_FC_var,
+		overall_burn_AFC,
+		label = "Simulated overall fuel use",
+		ylabel = "Fuel used (kg)",
+		xlim = (1.00, 2.00),
+		ylim = (1700, 2000),
+		color = :red,
+		ytickfontcolor = :red,
+		yguidefontcolor = :red,
+		lw = 3,
+		legend = :bottomright,
+		size = (500, 400),
+		marker = :x,
+		markersize = 4,
+		markerstrokewidth = 1,
 	)
+
+	xaxis!(minorticks = 5)
+	
 end
 
 # ╔═╡ dd1a0a7d-1884-4dc3-8428-51cf18310300
-# Plot for A_FC and overall fuel burn
+# Plots against t_w
 
 # ╔═╡ d7aebf1e-df3e-42ab-82ed-2080d552722b
 t_w_weightloop = 0.03;
@@ -420,7 +507,7 @@ begin
 		label = "Number of passengers",
 		ylabel = "Number of passengers",
 		xlabel = "Insulation thickness (cm)",
-		ylims = (0, 60),
+		ylims = (0, 64),
 		xlims = (0, 18),
 		color = :blue,
 		ytickfontcolor = :blue,
@@ -430,10 +517,13 @@ begin
 		marker = :x,
 		markersize = 4,
 		markerstrokewidth = 1,
-		minorgrid = true
+		xticks = 0:2:18,
+		yticks = 0:8:64,
+		minorgrid = true,
 	)
 
 	grnd = twinx(npass)
+	
 	plot!(
 		grnd,
 		t_w_var * 100,
@@ -447,11 +537,12 @@ begin
 		lw = 3,
 		legend = :bottomright,
 		size = (500, 400),
+		xlims = (0, 18),
 		marker = :x,
 		markersize = 4,
 		markerstrokewidth = 1,
-		minorgrid = true
 	)
+	xaxis!(minorticks = 4)
 end
 
 # ╔═╡ 5d8c23bf-05db-4072-a7a5-f9d9cb035422
@@ -472,7 +563,8 @@ begin
 		marker = :x,
 		markersize = 4,
 		markerstrokewidth = 1,
-		minorgrid = true
+		xticks = 0:2:18,
+		minorgrid = true,
 	)
 
 	grndplot = twinx(cruiseplt_tw)
@@ -489,12 +581,15 @@ begin
 		ylims = (1900, 2100),
 		legend = :topright,
 		size = (500, 400),
+		xlims = (0, 18),
 		minigrid = true,
 		marker = :x,
 		markersize = 4,
 		markerstrokewidth = 1,
 		minorgrid = true
 	)
+
+	xaxis!(minorticks = 4)
 end
 
 # ╔═╡ a77fce1f-0574-4666-ba3b-631716384ae0
@@ -1076,20 +1171,8 @@ begin
 	end
 end
 
-# ╔═╡ 60912178-17b6-42d8-971d-17184aa1d8d9
-P_tot
-
-# ╔═╡ 913db9f9-850b-4fe9-b4c5-1c872fc7ebf9
-W0[end]
-
-# ╔═╡ 8c38ccc1-fbc6-4531-89fb-a10b11805433
-Wf
-
-# ╔═╡ 6c8ed38b-1b05-41ca-92f9-760501184e58
-n_passengers
-
 # ╔═╡ 72ba560b-198f-457a-ba1e-3ddb3628864a
-Vf = Wf / ρ_LH2
+Vf = Wf / ρ_LH2;
 
 # ╔═╡ 852baaab-ce24-48cc-8393-1a8ee7554874
 begin
@@ -1191,9 +1274,13 @@ begin
 		[PW_max],
 		label = "Fuel Cell Dash 8 Q400 Design Point",
 		marker = :star,
-		size = (800, 600)
+		size = (800, 600),
+		minorgrid = true
 	)
 end
+
+# ╔═╡ da5c6163-2a6a-4d54-960f-bb656432b62d
+PW_max
 
 # ╔═╡ 87b0e21b-c75d-4b81-a7b8-34012ac92de7
 begin
@@ -1473,18 +1560,6 @@ begin
 	
 end
 
-# ╔═╡ dd05da5f-b206-41a8-88c7-ebfde1a871ef
-segment_burn[1] # Ground
-
-# ╔═╡ e38a34a3-cf2a-47fd-9806-0b702eabf363
-segment_burn[3] - segment_burn[2] # Climb
-
-# ╔═╡ 44026c47-ed26-4eb4-ba56-c84417f5d6a1
-segment_burn[4] - segment_burn[3] # Cruise
-
-# ╔═╡ 32290dce-ddde-4cb0-92a4-6794984840b2
-segment_burn[end] # Overall
-
 # ╔═╡ 26d249ff-9ac0-4559-9f43-4321429217a3
 plot(1:resolution:t, E_used / resolution,
 	xlabel = "Time (seconds)",
@@ -1523,14 +1598,14 @@ order_A = floor(Int, log10(A_min));
 print("Fuel cell area: " * string(round(A_eff, digits=0)) * " m^2")
 
 # ╔═╡ e2848f51-2145-4d37-a2c3-d73a67cd525d
-Areas = LinRange(A_min*1.1, 2000, 20);
+Areas = LinRange(A_min*1.06, 2000, 20);
 
 # ╔═╡ eea50a16-6798-4b53-8c36-ec647b592b23
 PEMFC = PEMFCStack(
 	area_effective=A_eff,
 	power_max = P_max,
-	height = 2.,
-	width = 2.,
+	height = 2*(fuse.radius - fuse_t_w),
+	width = 2*(fuse.radius - fuse_t_w),
 	layer_thickness=0.0043,
 	position = [0., 0., 0.]
 )
@@ -1557,9 +1632,11 @@ PEMFC_mass = mass(PEMFC) # Fuel cell mass (kg)
 begin
 	eta_climbpower = zeros(size(Areas));
 	eta_cruisepower = zeros(size(Areas));
+	eta_maxpower = zeros(size(Areas));
 
 	mdot_climbpower = zeros(size(Areas));
 	mdot_cruisepower = zeros(size(Areas));
+	mdot_maxpower = zeros(size(Areas));
 
 	length_fullpower = zeros(size(Areas));
 
@@ -1587,22 +1664,25 @@ begin
 	
 	global climb_throttle = ((PW_begclimb1 * W0[end] * 9.8) + P_misc) / P_max;
 	global cruise_throttle = ((PW_cr * W0[end] * 9.8) + P_misc) / P_max;
+	global system_throttle = P_misc / P_max;
 	
 	for i in 1:length(Areas)
 		PEMFC_AreaStudy = PEMFCStack(
 			area_effective=Areas[i],
 			power_max = P_max,
-			height = 2.,
-			width = 2.,
+			height = 2*(fuse.radius - fuse_t_w),
+			width = 2*(fuse.radius - fuse_t_w),
 			layer_thickness=0.0043,
 			position = [0., 0., 0.]
 		)
 
 		eta_climbpower[i] = η_FC(PEMFC_AreaStudy, climb_throttle);
 		eta_cruisepower[i] = η_FC(PEMFC_AreaStudy, cruise_throttle);
+		eta_maxpower[i] = η_FC(PEMFC_AreaStudy, 1);
 
 		mdot_climbpower[i] = fflow_H2(PEMFC_AreaStudy, climb_throttle);
 		mdot_cruisepower[i] = fflow_H2(PEMFC_AreaStudy, cruise_throttle);
+		mdot_maxpower[i] = fflow_H2(PEMFC_AreaStudy, 1);
 
 		length_fullpower[i] = length(PEMFC_AreaStudy);
 		mass_fullpower[i] = mass(PEMFC_AreaStudy);
@@ -1615,11 +1695,14 @@ climb_throttle
 # ╔═╡ 6a9c0657-f496-4efb-8113-b4a2b89604fe
 cruise_throttle
 
+# ╔═╡ 038a083e-71e1-4afa-987e-dc2741272338
+chosenarea = concept_fc.area_effective;
+
 # ╔═╡ 92e4aa80-c9fd-4aa0-940a-7ca4765141f5
 begin
 	plot(
-		Areas, eta_cruisepower,
-		label = "Cruise power",
+		Areas, eta_maxpower,
+		label = "Peak power",
 		lw = 3.,
 		ylabel = "Fuel Cell Efficiency",
 		xlabel = "Fuel Cell Area (m²)",
@@ -1627,7 +1710,9 @@ begin
 		ylims = (0., 1.0),
 		xlims = (800, 2000),
 		size = (600, 400),
-		grid = true
+		grid = true,
+		minorgrid = true,
+		minorticks = 4
 	);
 	plot!(
 		Areas, eta_climbpower,
@@ -1635,57 +1720,89 @@ begin
 		lw = 3.,
 	);
 	plot!(
-		[Areas[1], Areas[1]], [0., 1.],
+		Areas, eta_cruisepower,
+		label = "Start of cruise power",
+		lw = 3.,
+	)
+	plot!(
+		[A_min, A_min], [0., 1.],
 		color = :black,
 		linestyle = :dash,
 		label = "Minimum viable area"
+	)
+	plot!(
+		[chosenarea, chosenarea], [0., 1.],
+		color = :gray,
+		linestyle = :dash,
+		label = "Chosen area"
 	)
 end
 
 # ╔═╡ 373a8b16-b3a2-4cfb-ae50-bc9962a6cbe5
 begin
 	plot(
-		mass_fullpower, mdot_cruisepower,
-		label = "Cruise power",
+		mass_fullpower, mdot_maxpower,
+		label = "Peak power",
 		lw = 3.,
 		ylabel = "H₂ mass flow rate (kg/s)",
 		xlabel = "Fuel cell mass (kg)",
 		#title = "Hydrogen fuel flow rate versus PEMFC mass",
 		xlims = (2000, 5000),
-		ylims = (0.0, 0.15),
+		ylims = (0.0, 0.20),
+		yticks = (0.00:0.05:0.20),
 		size = (600, 400),
+		minorgrid = true,
 	);
+	#yaxis!(minorticks = 5)
 	plot!(
 		mass_fullpower, mdot_climbpower,
 		label = "Start of climb power",
 		lw = 3.,
 	);
 	plot!(
-		[mass_fullpower[1], mass_fullpower[1]], [0., 0.15],
+		mass_fullpower, mdot_cruisepower,
+		label = "Start of cruise power",
+		lw = 3.,
+	);
+	plot!(
+		[A_min * 2.5, A_min * 2.5], [0., 0.2],
 		color = :black,
 		linestyle = :dash,
 		label = "Minimum viable area"
+	);
+	plot!(
+		[chosenarea * 2.5, chosenarea * 2.5], [0., 0.2],
+		color = :gray,
+		linestyle = :dash,
+		label = "Chosen area"
 	)
 end
 
 # ╔═╡ 5bfe15dd-29db-4a48-af6f-f8a04bb495e7
 begin
 	plot(
-		Areas, length_fullpower*2*2,
+		Areas, length_fullpower*2*(fuse.radius - fuse_t_w)*2*(fuse.radius - fuse_t_w),
 		lw = 3.,
 		ylabel = "Fuel Cell Volume (m³)",
 		xlabel = "Fuel Cell Area (m²)",
 		#title = "Fuel cell volume versus effective area",
 		xlims = (600, 2000),
-		ylims = (3, 10),
+		ylims = (0, 10),
 		label = "FC volume",
-		size = (600, 300)
+		size = (600, 300),
+		minorgrid = true
 	);
 	plot!(
-		[Areas[1], Areas[1]], [0, 10],
+		[A_min, A_min], [0, 10],
 		color = :black,
 		linestyle = :dash,
 		label = "Minimum viable area"
+	)
+	plot!(
+		[chosenarea, chosenarea], [0., 10.],
+		color = :gray,
+		linestyle = :dash,
+		label = "Chosen area"
 	)
 end
 
@@ -1698,16 +1815,23 @@ begin
 		xlabel = "Fuel Cell Area (m²)",
 		#title = "Fuel cell mass versus effective area",
 		xlims = (600, 2000),
-		ylims = (1000, 5000),
+		ylims = (0, 5000),
 		label = "FC mass",
-		size = (600, 300)
+		size = (600, 300),
+		minorgrid = true
 	);
 
 	plot!(
-		[Areas[1], Areas[1]], [0, 5000],
+		[A_min, A_min], [0, 5000],
 		color = :black,
 		linestyle = :dash,
 		label = "Minimum viable area"
+	)
+	plot!(
+		[chosenarea, chosenarea], [0., 5000.],
+		color = :gray,
+		linestyle = :dash,
+		label = "Chosen area"
 	)
 end
 
@@ -1716,7 +1840,7 @@ begin
 	t_w = [0.001 0.002 0.003 0.004 0.005 0.006 0.008 0.01 0.015 0.02 0.03 0.04 0.05 0.1 0.15 0.2]'
 	K_insulation = insulation_material.Thermal_conductivity
 	T_s_0 = 100
-	T∞ = 293
+	T∞ = 303.15
 	T_LH2 = 20
 	ϵ = 0.1
 	M = zeros(Float64, size(t_w))
@@ -1741,22 +1865,26 @@ end
 begin
 	boiloffplot = plot(
 		100 * t_w,
-		360 * M,
+		3600 * M,
 		xlabel = "Insulation thickness (cm)",
 		ylabel = "Mass boil-off (kg /hr)",
 		legend = false,
 		lw = 3,
-		ylims = (0, 70)
+		xlims = (0, 20),
+		ylims = (0, 300),
+		minorgrid = true
 	);
 
 	volboioloffplot = plot(
 		100 * t_w,
-		360 * M / ρ_LH2,
+		3600 * M / ρ_LH2,
 		xlabel = "Insulation thickness (cm)",
 		ylabel = "Volume boil-off (m³ /hr)",
 		legend = false,
 		lw = 3,
-		ylims = (0., 1.)
+		xlims = (0, 20),
+		ylims = (0., 3.),
+		minorgrid = true
 	);
 
 	Tsplot = plot(
@@ -1766,7 +1894,9 @@ begin
 		ylabel = "Tank surface temperature (K)",
 		label = "Theoretical value",
 		lw = 3,
-		ylims = (220., 300.)
+		xlims = (0, 20),
+		ylims = (250., 310.),
+		minorgrid = true
 	)
 	
 	plot!([0; 20], [T∞; T∞], linestyle = :dash, linecolor = :gray, linewidth = 2, label = "T∞")
@@ -1966,20 +2096,18 @@ plt_vlm
 # ╟─e58f446a-88fe-430a-9598-d5bf2dc931ee
 # ╠═25f5ce08-02dc-4d9d-ae61-ae83f4c1dd13
 # ╠═16996cd1-b98a-4ab7-9674-e45b8548eda7
-# ╠═60912178-17b6-42d8-971d-17184aa1d8d9
-# ╠═913db9f9-850b-4fe9-b4c5-1c872fc7ebf9
-# ╠═dd05da5f-b206-41a8-88c7-ebfde1a871ef
-# ╠═e38a34a3-cf2a-47fd-9806-0b702eabf363
-# ╠═44026c47-ed26-4eb4-ba56-c84417f5d6a1
-# ╠═32290dce-ddde-4cb0-92a4-6794984840b2
+# ╠═7145e6cf-5f28-4741-8614-6dbeb734b6fe
+# ╠═37c062da-07ea-41a3-8494-47c272c78a73
 # ╠═d5181a37-7a4a-4c34-a9db-de83af11112c
 # ╠═54c2ae3c-01c9-4ee2-a7fe-9b9f310c34d5
 # ╠═37ebd144-a9c3-459a-9a92-1904a98c564a
 # ╠═46d5504f-4f9d-4f3b-bbfd-077de7309f4d
 # ╠═54721b25-05d8-4359-93d4-ee33bd0c43c7
 # ╠═e6c05972-7d17-46b4-b050-3dcd6eb23062
+# ╠═5eb8e3da-6af6-4896-ae1f-bc87f6ffb35e
 # ╟─25b245e6-7ac5-4550-a0a3-3d5b0d505cb4
-# ╟─c2128ea8-8852-4563-aa2e-22a9420c8bbd
+# ╠═b0170abf-e8a0-4d9c-901b-05741f1200f8
+# ╠═c2128ea8-8852-4563-aa2e-22a9420c8bbd
 # ╠═dd1a0a7d-1884-4dc3-8428-51cf18310300
 # ╠═d7aebf1e-df3e-42ab-82ed-2080d552722b
 # ╠═f4471ec8-25f5-429e-b74c-ceec181c7287
@@ -1990,8 +2118,6 @@ plt_vlm
 # ╠═f78e0409-512d-4dbd-90ac-92398d3ad80f
 # ╟─d816a764-574f-4323-bf12-248dc55a341b
 # ╟─5d8c23bf-05db-4072-a7a5-f9d9cb035422
-# ╠═8c38ccc1-fbc6-4531-89fb-a10b11805433
-# ╠═6c8ed38b-1b05-41ca-92f9-760501184e58
 # ╠═72ba560b-198f-457a-ba1e-3ddb3628864a
 # ╟─852baaab-ce24-48cc-8393-1a8ee7554874
 # ╠═8ce1c30e-b602-4411-b671-1cc5f267e646
@@ -2007,6 +2133,7 @@ plt_vlm
 # ╠═9bf58181-6a29-4587-bec5-cf5999d0ca32
 # ╠═bf75995b-317b-4ade-a46a-51ed947240c3
 # ╠═94eaf8be-b197-4606-9908-bc8317b1c6d0
+# ╠═da5c6163-2a6a-4d54-960f-bb656432b62d
 # ╟─848a3f87-f942-4691-832a-fe1883129e3d
 # ╠═87b0e21b-c75d-4b81-a7b8-34012ac92de7
 # ╠═26d249ff-9ac0-4559-9f43-4321429217a3
@@ -2023,8 +2150,8 @@ plt_vlm
 # ╟─631cfc20-058a-4574-8d81-b10c49fd2036
 # ╟─89530c07-b538-4875-b67b-c916963d9ab8
 # ╟─6fffa62e-48c1-48aa-a048-4e78048fb309
-# ╟─f4158708-4c5b-44d2-80bd-22334c19b319
-# ╟─c829759c-914e-4d1d-a037-9c59bf0f97c9
+# ╠═f4158708-4c5b-44d2-80bd-22334c19b319
+# ╠═c829759c-914e-4d1d-a037-9c59bf0f97c9
 # ╟─bffea698-1450-4cac-96fc-717ba609a5c1
 # ╟─7081ef25-8769-4a62-be19-c87168ac9135
 # ╟─66c1cc45-913d-44f8-bf55-dc4a47d5dca6
@@ -2059,7 +2186,7 @@ plt_vlm
 # ╠═a2e58e67-f7f1-444b-991f-442f304f86bf
 # ╟─4d86e477-7a9e-4eed-8b8f-e007411b2898
 # ╠═e2457cb1-8718-4175-b7a2-e5ad6e864a43
-# ╟─4e23f46e-9253-4b3b-92fa-1efe7049899a
+# ╠═4e23f46e-9253-4b3b-92fa-1efe7049899a
 # ╟─45f95a01-b50d-4f11-bc5c-412968c16dee
 # ╟─cbeacb6e-f1ae-4152-aef5-426908cb5f6e
 # ╟─479f80e3-8ab6-4f3d-bd47-a18f4671dfa9
@@ -2075,9 +2202,10 @@ plt_vlm
 # ╠═5270c8d4-4703-423b-89a5-805679a374ae
 # ╟─429db1e1-071f-41de-a02f-7d0297353928
 # ╠═e2848f51-2145-4d37-a2c3-d73a67cd525d
-# ╠═448e3477-6be6-41fb-8794-cd95c9ea56db
+# ╟─448e3477-6be6-41fb-8794-cd95c9ea56db
 # ╠═52f0d3d0-8fd0-44dc-8991-0f0244572a03
 # ╠═6a9c0657-f496-4efb-8113-b4a2b89604fe
+# ╟─038a083e-71e1-4afa-987e-dc2741272338
 # ╟─92e4aa80-c9fd-4aa0-940a-7ca4765141f5
 # ╟─373a8b16-b3a2-4cfb-ae50-bc9962a6cbe5
 # ╟─5bfe15dd-29db-4a48-af6f-f8a04bb495e7
