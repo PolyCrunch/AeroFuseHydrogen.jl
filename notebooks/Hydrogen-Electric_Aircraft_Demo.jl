@@ -210,6 +210,15 @@ M_cruise = 0.5 * var; # Vary with the 'var' variable if necessary
 # ╔═╡ be1dfd57-dddb-4d83-8a4d-cdaa13323f2c
 V_cruise_IAS = 108;
 
+# ╔═╡ 9e0cdf62-fab8-4f24-ae55-30f416944ddf
+# ╠═╡ disabled = true
+#=╠═╡
+V_cruise = TAS(7500, V_cruise_IAS);
+  ╠═╡ =#
+
+# ╔═╡ be0503a0-c734-4fb4-96a6-9eec3db7a691
+V_cruise = a_cruise * M_cruise
+
 # ╔═╡ c6697863-76bd-4ead-8cd7-7b4818d5af6f
 η_prop = 0.8;
 
@@ -434,7 +443,7 @@ n_pass_t_w = [56, 56, 56, 52, 52, 52, 48];
 grnd_burn_tw = [76.25, 37.39, 25.54, 13.27, 8.56, 6.56, 5.55];
 
 # ╔═╡ 4a6c742d-9a91-417b-b307-ffa9203fc475
-cruise_burn_tw = [1033.03, 1032.30, 1031.55, 1061.71, 1057.23, 1052.56, 1103.45]; # Why is this lower? Because more fuel mass has been burnt — lighter plane — simulation accounts for this
+cruise_burn_tw = [1033.03, 1032.30, 1031.55, 1061.71, 1057.23, 1052.56, 1103.45]; # Why is this lower? Because more fuel mass has been burnt — lighter plane — moves up constraint diagram — simulation accounts for this
 
 # ╔═╡ 18206899-9c9e-4a93-ab2f-8262dda88905
 overall_burn_tw = [2008.36, 1993.35, 1987.87, 2007.37, 2002.41, 1998.31, 2045.62];
@@ -1242,9 +1251,8 @@ begin
 	push!(segment_burn, m_burnt);
 
 	# Standard start up / T-O
-	m_burnt = W0[end] * (1 - W1_W0);
+	m_burnt += W0[end] * (1 - W1_W0);
 	push!(segment_burn, m_burnt);
-
 	# !============================== CLIMB 1 ================================!
 	
 	while h < h_cruise
@@ -1513,6 +1521,12 @@ segment_t
 
 # ╔═╡ 20388f96-d158-46b3-b62e-80915e77f20b
 segment_burn
+
+# ╔═╡ 479e21ae-744b-405a-9f6c-da08385a49c9
+segment_burn[12] - segment_burn[11]
+
+# ╔═╡ a7ea0962-93bb-432c-a528-9c60295a3fbb
+Wf
 
 # ╔═╡ 9d1c4841-09fc-4d3a-9229-79bf9addba01
 print("New Wf_W0: ", segment_burn[end] / W0[end])
@@ -1848,7 +1862,7 @@ tank = CryogenicFuelTank(
 	length = volume_to_length(Wf_W0 * W0[end] / ρ_LH2, fuse.radius - fuse_t_w, t_insulation),
 	insulation_thickness = t_insulation,
 	insulation_density = insulation_material.Density,
-	position = [0.5fuse.length, 0, 0]
+	position = [0.55fuse.length, 0, 0]
 )
 
 # ╔═╡ 63475bbf-6993-4f6c-86b8-f3b608b63a8e
@@ -1959,15 +1973,6 @@ plt_vlm
 # ╔═╡ f03893b1-7518-47d3-ae88-da688aff9591
 plt_vlm
 
-# ╔═╡ 9e0cdf62-fab8-4f24-ae55-30f416944ddf
-# ╠═╡ disabled = true
-#=╠═╡
-V_cruise = TAS(7500, V_cruise_IAS);
-  ╠═╡ =#
-
-# ╔═╡ be0503a0-c734-4fb4-96a6-9eec3db7a691
-V_cruise = a_cruise * M_cruise
-
 # ╔═╡ Cell order:
 # ╟─316a98fa-f3e4-4b46-8c19-c5dbfa6a550f
 # ╟─cf3ff4ea-03ed-4b53-982c-45d9d71a3ba2
@@ -1981,7 +1986,7 @@ V_cruise = a_cruise * M_cruise
 # ╠═87dfa675-cb8c-41e6-b03d-c5a983d99aa8
 # ╠═3fc8039e-acb3-44eb-a7c3-176afe4ad6e0
 # ╠═559bcd99-f43f-4228-9632-2aa5cd93a1fb
-# ╠═b4a9024c-2c1e-4291-95c1-b9560ff94b6d
+# ╟─b4a9024c-2c1e-4291-95c1-b9560ff94b6d
 # ╟─b1e81925-32b5-45c0-888c-4b38a34e27b6
 # ╟─b81ca63b-46e9-4808-8225-c36132e70084
 # ╟─6242fa28-1d3f-45d7-949a-646d2c7a9f52
@@ -2084,6 +2089,8 @@ V_cruise = a_cruise * M_cruise
 # ╟─26d249ff-9ac0-4559-9f43-4321429217a3
 # ╠═224e8310-30ac-4be9-9831-bcc1a41f48ff
 # ╠═20388f96-d158-46b3-b62e-80915e77f20b
+# ╠═479e21ae-744b-405a-9f6c-da08385a49c9
+# ╠═a7ea0962-93bb-432c-a528-9c60295a3fbb
 # ╟─9d1c4841-09fc-4d3a-9229-79bf9addba01
 # ╟─2b8ec21c-d8da-4e16-91c0-244857483463
 # ╟─a017efa0-cf08-4302-80f7-fae1ef55651c
